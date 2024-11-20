@@ -5,10 +5,10 @@ git add .
 # 描述更改内容
 git commit -m "24.11.20 first topk attempt"
 # 移除旧的远程仓库
-git remote remove origin
-git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git
+# git remote remove origin
+# git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git
 # 上传
-git push
+git push origin main
 
 # 下载
 # git pull origin main
