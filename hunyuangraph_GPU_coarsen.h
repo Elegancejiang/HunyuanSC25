@@ -51,6 +51,8 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
 
     hunyuangraph_admin->maxvwgt = 1.5 * graph->tvwgt[0] / hunyuangraph_admin->Coarsen_threshold; 
     
+    printf("level %d: nvtxs %d nedges %d\n",level, graph->nvtxs, graph->nedges);
+    
     do
     {
         hunyuangraph_malloc_coarseninfo(hunyuangraph_admin,graph);
@@ -70,8 +72,10 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
     	part_contruction += (end_part_contruction.tv_sec - begin_part_contruction.tv_sec) * 1000 + (end_part_contruction.tv_usec - begin_part_contruction.tv_usec) / 1000.0;
 
         graph = graph->coarser;
-
         level++;
+
+        printf("level %d: nvtxs %d nedges %d adjwgtsum %d\n",level, graph->nvtxs, graph->nedges, compute_graph_adjwgtsum_gpu(graph));
+        
     }while(
 		graph->nvtxs > hunyuangraph_admin->Coarsen_threshold && \
         graph->nvtxs < 0.85 * graph->finer->nvtxs && \

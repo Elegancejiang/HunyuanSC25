@@ -131,6 +131,21 @@ int hunyuangraph_computecut(hunyuangraph_graph_t *graph, int *where)
   	return cut/2;
 }
 
+int compute_graph_adjwgtsum_cpu(hunyuangraph_graph_t *graph)
+{
+	int sum = 0;
+	for(int i = 0;i < graph->nedges;i++)
+		sum += graph->adjwgt[i];
+	return sum;
+}
+
+int compute_graph_adjwgtsum_gpu(hunyuangraph_graph_t *graph)
+{
+	int sum = thrust::reduce(thrust::device, graph->cuda_adjwgt, graph->cuda_adjwgt + graph->nedges);
+	
+	return sum;
+}
+
 /*Malloc cpu coarsen graph params*/
 hunyuangraph_graph_t *hunyuangraph_set_cpu_cgraph(hunyuangraph_graph_t *graph, int cnvtxs)
 {
@@ -212,5 +227,31 @@ void hunyuangraph_free_graph(hunyuangraph_graph_t **r_graph)
   free(graph);
   *r_graph = NULL;
 }
+
+__global__ void exam_csr(int nvtxs, int *xadj, int *adjncy, int *adjwgt)
+{
+	for (int i = 0; i <= nvtxs; i++)
+		printf("%d ", xadj[i]);
+
+	printf("\nadjncy/adjwgt:\n");
+	for (int i = 0; i < nvtxs; i++)
+	{
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%d ", adjncy[j]);
+		printf("\n");
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%d ", adjwgt[j]);
+		printf("\n");
+	}
+	// printf("\n");
+	// for (int i = 0; i < nvtxs; i++)
+	// {
+	// 	for (int j = xadj[i]; j < xadj[i + 1]; j++)
+	// 		printf("%d ", adjwgt[j]);
+	// 	printf("\n");
+	// }
+	// printf("\n");
+}
+
 
 #endif

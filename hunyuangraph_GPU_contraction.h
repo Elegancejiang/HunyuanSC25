@@ -244,31 +244,6 @@ __global__ void set_cadjncy_cadjwgt(int *tadjncy,int *txadj, int *tadjwgt,int *t
 	}
 }
 
-__global__ void exam_csr(int nvtxs, int *xadj, int *adjncy, int *adjwgt)
-{
-	for (int i = 0; i <= nvtxs; i++)
-		printf("%d ", xadj[i]);
-
-	printf("\nadjncy/adjwgt:\n");
-	for (int i = 0; i < nvtxs; i++)
-	{
-		for (int j = xadj[i]; j < xadj[i + 1]; j++)
-			printf("%d ", adjncy[j]);
-		printf("\n");
-		for (int j = xadj[i]; j < xadj[i + 1]; j++)
-			printf("%d ", adjwgt[j]);
-		printf("\n");
-	}
-	// printf("\n");
-	// for (int i = 0; i < nvtxs; i++)
-	// {
-	// 	for (int j = xadj[i]; j < xadj[i + 1]; j++)
-	// 		printf("%d ", adjwgt[j]);
-	// 	printf("\n");
-	// }
-	// printf("\n");
-}
-
 /*Create gpu coarsen graph by contract*/
 void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph)
 {
@@ -330,7 +305,7 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	rfree_with_check(sizeof(int) * cnvtxs,"bb_id");				//bb_id
 	graph->tadjncy = bb_keysB_d;
 	graph->tadjwgt = bb_valsB_d;
-	rfree_with_check(sizeof(int) * nedges,"tadjwgt");			//tadjwgt
+	rfree_with_check(sizeof(int) * nedges,"bb_valsB_d");		//tadjwgt
 	rfree_with_check(sizeof(int) * nedges,"bb_keysB_d");		//tadjncy
     cudaDeviceSynchronize();
     gettimeofday(&end_free,NULL);

@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 	// save_init = save_init + memcpy_split;
 	// printf("could_save=      %10.2lf %7.3lf%\n",save_init, save_init / part_init * 100);
 
-	print_time_uncoarsen();
+	// print_time_uncoarsen();
 	// printf("\n");
 	// double Uncoarsen_else = part_uncoarsen - (krefine_atomicadd + uncoarsen_Sum_maxmin_pwgts + bndinfo_Find_real_bnd_info + bndinfo_init_bnd_info +\
 	// 	bndinfo_find_kayparams + bndinfo_initcucsr + bndinfo_bb_segsort + bndinfo_init_cu_que + bndinfo_findcsr +\
