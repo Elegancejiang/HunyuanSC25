@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	int best_edgecut = graph->nedges;
 	int *best_partition = (int *)malloc(sizeof(int) * graph->nvtxs);
 
-	for (int iter = 0; iter < 1; iter++)
+	for (int iter = 0; iter < 21; iter++)
 	{
 		init_timer();
 

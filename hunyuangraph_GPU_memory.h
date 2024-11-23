@@ -126,7 +126,7 @@ void *lmalloc_with_check(size_t size, char *infor)
 	// printf("lmalloc_with_check:%s\n",infor);
 	// printf("used memory=    %10ld\n",used_by_me_now);
 	// printf("malloc_address= %p\n",malloc_address);
-	printf("lmalloc lmove_pointer=%p size=%10d used_size=%10d %s\n", lmove_pointer, size, used_size, infor);
+	// printf("lmalloc lmove_pointer=%p size=%10d used_size=%10d %s\n", lmove_pointer, size, used_size, infor);
 	// printf("rmove_pointer=  %p lmalloc\n",rmove_pointer);
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
@@ -167,7 +167,7 @@ void *rmalloc_with_check(size_t size, char *infor)
 	// printf("used memory=    %10ld\n",used_by_me_now);
 	// printf("malloc_address= %p\n",malloc_address);
 	// printf("lmove_pointer=  %p\n",lmove_pointer);
-	printf("rmalloc rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
+	// printf("rmalloc rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
 	return malloc_address;
@@ -206,7 +206,7 @@ void *lfree_with_check(size_t size, char *infor)
 	// printf("lfree_with_check:%s\n",infor);
 	// printf("used memory=    %10ld\n",used_by_me_now);
 	// printf("lmove_pointer= %p\n",lmove_pointer);
-	printf("lfree   lmove_pointer=%p size=%10d used_size=%10d %s\n", lmove_pointer, size, used_size, infor);
+	// printf("lfree   lmove_pointer=%p size=%10d used_size=%10d %s\n", lmove_pointer, size, used_size, infor);
 	// printf("rmove_pointer= %p\n",rmove_pointer);
 	// printf("malloc_address=lfree\n");
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
@@ -248,7 +248,7 @@ void *rfree_with_check(size_t size, char *infor)
 	// printf("used memory=    %10ld\n",used_by_me_now);
 	// printf("lmove_pointer=  %p\n",lmove_pointer);
 	// printf("rmove_pointer=  %p\n",rmove_pointer);
-	printf("rfree   rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
+	// printf("rfree   rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
 	// printf("malloc_address= rfree\n");
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");

@@ -59,7 +59,7 @@ void Mallocinit_refineinfo(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangrap
 	int nparts = hunyuangraph_admin->nparts;
 	int num = 0;
 
-	printf("hunyuangraph_malloc_refineinfo nvtxs=%d\n", nvtxs);
+	// printf("hunyuangraph_malloc_refineinfo nvtxs=%d\n", nvtxs);
 
 	// cudaMalloc((void**)&graph->cuda_where,nvtxs * sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_bnd,nvtxs * sizeof(int));
@@ -100,7 +100,7 @@ void hunyuangraph_malloc_refineinfo(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	int nparts = hunyuangraph_admin->nparts;
 	int num = 0;
 
-	printf("hunyuangraph_malloc_refineinfo nvtxs=%d\n", nvtxs);
+	// printf("hunyuangraph_malloc_refineinfo nvtxs=%d\n", nvtxs);
 
 	// cudaMalloc((void**)&graph->cuda_bnd,nvtxs * sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_bndnum,sizeof(int));
@@ -155,9 +155,9 @@ void hunyuangraph_kway_project(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 /*Free graph uncoarsening phase params*/
 void hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 {
-	printf("hunyuangraph_uncoarsen_free_krefine nvtxs=%d\n", graph->nvtxs);
+	// printf("hunyuangraph_uncoarsen_free_krefine nvtxs=%d\n", graph->nvtxs);
 	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "hunyuangraph_uncoarsen_free_krefine: cuda_que"); // cuda_que
-	lfree_with_check(sizeof(int) * 2, "cuda_csr");															 // cuda_csr
+	lfree_with_check(sizeof(int) * 2, "cuda_csr");																	 // cuda_csr
 	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_g");					 // cuda_g
 	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_bt");					 // cuda_bt
 	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_bn");					 // cuda_bn
@@ -186,9 +186,9 @@ void hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin_t *hunyuangraph_admi
 
 void hunyuangraph_uncoarsen_free_coarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 {
-	printf("hunyuangraph_uncoarsen_free_coarsen nvtxs=%d\n", graph->nvtxs);
+	// printf("hunyuangraph_uncoarsen_free_coarsen nvtxs=%d\n", graph->nvtxs);
 
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where");		 // where
+	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where"); // where
 	if (graph->cuda_cmap != NULL)
 		lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: cmap");	 // cmap;
 	lfree_with_check(sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjwgt");	 // adjwgt
