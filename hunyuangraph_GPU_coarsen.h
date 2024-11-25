@@ -51,7 +51,7 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
 
     hunyuangraph_admin->maxvwgt = 1.5 * graph->tvwgt[0] / hunyuangraph_admin->Coarsen_threshold;
 
-    // printf("level %d: nvtxs %d nedges %d\n",level, graph->nvtxs, graph->nedges);
+    // printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n",level, graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
 
     do
     {

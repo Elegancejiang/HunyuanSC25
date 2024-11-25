@@ -297,7 +297,7 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	// segment_sort<<<(cnvtxs + 127) / 128, 128>>>(graph->tadjncy, graph->tadjwgt, nedges, graph->txadj, cnvtxs);
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
-    segmentsort_gpu_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
+    ncy_segmentsort_gpu_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
 
     cudaDeviceSynchronize();
     gettimeofday(&begin_free,NULL);

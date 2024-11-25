@@ -1,0 +1,415 @@
+graph:/media/jiangdie/新加卷/graph_10w/af_shell6.graph 504855 17084020
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5902005632B 5763677KB 5628MB 5GB
+front_pointer=  0x71ca08000000
+back_pointer=   0x71cb67c97580
+begin partition
+level  0: nvtxs     504855 nedges   17084020 nedges/nvtxs=  33.84 adjwgtsum     17084020
+level  1: nvtxs     270407 nedges    7769924 nedges/nvtxs=  28.73 adjwgtsum     16615124
+level  2: nvtxs     140493 nedges    2720240 nedges/nvtxs=  19.36 adjwgtsum     15703484
+level  3: nvtxs      71911 nedges     912932 nedges/nvtxs=  12.70 adjwgtsum     14039752
+level  4: nvtxs      37243 nedges     378466 nedges/nvtxs=  10.16 adjwgtsum     11566882
+level  5: nvtxs      19874 nedges     159006 nedges/nvtxs=   8.00 adjwgtsum      8899948
+level  6: nvtxs      10803 nedges      73784 nedges/nvtxs=   6.83 adjwgtsum      6795562
+level  7: nvtxs       5992 nedges      37248 nedges/nvtxs=   6.22 adjwgtsum      5187754
+Coarsen end:cnvtxs=5992 cnedges=37248
+end partition
+lmove_pointer=  0x71ca08000000
+rmove_pointer=  0x71cb67c97580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423359360B     413436KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      32.99 ms
+------Coarsen_time=               22.96 ms
+------Init_time=                   4.01 ms
+------Uncoarsen_time=              6.02 ms
+------else_time=                   0.00 ms
+edge-cut=                         54275
+
+Coarsen_time=                  22.962 ms
+    part_match                     11.171  48.650%
+        init_gpu_match_time             0.066   0.287%
+        hem_gpu_match_time             10.595  46.141%
+            random_match_time               6.173  58.263%
+            init_gpu_receive_send_time      0.120   1.133%
+            wgt_segmentsort_gpu_time        1.614  15.234%
+            segmentsort_memcpy_time         0.673   6.352%
+            set_receive_send_time           1.072  10.118%
+            set_match_topk_time             0.443   4.181%
+            reset_match_array_time          0.452   4.266%
+        resolve_conflict_1_time         0.079   0.344%
+        resolve_conflict_2_time         0.067   0.292%
+        inclusive_scan_time             0.167   0.727%
+        resolve_conflict_4_time         0.119   0.518%
+    part_contruction               10.343  45.044%
+        exclusive_scan_time             0.120   0.523%
+        set_tadjncy_tadjwgt_time        1.906   8.301%
+        ncy_segmentsort_gpu_time        3.623  15.778%
+        mark_edges_time                 0.876   3.815%
+        inclusive_scan_time2            1.690   7.360%
+        set_cxadj_time                  0.132   0.575%
+        init_cadjwgt_time               0.192   0.836%
+        set_cadjncy_cadjwgt_time        1.697   7.390%
+    coarsen_malloc                  0.013   0.057%
+    coarsen_memcpy                  0.314   1.367%
+    coarsen_free                    0.005   0.022%
+    else                            1.301   5.666%
+best_edgecut=54275
+graph:/media/jiangdie/新加卷/graph_10w/audikw_1.graph 943695 76708152
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5661753728B 5529056KB 5399MB 5GB
+front_pointer=  0x7551da000000
+back_pointer=   0x75532b778180
+begin partition
+level  0: nvtxs     943695 nedges   76708152 nedges/nvtxs=  81.28 adjwgtsum     76708152
+level  1: nvtxs     477839 nedges   37145734 nedges/nvtxs=  77.74 adjwgtsum     75776440
+level  2: nvtxs     246187 nedges   16477176 nedges/nvtxs=  66.93 adjwgtsum     73992266
+level  3: nvtxs     125876 nedges    6655324 nedges/nvtxs=  52.87 adjwgtsum     70705260
+level  4: nvtxs      64844 nedges    2774482 nedges/nvtxs=  42.79 adjwgtsum     65557222
+level  5: nvtxs      33770 nedges    1201124 nedges/nvtxs=  35.57 adjwgtsum     59219102
+level  6: nvtxs      17784 nedges     531356 nedges/nvtxs=  29.88 adjwgtsum     52438308
+level  7: nvtxs       9568 nedges     239910 nedges/nvtxs=  25.07 adjwgtsum     45624882
+Coarsen end:cnvtxs=9568 cnedges=239910
+end partition
+lmove_pointer=  0x7551da000000
+rmove_pointer=  0x75532b778180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     124.25 ms
+------Coarsen_time=               85.86 ms
+------Init_time=                  14.06 ms
+------Uncoarsen_time=             24.33 ms
+------else_time=                   0.00 ms
+edge-cut=                        820863
+
+Coarsen_time=                  85.861 ms
+    part_match                     40.094  46.696%
+        init_gpu_match_time             0.073   0.085%
+        hem_gpu_match_time             39.384  45.869%
+            random_match_time              26.264  66.687%
+            init_gpu_receive_send_time      0.169   0.429%
+            wgt_segmentsort_gpu_time        5.485  13.927%
+            segmentsort_memcpy_time         3.340   8.481%
+            set_receive_send_time           2.780   7.059%
+            set_match_topk_time             0.653   1.658%
+            reset_match_array_time          0.646   1.640%
+        resolve_conflict_1_time         0.096   0.112%
+        resolve_conflict_2_time         0.077   0.090%
+        inclusive_scan_time             0.190   0.221%
+        resolve_conflict_4_time         0.205   0.239%
+    part_contruction               42.149  49.090%
+        exclusive_scan_time             0.140   0.163%
+        set_tadjncy_tadjwgt_time        8.015   9.335%
+        ncy_segmentsort_gpu_time       13.517  15.743%
+        mark_edges_time                 3.773   4.394%
+        inclusive_scan_time2            7.483   8.715%
+        set_cxadj_time                  0.243   0.283%
+        init_cadjwgt_time               0.826   0.962%
+        set_cadjncy_cadjwgt_time        8.045   9.370%
+    coarsen_malloc                  0.015   0.017%
+    coarsen_memcpy                  1.106   1.288%
+    coarsen_free                    0.002   0.002%
+    else                            2.671   3.111%
+best_edgecut=820863
+graph:/media/jiangdie/新加卷/graph_10w/cage13.graph 445315 7034028
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5942443776B 5803167KB 5667MB 5GB
+front_pointer=  0x718336000000
+back_pointer=   0x718498327f00
+begin partition
+level  0: nvtxs     445315 nedges    7034028 nedges/nvtxs=  15.80 adjwgtsum      7034028
+level  1: nvtxs     231278 nedges    5338964 nedges/nvtxs=  23.08 adjwgtsum      6605954
+level  2: nvtxs     119435 nedges    3965230 nedges/nvtxs=  33.20 adjwgtsum      6136430
+level  3: nvtxs      61636 nedges    2730738 nedges/nvtxs=  44.30 adjwgtsum      5697530
+level  4: nvtxs      31942 nedges    1760830 nedges/nvtxs=  55.13 adjwgtsum      5300444
+level  5: nvtxs      16697 nedges    1067222 nedges/nvtxs=  63.92 adjwgtsum      4921928
+level  6: nvtxs       8872 nedges     612752 nedges/nvtxs=  69.07 adjwgtsum      4546390
+level  7: nvtxs       4856 nedges     338270 nedges/nvtxs=  69.66 adjwgtsum      4159878
+Coarsen end:cnvtxs=4856 cnedges=338270
+end partition
+lmove_pointer=  0x718336000000
+rmove_pointer=  0x718498327f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214090496B     209072KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      54.74 ms
+------Coarsen_time=               18.06 ms
+------Init_time=                  22.75 ms
+------Uncoarsen_time=             13.93 ms
+------else_time=                   0.00 ms
+edge-cut=                        234407
+
+Coarsen_time=                  18.059 ms
+    part_match                      7.533  41.713%
+        init_gpu_match_time             0.055   0.305%
+        hem_gpu_match_time              7.067  39.133%
+            random_match_time               2.490  35.234%
+            init_gpu_receive_send_time      0.098   1.387%
+            wgt_segmentsort_gpu_time        1.623  22.966%
+            segmentsort_memcpy_time         0.855  12.098%
+            set_receive_send_time           1.233  17.447%
+            set_match_topk_time             0.365   5.165%
+            reset_match_array_time          0.364   5.151%
+        resolve_conflict_1_time         0.066   0.365%
+        resolve_conflict_2_time         0.052   0.288%
+        inclusive_scan_time             0.115   0.637%
+        resolve_conflict_4_time         0.111   0.615%
+    part_contruction                8.218  45.506%
+        exclusive_scan_time             0.097   0.537%
+        set_tadjncy_tadjwgt_time        1.636   9.059%
+        ncy_segmentsort_gpu_time        2.509  13.893%
+        mark_edges_time                 0.693   3.837%
+        inclusive_scan_time2            1.258   6.966%
+        set_cxadj_time                  0.119   0.659%
+        init_cadjwgt_time               0.223   1.235%
+        set_cadjncy_cadjwgt_time        1.580   8.749%
+    coarsen_malloc                  0.024   0.133%
+    coarsen_memcpy                  1.246   6.900%
+    coarsen_free                    0.006   0.033%
+    else                            1.202   6.656%
+best_edgecut=234407
+graph:/media/jiangdie/新加卷/graph_10w/AS365.graph 3799275 22736152
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5866219392B 5728729KB 5594MB 5GB
+front_pointer=  0x764738000000
+back_pointer=   0x764895a76780
+begin partition
+level  0: nvtxs    3799275 nedges   22736152 nedges/nvtxs=   5.98 adjwgtsum     22736152
+level  1: nvtxs    2094957 nedges   12526678 nedges/nvtxs=   5.98 adjwgtsum     19327516
+level  2: nvtxs    1152371 nedges    6865904 nedges/nvtxs=   5.96 adjwgtsum     14806348
+level  3: nvtxs     644046 nedges    3809844 nedges/nvtxs=   5.92 adjwgtsum     11350964
+level  4: nvtxs     369265 nedges    2148848 nedges/nvtxs=   5.82 adjwgtsum      8703834
+level  5: nvtxs     220026 nedges    1240726 nedges/nvtxs=   5.64 adjwgtsum      6704306
+level  6: nvtxs     138690 nedges     739930 nedges/nvtxs=   5.34 adjwgtsum      5198288
+level  7: nvtxs      93977 nedges     461106 nedges/nvtxs=   4.91 adjwgtsum      4060212
+level  8: nvtxs      69214 nedges     303766 nedges/nvtxs=   4.39 adjwgtsum      3199692
+level  9: nvtxs      54847 nedges     214000 nedges/nvtxs=   3.90 adjwgtsum      2563100
+Coarsen end:cnvtxs=54847 cnedges=214000
+end partition
+lmove_pointer=  0x764738000000
+rmove_pointer=  0x764895a76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656062336B     640685KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     125.48 ms
+------Coarsen_time=               69.44 ms
+------Init_time=                  40.42 ms
+------Uncoarsen_time=             15.62 ms
+------else_time=                   0.00 ms
+edge-cut=                         16241
+
+Coarsen_time=                  69.442 ms
+    part_match                     34.198  49.247%
+        init_gpu_match_time             0.165   0.238%
+        hem_gpu_match_time             30.385  43.756%
+            random_match_time              11.060  36.400%
+            init_gpu_receive_send_time      0.647   2.129%
+            wgt_segmentsort_gpu_time        3.333  10.969%
+            segmentsort_memcpy_time         1.522   5.009%
+            set_receive_send_time           8.109  26.688%
+            set_match_topk_time             1.896   6.240%
+            reset_match_array_time          3.760  12.375%
+        resolve_conflict_1_time         0.708   1.020%
+        resolve_conflict_2_time         0.244   0.351%
+        inclusive_scan_time             0.572   0.824%
+        resolve_conflict_4_time         2.022   2.912%
+    part_contruction               32.504  46.807%
+        exclusive_scan_time             0.371   0.534%
+        set_tadjncy_tadjwgt_time       14.227  20.488%
+        ncy_segmentsort_gpu_time        5.001   7.202%
+        mark_edges_time                 3.367   4.849%
+        inclusive_scan_time2            2.748   3.957%
+        set_cxadj_time                  0.619   0.891%
+        init_cadjwgt_time               0.388   0.559%
+        set_cadjncy_cadjwgt_time        5.638   8.119%
+    coarsen_malloc                  0.022   0.032%
+    coarsen_memcpy                  1.151   1.657%
+    coarsen_free                    0.007   0.010%
+    else                            1.807   2.602%
+best_edgecut=16241
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 18318143 54940162
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5679327872B 5546218KB 5416MB 5GB
+front_pointer=  0x792762000000
+back_pointer=   0x7928b483aa80
+begin partition
+level  0: nvtxs   18318143 nedges   54940162 nedges/nvtxs=   3.00 adjwgtsum     54940162
+level  1: nvtxs    9304030 nedges   29882698 nedges/nvtxs=   3.21 adjwgtsum     36911936
+level  2: nvtxs    5446627 nedges   21701360 nedges/nvtxs=   3.98 adjwgtsum     22202030
+level  3: nvtxs    2878532 nedges   14316886 nedges/nvtxs=   4.97 adjwgtsum     16727380
+level  4: nvtxs    1539844 nedges    8117602 nedges/nvtxs=   5.27 adjwgtsum     12610804
+level  5: nvtxs     836046 nedges    4738566 nedges/nvtxs=   5.67 adjwgtsum      9551274
+level  6: nvtxs     457450 nedges    2658670 nedges/nvtxs=   5.81 adjwgtsum      7296586
+level  7: nvtxs     253101 nedges    1481760 nedges/nvtxs=   5.85 adjwgtsum      5547380
+Coarsen end:cnvtxs=253101 cnedges=1481760
+end partition
+lmove_pointer=  0x792762000000
+rmove_pointer=  0x7928b483aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816345216B    1773774KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     387.23 ms
+------Coarsen_time=              199.15 ms
+------Init_time=                 167.76 ms
+------Uncoarsen_time=             20.31 ms
+------else_time=                   0.00 ms
+edge-cut=                         10836
+
+Coarsen_time=                 199.155 ms
+    part_match                     75.847  38.084%
+        init_gpu_match_time             0.532   0.267%
+        hem_gpu_match_time             66.783  33.533%
+            random_match_time              20.916  31.319%
+            init_gpu_receive_send_time      2.546   3.812%
+            wgt_segmentsort_gpu_time        6.908  10.344%
+            segmentsort_memcpy_time         4.170   6.244%
+            set_receive_send_time          14.830  22.206%
+            set_match_topk_time             5.288   7.918%
+            reset_match_array_time         12.084  18.094%
+        resolve_conflict_1_time         1.217   0.611%
+        resolve_conflict_2_time         0.993   0.499%
+        inclusive_scan_time             2.131   1.070%
+        resolve_conflict_4_time         4.111   2.064%
+    part_contruction              105.604  53.026%
+        exclusive_scan_time             1.184   0.595%
+        set_tadjncy_tadjwgt_time       47.019  23.609%
+        ncy_segmentsort_gpu_time       10.750   5.398%
+        mark_edges_time                14.455   7.258%
+        inclusive_scan_time2            7.220   3.625%
+        set_cxadj_time                  2.181   1.095%
+        init_cadjwgt_time               1.043   0.524%
+        set_cadjncy_cadjwgt_time       21.644  10.868%
+    coarsen_malloc                  0.018   0.009%
+    coarsen_memcpy                 15.183   7.624%
+    coarsen_free                    0.003   0.002%
+    else                            2.688   1.350%
+best_edgecut=10836
+graph:/media/jiangdie/新加卷/graph_10w/rgg_n_2_22_s0.graph 4194304 60718396
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5712710400B 5578818KB 5448MB 5GB
+front_pointer=  0x7ef22a000000
+back_pointer=   0x7ef37e810b00
+begin partition
+level  0: nvtxs    4194304 nedges   60718396 nedges/nvtxs=  14.48 adjwgtsum     60718396
+level  1: nvtxs    2165497 nedges   29689592 nedges/nvtxs=  13.71 adjwgtsum     56660782
+level  2: nvtxs    1132220 nedges   11725696 nedges/nvtxs=  10.36 adjwgtsum     49869772
+level  3: nvtxs     602073 nedges    4842582 nedges/nvtxs=   8.04 adjwgtsum     39938054
+level  4: nvtxs     326299 nedges    2181254 nedges/nvtxs=   6.68 adjwgtsum     28311722
+level  5: nvtxs     179413 nedges    1086600 nedges/nvtxs=   6.06 adjwgtsum     19236900
+level  6: nvtxs     100375 nedges     582194 nedges/nvtxs=   5.80 adjwgtsum     13288616
+level  7: nvtxs      57324 nedges     322776 nedges/nvtxs=   5.63 adjwgtsum      9384832
+Coarsen end:cnvtxs=57324 cnedges=322776
+end partition
+lmove_pointer=  0x7ef22a000000
+rmove_pointer=  0x7ef37e810b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567113984B    1530384KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     137.46 ms
+------Coarsen_time=               92.08 ms
+------Init_time=                  33.51 ms
+------Uncoarsen_time=             11.87 ms
+------else_time=                   0.00 ms
+edge-cut=                         29889
+
+Coarsen_time=                  92.081 ms
+    part_match                     50.112  54.422%
+        init_gpu_match_time             0.157   0.171%
+        hem_gpu_match_time             47.977  52.103%
+            random_match_time              31.783  66.246%
+            init_gpu_receive_send_time      0.605   1.261%
+            wgt_segmentsort_gpu_time        4.642   9.675%
+            segmentsort_memcpy_time         2.606   5.432%
+            set_receive_send_time           4.254   8.867%
+            set_match_topk_time             1.538   3.206%
+            reset_match_array_time          2.508   5.228%
+        resolve_conflict_1_time         0.254   0.276%
+        resolve_conflict_2_time         0.246   0.267%
+        inclusive_scan_time             0.571   0.620%
+        resolve_conflict_4_time         0.834   0.906%
+    part_contruction               38.317  41.612%
+        exclusive_scan_time             0.334   0.363%
+        set_tadjncy_tadjwgt_time       10.812  11.742%
+        ncy_segmentsort_gpu_time        8.770   9.524%
+        mark_edges_time                 3.880   4.214%
+        inclusive_scan_time2            5.847   6.350%
+        set_cxadj_time                  0.623   0.677%
+        init_cadjwgt_time               0.648   0.704%
+        set_cadjncy_cadjwgt_time        7.274   7.900%
+    coarsen_malloc                  0.017   0.018%
+    coarsen_memcpy                  1.499   1.628%
+    coarsen_free                    0.008   0.009%
+    else                            2.330   2.530%
+best_edgecut=29889
+graph:/media/jiangdie/新加卷/graph_10w/vas_stokes_2M.graph 2146677 96703558
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5576960256B 5446250KB 5318MB 5GB
+front_pointer=  0x7371f4000000
+back_pointer=   0x73734069a900
+begin partition
+level  0: nvtxs    2146677 nedges   96703558 nedges/nvtxs=  45.05 adjwgtsum     96703558
+level  1: nvtxs    1091970 nedges   59161062 nedges/nvtxs=  54.18 adjwgtsum     94594144
+level  2: nvtxs     569460 nedges   33287644 nedges/nvtxs=  58.45 adjwgtsum     91102586
+level  3: nvtxs     297673 nedges   18169040 nedges/nvtxs=  61.04 adjwgtsum     85943628
+level  4: nvtxs     156689 nedges    9473286 nedges/nvtxs=  60.46 adjwgtsum     79836156
+level  5: nvtxs      83502 nedges    4719664 nedges/nvtxs=  56.52 adjwgtsum     73518734
+level  6: nvtxs      45461 nedges    2305212 nedges/nvtxs=  50.71 adjwgtsum     67362524
+level  7: nvtxs      25688 nedges    1130086 nedges/nvtxs=  43.99 adjwgtsum     61439020
+Coarsen end:cnvtxs=25688 cnedges=1130086
+end partition
+lmove_pointer=  0x7371f4000000
+rmove_pointer=  0x73734069a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463398144B    2405662KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     245.91 ms
+------Coarsen_time=              153.15 ms
+------Init_time=                  57.45 ms
+------Uncoarsen_time=             35.30 ms
+------else_time=                   0.00 ms
+edge-cut=                        912374
+
+Coarsen_time=                 153.149 ms
+    part_match                     72.134  47.101%
+        init_gpu_match_time             0.107   0.070%
+        hem_gpu_match_time             70.908  46.300%
+            random_match_time              45.742  64.509%
+            init_gpu_receive_send_time      0.328   0.463%
+            wgt_segmentsort_gpu_time       10.581  14.922%
+            segmentsort_memcpy_time         6.457   9.106%
+            set_receive_send_time           5.208   7.345%
+            set_match_topk_time             1.156   1.630%
+            reset_match_array_time          1.397   1.970%
+        resolve_conflict_1_time         0.163   0.106%
+        resolve_conflict_2_time         0.143   0.093%
+        inclusive_scan_time             0.340   0.222%
+        resolve_conflict_4_time         0.407   0.266%
+    part_contruction               66.782  43.606%
+        exclusive_scan_time             0.214   0.140%
+        set_tadjncy_tadjwgt_time       13.789   9.004%
+        ncy_segmentsort_gpu_time       18.938  12.366%
+        mark_edges_time                 6.055   3.954%
+        inclusive_scan_time2           11.819   7.717%
+        set_cxadj_time                  0.405   0.264%
+        init_cadjwgt_time               1.596   1.042%
+        set_cadjncy_cadjwgt_time       13.860   9.050%
+    coarsen_malloc                  0.016   0.010%
+    coarsen_memcpy                 10.697   6.985%
+    coarsen_free                    0.004   0.003%
+    else                            3.688   2.408%
+best_edgecut=912374

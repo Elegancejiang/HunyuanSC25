@@ -22,6 +22,8 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	printf("Coarsen end:cnvtxs=%d cnedges=%d\n", cgraph->nvtxs, cgraph->nedges);
 
+	// exit(0);
+
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_init, NULL);
 	hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);

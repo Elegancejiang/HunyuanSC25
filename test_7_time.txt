@@ -1,0 +1,3157 @@
+graph:/media/jiangdie/新加卷/graph_10w/af_shell6.graph 504855 17084020
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5902005632B 5763677KB 5628MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6785c97580
+begin partition
+Coarsen end:cnvtxs=5986 cnedges=37114
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6785c97580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      31.65 ms
+------Coarsen_time=               21.71 ms
+------Init_time=                   4.15 ms
+------Uncoarsen_time=              5.79 ms
+------else_time=                   0.00 ms
+edge-cut=                         57575
+
+Coarsen_time=                  21.706 ms
+    part_match                     11.135  51.299%
+        init_gpu_match_time             0.067   0.309%
+        hem_gpu_match_time             10.572  48.705%
+            random_match_time               6.168  58.343%
+            init_gpu_receive_send_time      0.115   1.088%
+            wgt_segmentsort_gpu_time        1.613  15.257%
+            segmentsort_memcpy_time         0.674   6.375%
+            set_receive_send_time           1.066  10.083%
+            set_match_topk_time             0.444   4.200%
+            reset_match_array_time          0.451   4.266%
+        resolve_conflict_1_time         0.072   0.332%
+        resolve_conflict_2_time         0.064   0.295%
+        inclusive_scan_time             0.156   0.719%
+        resolve_conflict_4_time         0.123   0.567%
+    part_contruction               10.356  47.710%
+        exclusive_scan_time             0.119   0.548%
+        set_tadjncy_tadjwgt_time        1.908   8.790%
+        ncy_segmentsort_gpu_time        3.620  16.677%
+        mark_edges_time                 0.873   4.022%
+        inclusive_scan_time2            1.704   7.850%
+        set_cxadj_time                  0.129   0.594%
+        init_cadjwgt_time               0.194   0.894%
+        set_cadjncy_cadjwgt_time        1.700   7.832%
+    coarsen_malloc                  0.019   0.088%
+    coarsen_memcpy                  0.194   0.894%
+    coarsen_free                    0.004   0.018%
+    else                            0.188   0.866%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5970 cnedges=37064
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      31.08 ms
+------Coarsen_time=               21.32 ms
+------Init_time=                   3.98 ms
+------Uncoarsen_time=              5.78 ms
+------else_time=                   0.00 ms
+edge-cut=                         52200
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5994 cnedges=37048
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      29.04 ms
+------Coarsen_time=               18.84 ms
+------Init_time=                   4.52 ms
+------Uncoarsen_time=              5.68 ms
+------else_time=                   0.00 ms
+edge-cut=                         51100
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5946 cnedges=36816
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      29.07 ms
+------Coarsen_time=               18.92 ms
+------Init_time=                   4.39 ms
+------Uncoarsen_time=              5.75 ms
+------else_time=                   0.01 ms
+edge-cut=                         49525
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5998 cnedges=37124
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.64 ms
+------Coarsen_time=               18.98 ms
+------Init_time=                   4.05 ms
+------Uncoarsen_time=              5.61 ms
+------else_time=                   0.00 ms
+edge-cut=                         53975
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5996 cnedges=37066
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.57 ms
+------Coarsen_time=               18.91 ms
+------Init_time=                   4.01 ms
+------Uncoarsen_time=              5.64 ms
+------else_time=                   0.00 ms
+edge-cut=                         48975
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5989 cnedges=37112
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.45 ms
+------Coarsen_time=               18.87 ms
+------Init_time=                   4.07 ms
+------Uncoarsen_time=              5.50 ms
+------else_time=                   0.00 ms
+edge-cut=                         51250
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5989 cnedges=37108
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.53 ms
+------Coarsen_time=               18.85 ms
+------Init_time=                   4.11 ms
+------Uncoarsen_time=              5.56 ms
+------else_time=                   0.00 ms
+edge-cut=                         48625
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5984 cnedges=37094
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.42 ms
+------Coarsen_time=               18.87 ms
+------Init_time=                   3.92 ms
+------Uncoarsen_time=              5.63 ms
+------else_time=                   0.00 ms
+edge-cut=                         54225
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6000 cnedges=37250
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.60 ms
+------Coarsen_time=               18.89 ms
+------Init_time=                   4.09 ms
+------Uncoarsen_time=              5.62 ms
+------else_time=                   0.01 ms
+edge-cut=                         48325
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6006 cnedges=37234
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.55 ms
+------Coarsen_time=               18.93 ms
+------Init_time=                   4.15 ms
+------Uncoarsen_time=              5.47 ms
+------else_time=                   0.00 ms
+edge-cut=                         47475
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6005 cnedges=37240
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.85 ms
+------Coarsen_time=               18.87 ms
+------Init_time=                   4.11 ms
+------Uncoarsen_time=              5.86 ms
+------else_time=                   0.00 ms
+edge-cut=                         55375
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5939 cnedges=36784
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.59 ms
+------Coarsen_time=               18.89 ms
+------Init_time=                   4.08 ms
+------Uncoarsen_time=              5.62 ms
+------else_time=                   0.01 ms
+edge-cut=                         51425
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5998 cnedges=37162
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.62 ms
+------Coarsen_time=               18.93 ms
+------Init_time=                   4.08 ms
+------Uncoarsen_time=              5.61 ms
+------else_time=                   0.00 ms
+edge-cut=                         49425
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=5964 cnedges=36870
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.70 ms
+------Coarsen_time=               18.99 ms
+------Init_time=                   4.10 ms
+------Uncoarsen_time=              5.60 ms
+------else_time=                   0.00 ms
+edge-cut=                         56125
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6021 cnedges=37488
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.96 ms
+------Coarsen_time=               19.01 ms
+------Init_time=                   4.29 ms
+------Uncoarsen_time=              5.66 ms
+------else_time=                   0.01 ms
+edge-cut=                         49775
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6014 cnedges=37220
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423361280B     413438KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.69 ms
+------Coarsen_time=               18.94 ms
+------Init_time=                   4.08 ms
+------Uncoarsen_time=              5.66 ms
+------else_time=                   0.00 ms
+edge-cut=                         59975
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6036 cnedges=37270
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423362432B     413439KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.66 ms
+------Coarsen_time=               18.94 ms
+------Init_time=                   4.19 ms
+------Uncoarsen_time=              5.53 ms
+------else_time=                   0.00 ms
+edge-cut=                         48800
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6001 cnedges=37300
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423362432B     413439KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.65 ms
+------Coarsen_time=               18.95 ms
+------Init_time=                   4.12 ms
+------Uncoarsen_time=              5.58 ms
+------else_time=                   0.00 ms
+edge-cut=                         55775
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6009 cnedges=37266
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423362432B     413439KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.80 ms
+------Coarsen_time=               18.97 ms
+------Init_time=                   4.08 ms
+------Uncoarsen_time=              5.75 ms
+------else_time=                   0.01 ms
+edge-cut=                         57700
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5872645504B 5735005KB 5600MB 5GB
+front_pointer=  0x7e6626000000
+back_pointer=   0x7e6784097580
+begin partition
+Coarsen end:cnvtxs=6010 cnedges=37238
+end partition
+lmove_pointer=  0x7e6626000000
+rmove_pointer=  0x7e6784097580
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  423362432B     413439KB        403MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      28.58 ms
+------Coarsen_time=               18.94 ms
+------Init_time=                   4.09 ms
+------Uncoarsen_time=              5.55 ms
+------else_time=                   0.01 ms
+edge-cut=                         55225
+best_edgecut=47475
+graph:/media/jiangdie/新加卷/graph_10w/audikw_1.graph 943695 76708152
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5661753728B 5529056KB 5399MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723685778180
+begin partition
+Coarsen end:cnvtxs=9580 cnedges=241016
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723685778180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865603712B    1821878KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.19 ms
+------Coarsen_time=               83.83 ms
+------Init_time=                  13.99 ms
+------Uncoarsen_time=             24.36 ms
+------else_time=                   0.00 ms
+edge-cut=                        813717
+
+Coarsen_time=                  83.833 ms
+    part_match                     40.307  48.080%
+        init_gpu_match_time             0.070   0.083%
+        hem_gpu_match_time             39.566  47.196%
+            random_match_time              26.378  66.668%
+            init_gpu_receive_send_time      0.164   0.414%
+            wgt_segmentsort_gpu_time        5.429  13.721%
+            segmentsort_memcpy_time         3.347   8.459%
+            set_receive_send_time           2.856   7.218%
+            set_match_topk_time             0.685   1.731%
+            reset_match_array_time          0.658   1.663%
+        resolve_conflict_1_time         0.097   0.116%
+        resolve_conflict_2_time         0.081   0.097%
+        inclusive_scan_time             0.195   0.233%
+        resolve_conflict_4_time         0.208   0.248%
+    part_contruction               42.474  50.665%
+        exclusive_scan_time             0.129   0.154%
+        set_tadjncy_tadjwgt_time        8.010   9.555%
+        ncy_segmentsort_gpu_time       13.806  16.468%
+        mark_edges_time                 3.777   4.505%
+        inclusive_scan_time2            7.524   8.975%
+        set_cxadj_time                  0.236   0.282%
+        init_cadjwgt_time               0.828   0.988%
+        set_cadjncy_cadjwgt_time        8.054   9.607%
+    coarsen_malloc                  0.018   0.021%
+    coarsen_memcpy                  1.030   1.229%
+    coarsen_free                    0.006   0.007%
+    else                            0.198   0.236%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9631 cnedges=240850
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865603712B    1821878KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.06 ms
+------Coarsen_time=               82.75 ms
+------Init_time=                  13.43 ms
+------Uncoarsen_time=             24.88 ms
+------else_time=                   0.01 ms
+edge-cut=                        833607
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9610 cnedges=239612
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865603712B    1821878KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.30 ms
+------Coarsen_time=               83.04 ms
+------Init_time=                  13.85 ms
+------Uncoarsen_time=             24.41 ms
+------else_time=                   0.00 ms
+edge-cut=                        807660
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9573 cnedges=240462
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     120.93 ms
+------Coarsen_time=               82.75 ms
+------Init_time=                  13.55 ms
+------Uncoarsen_time=             24.62 ms
+------else_time=                   0.00 ms
+edge-cut=                        839358
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9571 cnedges=239476
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.03 ms
+------Coarsen_time=               83.04 ms
+------Init_time=                  13.58 ms
+------Uncoarsen_time=             24.41 ms
+------else_time=                   0.00 ms
+edge-cut=                        823878
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9614 cnedges=240514
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.17 ms
+------Coarsen_time=               83.00 ms
+------Init_time=                  13.97 ms
+------Uncoarsen_time=             24.19 ms
+------else_time=                   0.01 ms
+edge-cut=                        820584
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9673 cnedges=240790
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.35 ms
+------Coarsen_time=               83.20 ms
+------Init_time=                  13.81 ms
+------Uncoarsen_time=             24.33 ms
+------else_time=                   0.00 ms
+edge-cut=                        816938
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9604 cnedges=239548
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604480B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.27 ms
+------Coarsen_time=               83.38 ms
+------Init_time=                  13.81 ms
+------Uncoarsen_time=             24.08 ms
+------else_time=                   0.00 ms
+edge-cut=                        809244
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9613 cnedges=240912
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.51 ms
+------Coarsen_time=               83.24 ms
+------Init_time=                  14.05 ms
+------Uncoarsen_time=             24.22 ms
+------else_time=                   0.00 ms
+edge-cut=                        832914
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9587 cnedges=241594
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.26 ms
+------Coarsen_time=               83.13 ms
+------Init_time=                  13.74 ms
+------Uncoarsen_time=             24.38 ms
+------else_time=                   0.00 ms
+edge-cut=                        813447
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9575 cnedges=240380
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.17 ms
+------Coarsen_time=               83.08 ms
+------Init_time=                  13.68 ms
+------Uncoarsen_time=             24.39 ms
+------else_time=                   0.00 ms
+edge-cut=                        813600
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9620 cnedges=240302
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.61 ms
+------Coarsen_time=               83.27 ms
+------Init_time=                  13.73 ms
+------Uncoarsen_time=             24.61 ms
+------else_time=                   0.00 ms
+edge-cut=                        836379
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9622 cnedges=240816
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.31 ms
+------Coarsen_time=               83.59 ms
+------Init_time=                  13.35 ms
+------Uncoarsen_time=             24.37 ms
+------else_time=                   0.00 ms
+edge-cut=                        818145
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9610 cnedges=241540
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.18 ms
+------Coarsen_time=               83.38 ms
+------Init_time=                  14.31 ms
+------Uncoarsen_time=             24.48 ms
+------else_time=                   0.01 ms
+edge-cut=                        824814
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9551 cnedges=240018
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.58 ms
+------Coarsen_time=               83.18 ms
+------Init_time=                  13.98 ms
+------Uncoarsen_time=             24.42 ms
+------else_time=                   0.00 ms
+edge-cut=                        810414
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9598 cnedges=240076
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     120.78 ms
+------Coarsen_time=               83.13 ms
+------Init_time=                  13.51 ms
+------Uncoarsen_time=             24.14 ms
+------else_time=                   0.00 ms
+edge-cut=                        821691
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9628 cnedges=241168
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     120.77 ms
+------Coarsen_time=               83.11 ms
+------Init_time=                  13.51 ms
+------Uncoarsen_time=             24.15 ms
+------else_time=                   0.00 ms
+edge-cut=                        829305
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9567 cnedges=239926
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.29 ms
+------Coarsen_time=               83.28 ms
+------Init_time=                  13.81 ms
+------Uncoarsen_time=             24.19 ms
+------else_time=                   0.01 ms
+edge-cut=                        820755
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9599 cnedges=240070
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.01 ms
+------Coarsen_time=               83.16 ms
+------Init_time=                  13.57 ms
+------Uncoarsen_time=             24.27 ms
+------else_time=                   0.01 ms
+edge-cut=                        815697
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9583 cnedges=240574
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.01 ms
+------Coarsen_time=               83.52 ms
+------Init_time=                  13.24 ms
+------Uncoarsen_time=             24.25 ms
+------else_time=                   0.00 ms
+edge-cut=                        819468
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5632393600B 5500384KB 5371MB 5GB
+front_pointer=  0x723534000000
+back_pointer=   0x723683b78180
+begin partition
+Coarsen end:cnvtxs=9620 cnedges=240424
+end partition
+lmove_pointer=  0x723534000000
+rmove_pointer=  0x723683b78180
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1865604864B    1821879KB       1779MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.53 ms
+------Coarsen_time=               83.32 ms
+------Init_time=                  13.95 ms
+------Uncoarsen_time=             24.25 ms
+------else_time=                   0.00 ms
+edge-cut=                        811314
+best_edgecut=807660
+graph:/media/jiangdie/新加卷/graph_10w/cage13.graph 445315 7034028
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5942443776B 5803167KB 5667MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9ea327f00
+begin partition
+Coarsen end:cnvtxs=4785 cnedges=340182
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9ea327f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      54.28 ms
+------Coarsen_time=               17.23 ms
+------Init_time=                  22.25 ms
+------Uncoarsen_time=             14.79 ms
+------else_time=                   0.00 ms
+edge-cut=                        240166
+
+Coarsen_time=                  17.235 ms
+    part_match                      7.628  44.259%
+        init_gpu_match_time             0.057   0.331%
+        hem_gpu_match_time              7.143  41.445%
+            random_match_time               2.515  35.209%
+            init_gpu_receive_send_time      0.095   1.330%
+            wgt_segmentsort_gpu_time        1.666  23.324%
+            segmentsort_memcpy_time         0.858  12.012%
+            set_receive_send_time           1.239  17.346%
+            set_match_topk_time             0.365   5.110%
+            reset_match_array_time          0.371   5.194%
+        resolve_conflict_1_time         0.074   0.429%
+        resolve_conflict_2_time         0.052   0.302%
+        inclusive_scan_time             0.114   0.661%
+        resolve_conflict_4_time         0.112   0.650%
+    part_contruction                8.288  48.088%
+        exclusive_scan_time             0.088   0.511%
+        set_tadjncy_tadjwgt_time        1.641   9.521%
+        ncy_segmentsort_gpu_time        2.571  14.917%
+        mark_edges_time                 0.694   4.027%
+        inclusive_scan_time2            1.259   7.305%
+        set_cxadj_time                  0.121   0.702%
+        init_cadjwgt_time               0.223   1.294%
+        set_cadjncy_cadjwgt_time        1.581   9.173%
+    coarsen_malloc                  0.024   0.139%
+    coarsen_memcpy                  1.299   7.537%
+    coarsen_free                    0.003   0.017%
+    else                            0.179   1.039%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4785 cnedges=337436
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      51.72 ms
+------Coarsen_time=               17.60 ms
+------Init_time=                  20.93 ms
+------Uncoarsen_time=             13.18 ms
+------else_time=                   0.01 ms
+edge-cut=                        215610
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4803 cnedges=337812
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.56 ms
+------Coarsen_time=               17.55 ms
+------Init_time=                  21.27 ms
+------Uncoarsen_time=             14.74 ms
+------else_time=                   0.01 ms
+edge-cut=                        231084
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4796 cnedges=339630
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      57.10 ms
+------Coarsen_time=               17.46 ms
+------Init_time=                  21.97 ms
+------Uncoarsen_time=             17.67 ms
+------else_time=                   0.00 ms
+edge-cut=                        256195
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4780 cnedges=338026
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      50.86 ms
+------Coarsen_time=               17.70 ms
+------Init_time=                  21.31 ms
+------Uncoarsen_time=             11.85 ms
+------else_time=                   0.00 ms
+edge-cut=                        205808
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4758 cnedges=336072
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      55.33 ms
+------Coarsen_time=               17.92 ms
+------Init_time=                  22.85 ms
+------Uncoarsen_time=             14.54 ms
+------else_time=                   0.01 ms
+edge-cut=                        239925
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4776 cnedges=338256
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.99 ms
+------Coarsen_time=               17.81 ms
+------Init_time=                  22.06 ms
+------Uncoarsen_time=             14.12 ms
+------else_time=                   0.00 ms
+edge-cut=                        234936
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4820 cnedges=336398
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      55.67 ms
+------Coarsen_time=               18.59 ms
+------Init_time=                  22.74 ms
+------Uncoarsen_time=             14.34 ms
+------else_time=                   0.00 ms
+edge-cut=                        244306
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4798 cnedges=337340
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.41 ms
+------Coarsen_time=               17.82 ms
+------Init_time=                  22.00 ms
+------Uncoarsen_time=             13.58 ms
+------else_time=                   0.00 ms
+edge-cut=                        220995
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4787 cnedges=337230
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.47 ms
+------Coarsen_time=               17.58 ms
+------Init_time=                  22.31 ms
+------Uncoarsen_time=             13.57 ms
+------else_time=                   0.01 ms
+edge-cut=                        226746
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4790 cnedges=336598
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      52.22 ms
+------Coarsen_time=               17.64 ms
+------Init_time=                  21.87 ms
+------Uncoarsen_time=             12.70 ms
+------else_time=                   0.00 ms
+edge-cut=                        206243
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4766 cnedges=337514
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      54.65 ms
+------Coarsen_time=               17.63 ms
+------Init_time=                  21.49 ms
+------Uncoarsen_time=             15.53 ms
+------else_time=                   0.01 ms
+edge-cut=                        236268
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4784 cnedges=339250
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.50 ms
+------Coarsen_time=               16.77 ms
+------Init_time=                  23.01 ms
+------Uncoarsen_time=             13.72 ms
+------else_time=                   0.00 ms
+edge-cut=                        221559
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4782 cnedges=340188
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      53.74 ms
+------Coarsen_time=               17.49 ms
+------Init_time=                  22.48 ms
+------Uncoarsen_time=             13.76 ms
+------else_time=                   0.00 ms
+edge-cut=                        220957
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4782 cnedges=337340
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      52.38 ms
+------Coarsen_time=               17.15 ms
+------Init_time=                  21.40 ms
+------Uncoarsen_time=             13.82 ms
+------else_time=                   0.01 ms
+edge-cut=                        233208
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4804 cnedges=340490
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      56.58 ms
+------Coarsen_time=               17.55 ms
+------Init_time=                  21.88 ms
+------Uncoarsen_time=             17.15 ms
+------else_time=                   0.00 ms
+edge-cut=                        258503
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4749 cnedges=336820
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      52.30 ms
+------Coarsen_time=               18.30 ms
+------Init_time=                  21.47 ms
+------Uncoarsen_time=             12.52 ms
+------else_time=                   0.00 ms
+edge-cut=                        211373
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4772 cnedges=336504
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      56.11 ms
+------Coarsen_time=               18.27 ms
+------Init_time=                  22.18 ms
+------Uncoarsen_time=             15.66 ms
+------else_time=                   0.01 ms
+edge-cut=                        243437
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4772 cnedges=336216
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      54.12 ms
+------Coarsen_time=               18.02 ms
+------Init_time=                  23.18 ms
+------Uncoarsen_time=             12.92 ms
+------else_time=                   0.00 ms
+edge-cut=                        210641
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4784 cnedges=337690
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      51.50 ms
+------Coarsen_time=               16.25 ms
+------Init_time=                  21.77 ms
+------Uncoarsen_time=             13.46 ms
+------else_time=                   0.00 ms
+edge-cut=                        213645
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5913083648B 5774495KB 5639MB 5GB
+front_pointer=  0x7de888000000
+back_pointer=   0x7de9e8727f00
+begin partition
+Coarsen end:cnvtxs=4836 cnedges=337496
+end partition
+lmove_pointer=  0x7de888000000
+rmove_pointer=  0x7de9e8727f00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  214300800B     209278KB        204MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=      55.51 ms
+------Coarsen_time=               17.52 ms
+------Init_time=                  21.09 ms
+------Uncoarsen_time=             16.88 ms
+------else_time=                   0.01 ms
+edge-cut=                        259110
+best_edgecut=205808
+graph:/media/jiangdie/新加卷/graph_10w/AS365.graph 3799275 22736152
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5866219392B 5728729KB 5594MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794763a76780
+begin partition
+Coarsen end:cnvtxs=55065 cnedges=214780
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794763a76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.70 ms
+------Coarsen_time=               68.84 ms
+------Init_time=                  39.26 ms
+------Uncoarsen_time=             15.61 ms
+------else_time=                   0.00 ms
+edge-cut=                         15262
+
+Coarsen_time=                  68.838 ms
+    part_match                     34.284  49.804%
+        init_gpu_match_time             0.157   0.228%
+        hem_gpu_match_time             30.462  44.252%
+            random_match_time              11.106  36.459%
+            init_gpu_receive_send_time      0.636   2.088%
+            wgt_segmentsort_gpu_time        3.371  11.066%
+            segmentsort_memcpy_time         1.507   4.947%
+            set_receive_send_time           8.113  26.633%
+            set_match_topk_time             1.902   6.244%
+            reset_match_array_time          3.761  12.347%
+        resolve_conflict_1_time         0.711   1.033%
+        resolve_conflict_2_time         0.250   0.363%
+        inclusive_scan_time             0.579   0.841%
+        resolve_conflict_4_time         2.025   2.942%
+    part_contruction               32.733  47.551%
+        exclusive_scan_time             0.373   0.542%
+        set_tadjncy_tadjwgt_time       14.311  20.789%
+        ncy_segmentsort_gpu_time        5.082   7.383%
+        mark_edges_time                 3.421   4.970%
+        inclusive_scan_time2            2.762   4.012%
+        set_cxadj_time                  0.622   0.904%
+        init_cadjwgt_time               0.388   0.564%
+        set_cadjncy_cadjwgt_time        5.639   8.192%
+    coarsen_malloc                  0.022   0.032%
+    coarsen_memcpy                  1.789   2.599%
+    coarsen_free                    0.012   0.017%
+    else                            0.233   0.338%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54800 cnedges=213982
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.88 ms
+------Coarsen_time=               67.99 ms
+------Init_time=                  39.66 ms
+------Uncoarsen_time=             15.23 ms
+------else_time=                   0.00 ms
+edge-cut=                         16300
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=55155 cnedges=215540
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.69 ms
+------Coarsen_time=               68.09 ms
+------Init_time=                  40.32 ms
+------Uncoarsen_time=             15.28 ms
+------else_time=                   0.00 ms
+edge-cut=                         15156
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54936 cnedges=214330
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.27 ms
+------Coarsen_time=               68.11 ms
+------Init_time=                  39.93 ms
+------Uncoarsen_time=             15.22 ms
+------else_time=                   0.01 ms
+edge-cut=                         15363
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=55036 cnedges=214802
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.06 ms
+------Coarsen_time=               67.75 ms
+------Init_time=                  39.59 ms
+------Uncoarsen_time=             15.71 ms
+------else_time=                   0.01 ms
+edge-cut=                         15740
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54837 cnedges=214042
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.15 ms
+------Coarsen_time=               67.87 ms
+------Init_time=                  38.95 ms
+------Uncoarsen_time=             15.34 ms
+------else_time=                   0.00 ms
+edge-cut=                         15273
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54879 cnedges=214418
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.56 ms
+------Coarsen_time=               67.87 ms
+------Init_time=                  39.33 ms
+------Uncoarsen_time=             15.36 ms
+------else_time=                   0.00 ms
+edge-cut=                         15786
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54849 cnedges=214412
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.00 ms
+------Coarsen_time=               68.73 ms
+------Init_time=                  39.04 ms
+------Uncoarsen_time=             15.22 ms
+------else_time=                   0.01 ms
+edge-cut=                         15690
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54522 cnedges=213286
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.27 ms
+------Coarsen_time=               68.01 ms
+------Init_time=                  39.01 ms
+------Uncoarsen_time=             15.24 ms
+------else_time=                   0.00 ms
+edge-cut=                         15269
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54885 cnedges=214320
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.31 ms
+------Coarsen_time=               68.08 ms
+------Init_time=                  38.88 ms
+------Uncoarsen_time=             15.34 ms
+------else_time=                   0.00 ms
+edge-cut=                         16037
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54704 cnedges=214042
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.39 ms
+------Coarsen_time=               68.20 ms
+------Init_time=                  38.86 ms
+------Uncoarsen_time=             15.32 ms
+------else_time=                   0.00 ms
+edge-cut=                         16936
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54932 cnedges=214638
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.48 ms
+------Coarsen_time=               67.95 ms
+------Init_time=                  39.14 ms
+------Uncoarsen_time=             15.39 ms
+------else_time=                   0.00 ms
+edge-cut=                         15599
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54792 cnedges=214148
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     121.67 ms
+------Coarsen_time=               67.97 ms
+------Init_time=                  38.37 ms
+------Uncoarsen_time=             15.32 ms
+------else_time=                   0.00 ms
+edge-cut=                         15348
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=55205 cnedges=215796
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.47 ms
+------Coarsen_time=               68.20 ms
+------Init_time=                  39.97 ms
+------Uncoarsen_time=             15.29 ms
+------else_time=                   0.00 ms
+edge-cut=                         16030
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54826 cnedges=213956
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     123.03 ms
+------Coarsen_time=               68.33 ms
+------Init_time=                  39.34 ms
+------Uncoarsen_time=             15.36 ms
+------else_time=                   0.00 ms
+edge-cut=                         16105
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54744 cnedges=213900
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656065408B     640688KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.53 ms
+------Coarsen_time=               67.86 ms
+------Init_time=                  39.41 ms
+------Uncoarsen_time=             15.26 ms
+------else_time=                   0.00 ms
+edge-cut=                         15764
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54799 cnedges=214514
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656070528B     640693KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.82 ms
+------Coarsen_time=               67.95 ms
+------Init_time=                  39.43 ms
+------Uncoarsen_time=             15.44 ms
+------else_time=                   0.00 ms
+edge-cut=                         15602
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54886 cnedges=214298
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656070528B     640693KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.69 ms
+------Coarsen_time=               67.75 ms
+------Init_time=                  39.51 ms
+------Uncoarsen_time=             15.42 ms
+------else_time=                   0.00 ms
+edge-cut=                         16379
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54711 cnedges=214042
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656073600B     640696KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.84 ms
+------Coarsen_time=               67.71 ms
+------Init_time=                  39.77 ms
+------Uncoarsen_time=             15.36 ms
+------else_time=                   0.01 ms
+edge-cut=                         15007
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=54871 cnedges=213692
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656073600B     640696KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.46 ms
+------Coarsen_time=               67.77 ms
+------Init_time=                  39.35 ms
+------Uncoarsen_time=             15.33 ms
+------else_time=                   0.00 ms
+edge-cut=                         15745
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5836859264B 5700057KB 5566MB 5GB
+front_pointer=  0x794606000000
+back_pointer=   0x794761e76780
+begin partition
+Coarsen end:cnvtxs=55035 cnedges=215142
+end partition
+lmove_pointer=  0x794606000000
+rmove_pointer=  0x794761e76780
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU:  656073600B     640696KB        625MB          0GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     122.94 ms
+------Coarsen_time=               67.77 ms
+------Init_time=                  39.89 ms
+------Uncoarsen_time=             15.27 ms
+------else_time=                   0.00 ms
+edge-cut=                         15581
+best_edgecut=15007
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 18318143 54940162
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5679327872B 5546218KB 5416MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb53283aa80
+begin partition
+Coarsen end:cnvtxs=253697 cnedges=1485284
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb53283aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816370560B    1773799KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     386.23 ms
+------Coarsen_time=              197.75 ms
+------Init_time=                 168.02 ms
+------Uncoarsen_time=             20.46 ms
+------else_time=                   0.00 ms
+edge-cut=                         10958
+
+Coarsen_time=                 197.748 ms
+    part_match                     75.991  38.428%
+        init_gpu_match_time             0.512   0.259%
+        hem_gpu_match_time             66.966  33.864%
+            random_match_time              21.018  31.386%
+            init_gpu_receive_send_time      2.537   3.788%
+            wgt_segmentsort_gpu_time        6.940  10.363%
+            segmentsort_memcpy_time         4.172   6.230%
+            set_receive_send_time          14.854  22.181%
+            set_match_topk_time             5.317   7.940%
+            reset_match_array_time         12.089  18.052%
+        resolve_conflict_1_time         1.205   0.609%
+        resolve_conflict_2_time         0.994   0.503%
+        inclusive_scan_time             2.128   1.076%
+        resolve_conflict_4_time         4.108   2.077%
+    part_contruction              106.313  53.762%
+        exclusive_scan_time             1.181   0.597%
+        set_tadjncy_tadjwgt_time       47.230  23.884%
+        ncy_segmentsort_gpu_time       10.795   5.459%
+        mark_edges_time                14.650   7.408%
+        inclusive_scan_time2            7.239   3.661%
+        set_cxadj_time                  2.182   1.103%
+        init_cadjwgt_time               1.045   0.528%
+        set_cadjncy_cadjwgt_time       21.885  11.067%
+    coarsen_malloc                  0.019   0.010%
+    coarsen_memcpy                 15.415   7.795%
+    coarsen_free                    0.007   0.004%
+    else                            0.187   0.095%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253532 cnedges=1484112
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816373120B    1773801KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     370.19 ms
+------Coarsen_time=              187.73 ms
+------Init_time=                 162.44 ms
+------Uncoarsen_time=             20.02 ms
+------else_time=                   0.00 ms
+edge-cut=                         10771
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253281 cnedges=1482848
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816373120B    1773801KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     369.42 ms
+------Coarsen_time=              186.90 ms
+------Init_time=                 162.61 ms
+------Uncoarsen_time=             19.91 ms
+------else_time=                   0.00 ms
+edge-cut=                         11103
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253169 cnedges=1482438
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816373120B    1773801KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     369.52 ms
+------Coarsen_time=              187.17 ms
+------Init_time=                 162.00 ms
+------Uncoarsen_time=             20.34 ms
+------else_time=                   0.00 ms
+edge-cut=                         11643
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253324 cnedges=1483170
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816393728B    1773822KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     370.60 ms
+------Coarsen_time=              187.47 ms
+------Init_time=                 163.14 ms
+------Uncoarsen_time=             19.98 ms
+------else_time=                   0.00 ms
+edge-cut=                         11133
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253349 cnedges=1483250
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816393728B    1773822KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     369.83 ms
+------Coarsen_time=              187.26 ms
+------Init_time=                 162.47 ms
+------Uncoarsen_time=             20.09 ms
+------else_time=                   0.00 ms
+edge-cut=                         11412
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253167 cnedges=1482492
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     367.93 ms
+------Coarsen_time=              186.93 ms
+------Init_time=                 160.90 ms
+------Uncoarsen_time=             20.07 ms
+------else_time=                   0.02 ms
+edge-cut=                         10872
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253351 cnedges=1483302
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     368.84 ms
+------Coarsen_time=              187.65 ms
+------Init_time=                 161.12 ms
+------Uncoarsen_time=             20.07 ms
+------else_time=                   0.00 ms
+edge-cut=                         10678
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253183 cnedges=1481846
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     373.84 ms
+------Coarsen_time=              192.73 ms
+------Init_time=                 161.00 ms
+------Uncoarsen_time=             20.10 ms
+------else_time=                   0.01 ms
+edge-cut=                         10711
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253183 cnedges=1482752
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     368.36 ms
+------Coarsen_time=              187.42 ms
+------Init_time=                 160.88 ms
+------Uncoarsen_time=             20.06 ms
+------else_time=                   0.00 ms
+edge-cut=                         11186
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253276 cnedges=1482660
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     368.88 ms
+------Coarsen_time=              187.44 ms
+------Init_time=                 161.26 ms
+------Uncoarsen_time=             20.18 ms
+------else_time=                   0.00 ms
+edge-cut=                         11184
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253364 cnedges=1483406
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     369.07 ms
+------Coarsen_time=              187.83 ms
+------Init_time=                 161.00 ms
+------Uncoarsen_time=             20.24 ms
+------else_time=                   0.00 ms
+edge-cut=                         11802
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253451 cnedges=1483502
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     368.79 ms
+------Coarsen_time=              187.50 ms
+------Init_time=                 161.14 ms
+------Uncoarsen_time=             20.15 ms
+------else_time=                   0.00 ms
+edge-cut=                         11643
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253417 cnedges=1483776
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     369.21 ms
+------Coarsen_time=              187.40 ms
+------Init_time=                 161.67 ms
+------Uncoarsen_time=             20.13 ms
+------else_time=                   0.00 ms
+edge-cut=                         11340
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253423 cnedges=1483574
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     370.69 ms
+------Coarsen_time=              187.66 ms
+------Init_time=                 163.12 ms
+------Uncoarsen_time=             19.91 ms
+------else_time=                   0.00 ms
+edge-cut=                         10763
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253117 cnedges=1481768
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     368.19 ms
+------Coarsen_time=              187.31 ms
+------Init_time=                 160.73 ms
+------Uncoarsen_time=             20.15 ms
+------else_time=                   0.00 ms
+edge-cut=                         11047
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253357 cnedges=1484068
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     371.19 ms
+------Coarsen_time=              187.61 ms
+------Init_time=                 163.38 ms
+------Uncoarsen_time=             20.20 ms
+------else_time=                   0.00 ms
+edge-cut=                         10997
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253395 cnedges=1483526
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     371.29 ms
+------Coarsen_time=              187.55 ms
+------Init_time=                 163.59 ms
+------Uncoarsen_time=             20.15 ms
+------else_time=                   0.00 ms
+edge-cut=                         11059
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253391 cnedges=1483912
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     370.58 ms
+------Coarsen_time=              188.06 ms
+------Init_time=                 162.49 ms
+------Uncoarsen_time=             20.02 ms
+------else_time=                   0.01 ms
+edge-cut=                         11102
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253214 cnedges=1482666
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     370.39 ms
+------Coarsen_time=              187.88 ms
+------Init_time=                 162.29 ms
+------Uncoarsen_time=             20.22 ms
+------else_time=                   0.00 ms
+edge-cut=                         10817
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5649967744B 5517546KB 5388MB 5GB
+front_pointer=  0x7cb3e0000000
+back_pointer=   0x7cb530c3aa80
+begin partition
+Coarsen end:cnvtxs=253065 cnedges=1482162
+end partition
+lmove_pointer=  0x7cb3e0000000
+rmove_pointer=  0x7cb530c3aa80
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1816414720B    1773842KB       1732MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     371.32 ms
+------Coarsen_time=              187.62 ms
+------Init_time=                 163.64 ms
+------Uncoarsen_time=             20.06 ms
+------else_time=                   0.00 ms
+edge-cut=                         11249
+best_edgecut=10678
+graph:/media/jiangdie/新加卷/graph_10w/rgg_n_2_22_s0.graph 4194304 60718396
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5712710400B 5578818KB 5448MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b750810b00
+begin partition
+Coarsen end:cnvtxs=57384 cnedges=322808
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b750810b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     136.82 ms
+------Coarsen_time=               91.75 ms
+------Init_time=                  33.29 ms
+------Uncoarsen_time=             11.77 ms
+------else_time=                   0.00 ms
+edge-cut=                         28831
+
+Coarsen_time=                  91.755 ms
+    part_match                     51.236  55.840%
+        init_gpu_match_time             0.155   0.169%
+        hem_gpu_match_time             49.082  53.492%
+            random_match_time              32.964  67.161%
+            init_gpu_receive_send_time      0.598   1.218%
+            wgt_segmentsort_gpu_time        4.745   9.667%
+            segmentsort_memcpy_time         2.595   5.287%
+            set_receive_send_time           4.116   8.386%
+            set_match_topk_time             1.511   3.079%
+            reset_match_array_time          2.506   5.106%
+        resolve_conflict_1_time         0.272   0.296%
+        resolve_conflict_2_time         0.248   0.270%
+        inclusive_scan_time             0.568   0.619%
+        resolve_conflict_4_time         0.836   0.911%
+    part_contruction               38.995  42.499%
+        exclusive_scan_time             0.339   0.369%
+        set_tadjncy_tadjwgt_time       10.969  11.955%
+        ncy_segmentsort_gpu_time        9.045   9.858%
+        mark_edges_time                 3.964   4.320%
+        inclusive_scan_time2            5.920   6.452%
+        set_cxadj_time                  0.624   0.680%
+        init_cadjwgt_time               0.652   0.711%
+        set_cadjncy_cadjwgt_time        7.371   8.033%
+    coarsen_malloc                  0.022   0.024%
+    coarsen_memcpy                  1.495   1.629%
+    coarsen_free                    0.009   0.010%
+    else                            0.184   0.201%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57362 cnedges=323042
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.94 ms
+------Coarsen_time=               91.52 ms
+------Init_time=                  32.98 ms
+------Uncoarsen_time=             11.44 ms
+------else_time=                   0.00 ms
+edge-cut=                         28074
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57452 cnedges=323414
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.99 ms
+------Coarsen_time=               90.52 ms
+------Init_time=                  32.80 ms
+------Uncoarsen_time=             11.66 ms
+------else_time=                   0.00 ms
+edge-cut=                         30436
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57317 cnedges=322362
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.22 ms
+------Coarsen_time=               90.20 ms
+------Init_time=                  33.27 ms
+------Uncoarsen_time=             11.74 ms
+------else_time=                   0.01 ms
+edge-cut=                         29726
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57319 cnedges=322712
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.57 ms
+------Coarsen_time=               90.82 ms
+------Init_time=                  32.96 ms
+------Uncoarsen_time=             11.80 ms
+------else_time=                   0.00 ms
+edge-cut=                         28763
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57390 cnedges=322892
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     136.44 ms
+------Coarsen_time=               89.73 ms
+------Init_time=                  35.01 ms
+------Uncoarsen_time=             11.70 ms
+------else_time=                   0.00 ms
+edge-cut=                         28141
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57372 cnedges=322800
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.58 ms
+------Coarsen_time=               90.17 ms
+------Init_time=                  32.78 ms
+------Uncoarsen_time=             11.62 ms
+------else_time=                   0.00 ms
+edge-cut=                         28427
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57488 cnedges=323322
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.48 ms
+------Coarsen_time=               90.51 ms
+------Init_time=                  33.15 ms
+------Uncoarsen_time=             11.81 ms
+------else_time=                   0.00 ms
+edge-cut=                         29341
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57351 cnedges=322788
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.41 ms
+------Coarsen_time=               90.07 ms
+------Init_time=                  32.70 ms
+------Uncoarsen_time=             11.63 ms
+------else_time=                   0.00 ms
+edge-cut=                         29561
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57333 cnedges=322964
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     136.87 ms
+------Coarsen_time=               91.43 ms
+------Init_time=                  32.89 ms
+------Uncoarsen_time=             12.54 ms
+------else_time=                   0.00 ms
+edge-cut=                         28846
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57383 cnedges=322738
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.47 ms
+------Coarsen_time=               91.16 ms
+------Init_time=                  32.74 ms
+------Uncoarsen_time=             11.56 ms
+------else_time=                   0.01 ms
+edge-cut=                         28074
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57289 cnedges=322544
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.61 ms
+------Coarsen_time=               90.31 ms
+------Init_time=                  32.49 ms
+------Uncoarsen_time=             11.80 ms
+------else_time=                   0.00 ms
+edge-cut=                         30212
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57562 cnedges=323430
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.23 ms
+------Coarsen_time=               90.30 ms
+------Init_time=                  33.29 ms
+------Uncoarsen_time=             11.63 ms
+------else_time=                   0.00 ms
+edge-cut=                         28900
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57351 cnedges=322768
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     136.53 ms
+------Coarsen_time=               91.00 ms
+------Init_time=                  33.85 ms
+------Uncoarsen_time=             11.67 ms
+------else_time=                   0.00 ms
+edge-cut=                         29302
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57364 cnedges=323274
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.94 ms
+------Coarsen_time=               90.55 ms
+------Init_time=                  32.78 ms
+------Uncoarsen_time=             11.61 ms
+------else_time=                   0.00 ms
+edge-cut=                         30077
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57329 cnedges=322820
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.67 ms
+------Coarsen_time=               90.36 ms
+------Init_time=                  32.74 ms
+------Uncoarsen_time=             11.57 ms
+------else_time=                   0.00 ms
+edge-cut=                         30232
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57359 cnedges=322680
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.90 ms
+------Coarsen_time=               91.45 ms
+------Init_time=                  32.49 ms
+------Uncoarsen_time=             11.96 ms
+------else_time=                   0.00 ms
+edge-cut=                         27265
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57464 cnedges=323086
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567114368B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.26 ms
+------Coarsen_time=               90.70 ms
+------Init_time=                  32.94 ms
+------Uncoarsen_time=             11.62 ms
+------else_time=                   0.00 ms
+edge-cut=                         28782
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57449 cnedges=323380
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567115136B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     135.90 ms
+------Coarsen_time=               90.30 ms
+------Init_time=                  33.82 ms
+------Uncoarsen_time=             11.78 ms
+------else_time=                   0.00 ms
+edge-cut=                         29123
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57336 cnedges=322824
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567115136B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.94 ms
+------Coarsen_time=               90.87 ms
+------Init_time=                  32.49 ms
+------Uncoarsen_time=             11.58 ms
+------else_time=                   0.00 ms
+edge-cut=                         27064
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5683350272B 5550146KB 5420MB 5GB
+front_pointer=  0x79b5fc000000
+back_pointer=   0x79b74ec10b00
+begin partition
+Coarsen end:cnvtxs=57310 cnedges=322480
+end partition
+lmove_pointer=  0x79b5fc000000
+rmove_pointer=  0x79b74ec10b00
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 1567115136B    1530385KB       1494MB          1GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     134.70 ms
+------Coarsen_time=               89.99 ms
+------Init_time=                  33.05 ms
+------Uncoarsen_time=             11.66 ms
+------else_time=                   0.00 ms
+edge-cut=                         30166
+best_edgecut=27064
+graph:/media/jiangdie/新加卷/graph_10w/vas_stokes_2M.graph 2146677 96703558
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  5576960256B 5446250KB 5318MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75e69a900
+begin partition
+Coarsen end:cnvtxs=25718 cnedges=1129454
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75e69a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463208064B    2405476KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     243.74 ms
+------Coarsen_time=              149.61 ms
+------Init_time=                  58.66 ms
+------Uncoarsen_time=             35.47 ms
+------else_time=                   0.00 ms
+edge-cut=                        971122
+
+Coarsen_time=                 149.614 ms
+    part_match                     71.362  47.697%
+        init_gpu_match_time             0.102   0.068%
+        hem_gpu_match_time             70.137  46.879%
+            random_match_time              44.437  63.357%
+            init_gpu_receive_send_time      0.321   0.458%
+            wgt_segmentsort_gpu_time       10.966  15.635%
+            segmentsort_memcpy_time         6.459   9.209%
+            set_receive_send_time           5.326   7.594%
+            set_match_topk_time             1.179   1.681%
+            reset_match_array_time          1.397   1.992%
+        resolve_conflict_1_time         0.158   0.106%
+        resolve_conflict_2_time         0.139   0.093%
+        inclusive_scan_time             0.344   0.230%
+        resolve_conflict_4_time         0.408   0.273%
+    part_contruction               67.624  45.199%
+        exclusive_scan_time             0.213   0.142%
+        set_tadjncy_tadjwgt_time       13.833   9.246%
+        ncy_segmentsort_gpu_time       19.597  13.098%
+        mark_edges_time                 6.073   4.059%
+        inclusive_scan_time2           11.906   7.958%
+        set_cxadj_time                  0.406   0.271%
+        init_cadjwgt_time               1.599   1.069%
+        set_cadjncy_cadjwgt_time       13.889   9.283%
+    coarsen_malloc                  0.021   0.014%
+    coarsen_memcpy                 10.594   7.081%
+    coarsen_free                    0.007   0.005%
+    else                            0.188   0.126%
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25565 cnedges=1115110
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463208064B    2405476KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.63 ms
+------Coarsen_time=              139.65 ms
+------Init_time=                  56.12 ms
+------Uncoarsen_time=             35.86 ms
+------else_time=                   0.00 ms
+edge-cut=                        943559
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25576 cnedges=1117544
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463208064B    2405476KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     232.77 ms
+------Coarsen_time=              143.13 ms
+------Init_time=                  54.78 ms
+------Uncoarsen_time=             34.85 ms
+------else_time=                   0.00 ms
+edge-cut=                        949353
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25634 cnedges=1128374
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.47 ms
+------Coarsen_time=              141.08 ms
+------Init_time=                  55.76 ms
+------Uncoarsen_time=             34.63 ms
+------else_time=                   0.00 ms
+edge-cut=                        908143
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25500 cnedges=1108446
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     230.66 ms
+------Coarsen_time=              141.16 ms
+------Init_time=                  54.69 ms
+------Uncoarsen_time=             34.81 ms
+------else_time=                   0.00 ms
+edge-cut=                        967736
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25510 cnedges=1118558
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     232.38 ms
+------Coarsen_time=              140.46 ms
+------Init_time=                  56.46 ms
+------Uncoarsen_time=             35.46 ms
+------else_time=                   0.00 ms
+edge-cut=                        940670
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25658 cnedges=1122654
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     229.27 ms
+------Coarsen_time=              138.94 ms
+------Init_time=                  54.93 ms
+------Uncoarsen_time=             35.40 ms
+------else_time=                   0.00 ms
+edge-cut=                        979441
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25573 cnedges=1115492
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.40 ms
+------Coarsen_time=              141.56 ms
+------Init_time=                  54.81 ms
+------Uncoarsen_time=             35.03 ms
+------else_time=                   0.00 ms
+edge-cut=                        963206
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25733 cnedges=1123352
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.15 ms
+------Coarsen_time=              139.04 ms
+------Init_time=                  56.99 ms
+------Uncoarsen_time=             35.12 ms
+------else_time=                   0.00 ms
+edge-cut=                        932574
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25445 cnedges=1116238
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     235.30 ms
+------Coarsen_time=              143.46 ms
+------Init_time=                  56.98 ms
+------Uncoarsen_time=             34.86 ms
+------else_time=                   0.00 ms
+edge-cut=                        960565
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25695 cnedges=1119864
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     232.95 ms
+------Coarsen_time=              141.10 ms
+------Init_time=                  56.69 ms
+------Uncoarsen_time=             35.16 ms
+------else_time=                   0.00 ms
+edge-cut=                        892787
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25536 cnedges=1114198
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     229.74 ms
+------Coarsen_time=              139.11 ms
+------Init_time=                  54.67 ms
+------Uncoarsen_time=             35.96 ms
+------else_time=                   0.00 ms
+edge-cut=                        914442
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25511 cnedges=1115068
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     235.12 ms
+------Coarsen_time=              144.66 ms
+------Init_time=                  55.72 ms
+------Uncoarsen_time=             34.74 ms
+------else_time=                   0.00 ms
+edge-cut=                        952896
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25809 cnedges=1133346
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     239.44 ms
+------Coarsen_time=              148.68 ms
+------Init_time=                  56.28 ms
+------Uncoarsen_time=             34.48 ms
+------else_time=                   0.00 ms
+edge-cut=                        908702
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25654 cnedges=1120146
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     233.36 ms
+------Coarsen_time=              141.18 ms
+------Init_time=                  56.52 ms
+------Uncoarsen_time=             35.67 ms
+------else_time=                   0.00 ms
+edge-cut=                        923233
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25512 cnedges=1105262
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.14 ms
+------Coarsen_time=              139.37 ms
+------Init_time=                  56.24 ms
+------Uncoarsen_time=             35.53 ms
+------else_time=                   0.00 ms
+edge-cut=                        930495
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25611 cnedges=1117452
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.45 ms
+------Coarsen_time=              141.38 ms
+------Init_time=                  55.66 ms
+------Uncoarsen_time=             34.41 ms
+------else_time=                   0.01 ms
+edge-cut=                        913955
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25465 cnedges=1103168
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     234.09 ms
+------Coarsen_time=              142.26 ms
+------Init_time=                  56.43 ms
+------Uncoarsen_time=             35.39 ms
+------else_time=                   0.00 ms
+edge-cut=                        937760
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25582 cnedges=1128748
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     232.08 ms
+------Coarsen_time=              142.27 ms
+------Init_time=                  54.21 ms
+------Uncoarsen_time=             35.59 ms
+------else_time=                   0.00 ms
+edge-cut=                        911852
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25490 cnedges=1115460
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     231.73 ms
+------Coarsen_time=              142.84 ms
+------Init_time=                  54.08 ms
+------Uncoarsen_time=             34.81 ms
+------else_time=                   0.00 ms
+edge-cut=                        978529
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6084689920B 5942080KB 5802MB 5GB
+Malloc GPU Memory:                  5547600128B 5417578KB 5290MB 5GB
+front_pointer=  0x7bd612000000
+back_pointer=   0x7bd75ca9a900
+begin partition
+Coarsen end:cnvtxs=25583 cnedges=1119252
+end partition
+lmove_pointer=  0x7bd612000000
+rmove_pointer=  0x7bd75ca9a900
+The left stack has been freed
+The right stack has been freed
+Max memory used of GPU: 2463553920B    2405814KB       2349MB          2GB
+Hunyuangraph-Partition-end
+Hunyuangraph_Partition_time=     230.17 ms
+------Coarsen_time=              139.69 ms
+------Init_time=                  54.67 ms
+------Uncoarsen_time=             35.80 ms
+------else_time=                   0.00 ms
+edge-cut=                        932145
+best_edgecut=892787

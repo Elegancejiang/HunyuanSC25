@@ -8,7 +8,7 @@ git status
 # 添加所有文件到暂存区
 git add .
 # 描述更改内容
-git commit -m "24.11.21 4090 Coarsen_threshold/twenty-one/exam memory leak/uncoarsen free error"
+git commit -m "24.11.25 3060 Coarsen end"
 # 移除旧的远程仓库
 # git remote remove origin
 # git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git

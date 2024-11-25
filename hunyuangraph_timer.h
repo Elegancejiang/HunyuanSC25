@@ -101,10 +101,21 @@ double resolve_conflict_4_time = 0;
 struct timeval begin_gpu_match;
 struct timeval end_gpu_match;
 
+//match kernel
+double random_match_time = 0;
+double init_gpu_receive_send_time = 0;
+double wgt_segmentsort_gpu_time = 0;
+double segmentsort_memcpy_time = 0;
+double set_receive_send_time = 0;
+double set_match_topk_time = 0;
+double reset_match_array_time = 0;
+struct timeval begin_gpu_match_kernel;
+struct timeval end_gpu_match_kernel;
+
 // contract
 double exclusive_scan_time = 0;
 double set_tadjncy_tadjwgt_time = 0;
-double segmentsort_gpu_time = 0;
+double ncy_segmentsort_gpu_time = 0;
 double mark_edges_time = 0;
 double inclusive_scan_time2 = 0;
 double set_cxadj_time = 0;
@@ -221,10 +232,19 @@ void init_timer()
     inclusive_scan_time1 = 0;
     resolve_conflict_4_time = 0;
 
+    //match kernel
+    random_match_time = 0;
+    init_gpu_receive_send_time = 0;
+    wgt_segmentsort_gpu_time = 0;
+    segmentsort_memcpy_time = 0;
+    set_receive_send_time = 0;
+    set_match_topk_time = 0;
+    reset_match_array_time = 0;
+
     // contract
     exclusive_scan_time = 0;
     set_tadjncy_tadjwgt_time = 0;
-    segmentsort_gpu_time = 0;
+    ncy_segmentsort_gpu_time = 0;
     mark_edges_time = 0;
     inclusive_scan_time2 = 0;
     set_cxadj_time = 0;
@@ -248,12 +268,19 @@ void print_time_coarsen()
     printf("\n");
 
     coarsen_else = part_coarsen - (init_gpu_match_time + hem_gpu_match_time + resolve_conflict_1_time + resolve_conflict_2_time + inclusive_scan_time1 +
-                                   resolve_conflict_4_time + exclusive_scan_time + set_tadjncy_tadjwgt_time + segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
+                                   resolve_conflict_4_time + exclusive_scan_time + set_tadjncy_tadjwgt_time + ncy_segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
                                    set_cxadj_time + init_cadjwgt_time + set_cadjncy_cadjwgt_time + coarsen_malloc + coarsen_memcpy + coarsen_free);
     printf("Coarsen_time=              %10.3lf ms\n", part_coarsen);
     printf("    part_match                 %10.3lf %7.3lf%\n", part_match, part_match / part_coarsen * 100);
     printf("        init_gpu_match_time        %10.3lf %7.3lf%\n", init_gpu_match_time, init_gpu_match_time / part_coarsen * 100);
     printf("        hem_gpu_match_time         %10.3lf %7.3lf%\n", hem_gpu_match_time, hem_gpu_match_time / part_coarsen * 100);
+    printf("            random_match_time          %10.3lf %7.3lf%\n", random_match_time, random_match_time / hem_gpu_match_time * 100);
+    printf("            init_gpu_receive_send_time %10.3lf %7.3lf%\n", init_gpu_receive_send_time, init_gpu_receive_send_time / hem_gpu_match_time * 100);
+    printf("            wgt_segmentsort_gpu_time   %10.3lf %7.3lf%\n", wgt_segmentsort_gpu_time, wgt_segmentsort_gpu_time / hem_gpu_match_time * 100);
+    printf("            segmentsort_memcpy_time    %10.3lf %7.3lf%\n", segmentsort_memcpy_time, segmentsort_memcpy_time / hem_gpu_match_time * 100);
+    printf("            set_receive_send_time      %10.3lf %7.3lf%\n", set_receive_send_time, set_receive_send_time / hem_gpu_match_time * 100);
+    printf("            set_match_topk_time        %10.3lf %7.3lf%\n", set_match_topk_time, set_match_topk_time / hem_gpu_match_time * 100);
+    printf("            reset_match_array_time     %10.3lf %7.3lf%\n", reset_match_array_time, reset_match_array_time / hem_gpu_match_time * 100);
     printf("        resolve_conflict_1_time    %10.3lf %7.3lf%\n", resolve_conflict_1_time, resolve_conflict_1_time / part_coarsen * 100);
     printf("        resolve_conflict_2_time    %10.3lf %7.3lf%\n", resolve_conflict_2_time, resolve_conflict_2_time / part_coarsen * 100);
     printf("        inclusive_scan_time        %10.3lf %7.3lf%\n", inclusive_scan_time1, inclusive_scan_time1 / part_coarsen * 100);
@@ -261,7 +288,7 @@ void print_time_coarsen()
     printf("    part_contruction           %10.3lf %7.3lf%\n", part_contruction, part_contruction / part_coarsen * 100);
     printf("        exclusive_scan_time        %10.3lf %7.3lf%\n", exclusive_scan_time, exclusive_scan_time / part_coarsen * 100);
     printf("        set_tadjncy_tadjwgt_time   %10.3lf %7.3lf%\n", set_tadjncy_tadjwgt_time, set_tadjncy_tadjwgt_time / part_coarsen * 100);
-    printf("        segmentsort_gpu_time       %10.3lf %7.3lf%\n", segmentsort_gpu_time, segmentsort_gpu_time / part_coarsen * 100);
+    printf("        ncy_segmentsort_gpu_time   %10.3lf %7.3lf%\n", ncy_segmentsort_gpu_time, ncy_segmentsort_gpu_time / part_coarsen * 100);
     printf("        mark_edges_time            %10.3lf %7.3lf%\n", mark_edges_time, mark_edges_time / part_coarsen * 100);
     printf("        inclusive_scan_time2       %10.3lf %7.3lf%\n", inclusive_scan_time2, inclusive_scan_time2 / part_coarsen * 100);
     printf("        set_cxadj_time             %10.3lf %7.3lf%\n", set_cxadj_time, set_cxadj_time / part_coarsen * 100);
