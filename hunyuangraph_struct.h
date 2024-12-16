@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
+typedef signed char hunyuangraph_int8_t;
+
 /*Graph data structure*/
 typedef struct hunyuangraph_graph_t {
 	/*graph cpu params*/
@@ -49,6 +51,9 @@ typedef struct hunyuangraph_graph_t {
 	int *cuda_where;
 	int *cuda_label;
 	int *cuda_pwgts;
+	int *cuda_ed;
+	int *cuda_id;
+	int *cuda_bndlist;
 	int *cuda_bnd;
 	int *cuda_bndnum;
 	int *cpu_bndnum;
@@ -119,11 +124,20 @@ typedef struct hunyuangraph_rkv_t{
 
 /*Queue information*/
 typedef struct {
-  ssize_t nnodes;
-  ssize_t maxnodes;
-  hunyuangraph_rkv_t   *heap;
-  ssize_t *locator;
+	ssize_t nnodes;
+	ssize_t maxnodes;
+	hunyuangraph_rkv_t   *heap;
+	ssize_t *locator;
 } hunyuangraph_queue_t;
+
+typedef struct 
+{
+	int nownodes;
+	int maxnodes;
+	int *key;
+	int *val;
+	int *locator;
+} priority_queue_t;
 
 typedef struct {
   int key;

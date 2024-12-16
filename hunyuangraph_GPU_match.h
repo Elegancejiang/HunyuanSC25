@@ -666,19 +666,19 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 			reset_match_array_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 			// printf("hunyuangraph_gpu_match reset_match iter=%d end\n",iter);
 
-			/*int *host_match = (int *)malloc(sizeof(int) * nvtxs);
-			cudaMemcpy(host_match, graph->cuda_match, nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
-			success_num[iter] = 0;
-			for (int i = 0; i < nvtxs; i++)
-			{
-				if (host_match[i] != -1 && host_match[i] != i && host_match[host_match[i]] == i)
-				{
-					success_num[iter]++;
-				}
-			}
-			free(host_match);
-			success_rate[iter] = (double)success_num[iter] / (double)nvtxs * 100;
-			printf("iter=%2d success_rate=%10.2lf%% success_num=%10d the iter add %10.2lf%%\n", iter, success_rate[iter], success_num[iter], success_rate[iter] - success_rate[iter - 1]);*/
+			// int *host_match = (int *)malloc(sizeof(int) * nvtxs);
+			// cudaMemcpy(host_match, graph->cuda_match, nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
+			// success_num[iter] = 0;
+			// for (int i = 0; i < nvtxs; i++)
+			// {
+			// 	if (host_match[i] != -1 && host_match[i] != i && host_match[host_match[i]] == i)
+			// 	{
+			// 		success_num[iter]++;
+			// 	}
+			// }
+			// free(host_match);
+			// success_rate[iter] = (double)success_num[iter] / (double)nvtxs * 100;
+			// printf("iter=%2d success_rate=%10.2lf%% success_num=%10d the iter add %10.2lf%%\n", iter, success_rate[iter], success_num[iter], success_rate[iter] - success_rate[iter - 1]);
 		}
 
 		rfree_with_check(sizeof(int) * nvtxs * 5, "hunyuangraph_gpu_match: send");	  // send

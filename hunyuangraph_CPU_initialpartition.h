@@ -1,5 +1,5 @@
-#ifndef _H_INITIALPARTITION
-#define _H_INITIALPARTITION
+#ifndef _H_CPU_INITIALPARTITION
+#define _H_CPU_INITIALPARTITION
 
 #include "hunyuangraph_struct.h"
 #include "hunyuangraph_common.h"
@@ -363,7 +363,7 @@ int hunyuangraph_rbbisection(int *nvtxs, int *xadj, int *adjncy, int *vwgt,int *
 	hunyuangraph_graph_t *graph;
 	hunyuangraph_admin_t *hunyuangraph_admin;
 
-	hunyuangraph_admin = hunyuangraph_set_graph_admin( *nparts, tpwgts, ubvec);
+	hunyuangraph_admin = hunyuangraph_set_graph_admin(*nparts, tpwgts, ubvec);
 
     graph = hunyuangraph_set_graph(hunyuangraph_admin, *nvtxs, xadj, adjncy, vwgt, adjwgt, tvwgt);
 	hunyuangraph_allocatespace(hunyuangraph_admin, graph);           
@@ -392,6 +392,5 @@ void hunyuangarph_initialpartition(hunyuangraph_admin_t *hunyuangraph_admin, hun
   free(ubvec);
   free(bestwhere);
 }
-
 
 #endif

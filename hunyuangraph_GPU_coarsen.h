@@ -56,6 +56,7 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
     do
     {
         hunyuangraph_malloc_coarseninfo(hunyuangraph_admin, graph);
+        // printf("hunyuangraph_malloc_coarseninfo end\n");
 
         cudaDeviceSynchronize();
         gettimeofday(&begin_part_match, NULL);
@@ -63,6 +64,8 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         cudaDeviceSynchronize();
         gettimeofday(&end_part_match, NULL);
         part_match += (end_part_match.tv_sec - begin_part_match.tv_sec) * 1000 + (end_part_match.tv_usec - begin_part_match.tv_usec) / 1000.0;
+
+        // printf("hunyuangraph_gpu_match end\n");
 
         cudaDeviceSynchronize();
         gettimeofday(&begin_part_contruction, NULL);
@@ -74,7 +77,7 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         graph = graph->coarser;
         level++;
 
-        // printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level, graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
+        printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level, graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
 
     } while (
         graph->nvtxs > hunyuangraph_admin->Coarsen_threshold &&

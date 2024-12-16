@@ -5,13 +5,16 @@
 #include "hunyuangraph_timer.h"
 #include "hunyuangraph_GPU_memory.h"
 #include "hunyuangraph_GPU_coarsen.h"
-#include "hunyuangraph_initialpartition.h"
+#include "hunyuangraph_CPU_initialpartition.h"
+#include "hunyuangraph_GPU_initialpartition.h"
 #include "hunyuangraph_GPU_uncoarsen.h"
 
 /*Graph kway-partition algorithm*/
 void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *part)
 {
 	hunyuangraph_graph_t *cgraph;
+
+	printf("Coarsen begin\n");
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_coarsen, NULL);
@@ -22,14 +25,28 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	printf("Coarsen end:cnvtxs=%d cnedges=%d\n", cgraph->nvtxs, cgraph->nedges);
 
+	/*FILE *fp = fopen("graph.txt","w");
+    fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
+    for(int a = 0; a < cgraph->nvtxs; a++)
+    {
+    	fprintf(fp, "%d ",cgraph->vwgt[a]);
+        for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+        	fprintf(fp, "%d %d ",cgraph->adjncy[b] + 1, cgraph->adjwgt[b]);
+        fprintf(fp, "\n");
+    }
+    fclose(fp);*/
+
 	// exit(0);
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_init, NULL);
-	hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
+	// hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
+	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
+
+	exit(0);
 
 	// hunyuangraph_memcpy_coarsentoinit(cgraph);
 	// int e = hunyuangraph_computecut(cgraph, cgraph->where);
@@ -121,13 +138,13 @@ void hunyuangraph_PartitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt, 
 	hunyuangraph_admin->Coarsen_threshold = hunyuangraph_max((*nvtxs) / (20 * (hunyuangraph_compute_log2(*nparts))), 30 * (*nparts));
 	hunyuangraph_admin->nIparts = (hunyuangraph_admin->Coarsen_threshold == 30 * (*nparts) ? 4 : 5);
 
-	/*hunyuangraph_admin->Coarsen_threshold = (*nparts) * 8;
+	hunyuangraph_admin->Coarsen_threshold = (*nparts) * 8;
 	if (hunyuangraph_admin->Coarsen_threshold > 1024)
 	{
 		hunyuangraph_admin->Coarsen_threshold = (*nparts) * 2;
 		hunyuangraph_admin->Coarsen_threshold = hunyuangraph_max(1024, hunyuangraph_admin->Coarsen_threshold);
 	}
-	printf("hunyuangraph_admin->Coarsen_threshold=%10d\n", hunyuangraph_admin->Coarsen_threshold);*/
+	printf("hunyuangraph_admin->Coarsen_threshold=%10d\n", hunyuangraph_admin->Coarsen_threshold);
 
 	Malloc_GPU_Memory(graph->nvtxs, graph->nedges);
 

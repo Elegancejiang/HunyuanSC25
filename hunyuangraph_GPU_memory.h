@@ -46,8 +46,8 @@ void Malloc_GPU_Memory(size_t nvtxs, size_t nedges)
 
 	// 计算剩余的部分显存大小
 	// size_t remainingMem = freeMem - usableMem - 5 * nedges * sizeof(int);
-	size_t remainingMem = freeMem - usableMem - (nvtxs + nedges) * sizeof(int); // 调试所用
-	// size_t remainingMem = (freeMem - usableMem) / 2;	//调试所用
+	// size_t remainingMem = freeMem - usableMem - (nvtxs + nedges) * sizeof(int); // 调试所用
+	size_t remainingMem = (freeMem - usableMem) / 3 * 2;	//调试所用
 	// size_t remainingMem = 2 * 1024 * 1024 * 1024;	//调试所用
 
 	//	alingning cache line

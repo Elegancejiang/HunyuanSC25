@@ -138,6 +138,11 @@ struct timeval end_free;
 
 double coarsen_else = 0;
 
+// init
+double bisection_gpu_time = 0;
+struct timeval begin_gpu_bisection;
+struct timeval end_gpu_bisection;
+
 double set_cpu_graph = 0;
 struct timeval begin_set_cpu_graph;
 struct timeval end_set_cpu_graph;
@@ -298,6 +303,13 @@ void print_time_coarsen()
     printf("    coarsen_memcpy             %10.3lf %7.3lf%\n", coarsen_memcpy, coarsen_memcpy / part_coarsen * 100);
     printf("    coarsen_free               %10.3lf %7.3lf%\n", coarsen_free, coarsen_free / part_coarsen * 100);
     printf("    else                       %10.3lf %7.3lf%\n", coarsen_else, coarsen_else / part_coarsen * 100);
+}
+
+void print_time_init()
+{
+    printf("\n");
+
+    printf("        gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / bisection_gpu_time * 100);
 }
 
 void print_time_uncoarsen()

@@ -83,6 +83,14 @@ float hunyuangraph_float_sum(size_t n, float *a)
   return sum;
 }
 
+double hunyuangraph_double_sum(size_t n, double *src)
+{
+	double sum = 0;
+	for(int i = 0;i < n;i++)
+		sum += src[i];
+	return sum;
+}
+
 /*Rescale tpwgts array*/
 float *hunyuangraph_tpwgts_rescale(size_t n, float wsum, float *a)
 {

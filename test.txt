@@ -1,0 +1,319 @@
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7925ea000000
+back_pointer=   0x7926d7520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576386 nedges   33940928 nedges/nvtxs=  58.89 adjwgtsum     52148244
+level  2: nvtxs     300692 nedges   19020516 nedges/nvtxs=  63.26 adjwgtsum     50418764
+level  3: nvtxs     157862 nedges   10335636 nedges/nvtxs=  65.47 adjwgtsum     47893672
+level  4: nvtxs      83769 nedges    5417238 nedges/nvtxs=  64.67 adjwgtsum     44855862
+level  5: nvtxs      45213 nedges    2704934 nedges/nvtxs=  59.83 adjwgtsum     41645918
+level  6: nvtxs      25081 nedges    1321368 nedges/nvtxs=  52.68 adjwgtsum     38439040
+level  7: nvtxs      14581 nedges     648162 nedges/nvtxs=  44.45 adjwgtsum     35250316
+level  8: nvtxs       9000 nedges     321356 nedges/nvtxs=  35.71 adjwgtsum     32023704
+level  9: nvtxs       5967 nedges     163924 nedges/nvtxs=  27.47 adjwgtsum     28648868
+level 10: nvtxs       4261 nedges      87126 nedges/nvtxs=  20.45 adjwgtsum     25135758
+level 11: nvtxs       3301 nedges      50148 nedges/nvtxs=  15.19 adjwgtsum     21604252
+level 12: nvtxs       2760 nedges      32158 nedges/nvtxs=  11.65 adjwgtsum     18341656
+level 13: nvtxs       2442 nedges      22860 nedges/nvtxs=   9.36 adjwgtsum     15662528
+Coarsen end:cnvtxs=2442 cnedges=22860
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x792628e93800
+global_where=0x79262e423980
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              5.333 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x711b80000000
+back_pointer=   0x711c6d520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576023 nedges   33886954 nedges/nvtxs=  58.83 adjwgtsum     52147518
+level  2: nvtxs     300582 nedges   18955568 nedges/nvtxs=  63.06 adjwgtsum     50418242
+level  3: nvtxs     157741 nedges   10299450 nedges/nvtxs=  65.29 adjwgtsum     47895566
+level  4: nvtxs      83767 nedges    5400328 nedges/nvtxs=  64.47 adjwgtsum     44862646
+level  5: nvtxs      45219 nedges    2702018 nedges/nvtxs=  59.75 adjwgtsum     41652138
+level  6: nvtxs      25129 nedges    1328088 nedges/nvtxs=  52.85 adjwgtsum     38434672
+level  7: nvtxs      14612 nedges     652572 nedges/nvtxs=  44.66 adjwgtsum     35251788
+level  8: nvtxs       8987 nedges     322632 nedges/nvtxs=  35.90 adjwgtsum     32015680
+level  9: nvtxs       5974 nedges     165886 nedges/nvtxs=  27.77 adjwgtsum     28653226
+level 10: nvtxs       4322 nedges      90526 nedges/nvtxs=  20.95 adjwgtsum     25076874
+level 11: nvtxs       3380 nedges      53288 nedges/nvtxs=  15.77 adjwgtsum     21527534
+level 12: nvtxs       2841 nedges      34480 nedges/nvtxs=  12.14 adjwgtsum     18285586
+level 13: nvtxs       2556 nedges      25706 nedges/nvtxs=  10.06 adjwgtsum     15743624
+Coarsen end:cnvtxs=2556 cnedges=25706
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x711bbed77800
+global_where=0x711bc4b14800
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              7.056 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7940b4000000
+back_pointer=   0x7941a1520000
+begin partition
+Coarsen begin
+level  1: nvtxs     575936 nedges   33959876 nedges/nvtxs=  58.96 adjwgtsum     52147344
+level  2: nvtxs     300406 nedges   18983584 nedges/nvtxs=  63.19 adjwgtsum     50416968
+level  3: nvtxs     157604 nedges   10316186 nedges/nvtxs=  65.46 adjwgtsum     47892006
+level  4: nvtxs      83590 nedges    5408790 nedges/nvtxs=  64.71 adjwgtsum     44853072
+level  5: nvtxs      45004 nedges    2703864 nedges/nvtxs=  60.08 adjwgtsum     41637526
+level  6: nvtxs      24951 nedges    1321694 nedges/nvtxs=  52.97 adjwgtsum     38422064
+level  7: nvtxs      14445 nedges     645556 nedges/nvtxs=  44.69 adjwgtsum     35235232
+level  8: nvtxs       8828 nedges     317926 nedges/nvtxs=  36.01 adjwgtsum     31997212
+level  9: nvtxs       5789 nedges     160662 nedges/nvtxs=  27.75 adjwgtsum     28637152
+level 10: nvtxs       4094 nedges      84598 nedges/nvtxs=  20.66 adjwgtsum     25092582
+level 11: nvtxs       3143 nedges      48392 nedges/nvtxs=  15.40 adjwgtsum     21463960
+level 12: nvtxs       2605 nedges      30456 nedges/nvtxs=  11.69 adjwgtsum     18135854
+level 13: nvtxs       2251 nedges      20480 nedges/nvtxs=   9.10 adjwgtsum     15242082
+Coarsen end:cnvtxs=2251 cnedges=20480
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x7940f2e03000
+global_where=0x7940f768ff80
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              4.813 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7e1376000000
+back_pointer=   0x7e1463520000
+begin partition
+Coarsen begin
+level  1: nvtxs     575918 nedges   33956624 nedges/nvtxs=  58.96 adjwgtsum     52147308
+level  2: nvtxs     300540 nedges   18997306 nedges/nvtxs=  63.21 adjwgtsum     50417474
+level  3: nvtxs     157702 nedges   10310452 nedges/nvtxs=  65.38 adjwgtsum     47892806
+level  4: nvtxs      83779 nedges    5393478 nedges/nvtxs=  64.38 adjwgtsum     44860480
+level  5: nvtxs      45297 nedges    2698488 nedges/nvtxs=  59.57 adjwgtsum     41655924
+level  6: nvtxs      25267 nedges    1328576 nedges/nvtxs=  52.58 adjwgtsum     38457314
+level  7: nvtxs      14705 nedges     652898 nedges/nvtxs=  44.40 adjwgtsum     35282384
+level  8: nvtxs       9079 nedges     325096 nedges/nvtxs=  35.81 adjwgtsum     32039366
+level  9: nvtxs       6004 nedges     166364 nedges/nvtxs=  27.71 adjwgtsum     28691980
+level 10: nvtxs       4250 nedges      88258 nedges/nvtxs=  20.77 adjwgtsum     25133132
+level 11: nvtxs       3250 nedges      50140 nedges/nvtxs=  15.43 adjwgtsum     21544548
+level 12: nvtxs       2662 nedges      31046 nedges/nvtxs=  11.66 adjwgtsum     18264812
+level 13: nvtxs       2330 nedges      21444 nedges/nvtxs=   9.20 adjwgtsum     15449500
+Coarsen end:cnvtxs=2330 cnedges=21444
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x7e13b4e32300
+global_where=0x7e13b9c23180
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              4.715 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x71a86a000000
+back_pointer=   0x71a957520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576242 nedges   33926038 nedges/nvtxs=  58.87 adjwgtsum     52147956
+level  2: nvtxs     300763 nedges   18977484 nedges/nvtxs=  63.10 adjwgtsum     50419556
+level  3: nvtxs     157998 nedges   10321902 nedges/nvtxs=  65.33 adjwgtsum     47892960
+level  4: nvtxs      84001 nedges    5436166 nedges/nvtxs=  64.72 adjwgtsum     44859118
+level  5: nvtxs      45423 nedges    2726282 nedges/nvtxs=  60.02 adjwgtsum     41654698
+level  6: nvtxs      25350 nedges    1347610 nedges/nvtxs=  53.16 adjwgtsum     38444272
+level  7: nvtxs      14825 nedges     667340 nedges/nvtxs=  45.01 adjwgtsum     35275798
+level  8: nvtxs       9153 nedges     333136 nedges/nvtxs=  36.40 adjwgtsum     32032122
+level  9: nvtxs       6100 nedges     171262 nedges/nvtxs=  28.08 adjwgtsum     28714348
+level 10: nvtxs       4366 nedges      91808 nedges/nvtxs=  21.03 adjwgtsum     25197304
+level 11: nvtxs       3400 nedges      53614 nedges/nvtxs=  15.77 adjwgtsum     21681160
+level 12: nvtxs       2844 nedges      33984 nedges/nvtxs=  11.95 adjwgtsum     18385392
+level 13: nvtxs       2522 nedges      24182 nedges/nvtxs=   9.59 adjwgtsum     15592644
+Coarsen end:cnvtxs=2522 cnedges=24182
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x71a8a8ef4c00
+global_where=0x71a8aea17b80
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              4.754 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x74505a000000
+back_pointer=   0x745147520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576526 nedges   33971442 nedges/nvtxs=  58.92 adjwgtsum     52148524
+level  2: nvtxs     300702 nedges   19032902 nedges/nvtxs=  63.29 adjwgtsum     50418774
+level  3: nvtxs     157858 nedges   10344420 nedges/nvtxs=  65.53 adjwgtsum     47894116
+level  4: nvtxs      83713 nedges    5416338 nedges/nvtxs=  64.70 adjwgtsum     44864042
+level  5: nvtxs      45122 nedges    2716744 nedges/nvtxs=  60.21 adjwgtsum     41657804
+level  6: nvtxs      25083 nedges    1329678 nedges/nvtxs=  53.01 adjwgtsum     38452060
+level  7: nvtxs      14530 nedges     650124 nedges/nvtxs=  44.74 adjwgtsum     35272480
+level  8: nvtxs       8954 nedges     322154 nedges/nvtxs=  35.98 adjwgtsum     32059288
+level  9: nvtxs       5891 nedges     162580 nedges/nvtxs=  27.60 adjwgtsum     28695554
+level 10: nvtxs       4175 nedges      85140 nedges/nvtxs=  20.39 adjwgtsum     25193836
+level 11: nvtxs       3211 nedges      48004 nedges/nvtxs=  14.95 adjwgtsum     21560668
+level 12: nvtxs       2683 nedges      30442 nedges/nvtxs=  11.35 adjwgtsum     18201766
+level 13: nvtxs       2361 nedges      21010 nedges/nvtxs=   8.90 adjwgtsum     15287372
+Coarsen end:cnvtxs=2361 cnedges=21010
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x745098f0aa80
+global_where=0x74509dee2600
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              5.249 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7d1faa000000
+back_pointer=   0x7d2097520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576156 nedges   33881912 nedges/nvtxs=  58.81 adjwgtsum     52147784
+level  2: nvtxs     300366 nedges   18952344 nedges/nvtxs=  63.10 adjwgtsum     50417242
+level  3: nvtxs     157505 nedges   10291768 nedges/nvtxs=  65.34 adjwgtsum     47891284
+level  4: nvtxs      83636 nedges    5403010 nedges/nvtxs=  64.60 adjwgtsum     44856946
+level  5: nvtxs      45109 nedges    2701212 nedges/nvtxs=  59.88 adjwgtsum     41643270
+level  6: nvtxs      25000 nedges    1322140 nedges/nvtxs=  52.89 adjwgtsum     38432298
+level  7: nvtxs      14453 nedges     648014 nedges/nvtxs=  44.84 adjwgtsum     35258272
+level  8: nvtxs       8817 nedges     318054 nedges/nvtxs=  36.07 adjwgtsum     32013166
+level  9: nvtxs       5747 nedges     159834 nedges/nvtxs=  27.81 adjwgtsum     28648368
+level 10: nvtxs       4036 nedges      84074 nedges/nvtxs=  20.83 adjwgtsum     25148236
+level 11: nvtxs       3074 nedges      46810 nedges/nvtxs=  15.23 adjwgtsum     21535778
+level 12: nvtxs       2509 nedges      29058 nedges/nvtxs=  11.58 adjwgtsum     18283726
+level 13: nvtxs       2197 nedges      19978 nedges/nvtxs=   9.09 adjwgtsum     15386890
+Coarsen end:cnvtxs=2197 cnedges=19978
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x7d1fe8ce8200
+global_where=0x7d1fed21b980
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              5.403 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7a105a000000
+back_pointer=   0x7a1147520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576039 nedges   33929966 nedges/nvtxs=  58.90 adjwgtsum     52147550
+level  2: nvtxs     300582 nedges   19011196 nedges/nvtxs=  63.25 adjwgtsum     50417442
+level  3: nvtxs     157808 nedges   10344116 nedges/nvtxs=  65.55 adjwgtsum     47887964
+level  4: nvtxs      83767 nedges    5426002 nedges/nvtxs=  64.77 adjwgtsum     44852704
+level  5: nvtxs      45175 nedges    2721834 nedges/nvtxs=  60.25 adjwgtsum     41646614
+level  6: nvtxs      25119 nedges    1336608 nedges/nvtxs=  53.21 adjwgtsum     38442624
+level  7: nvtxs      14567 nedges     653650 nedges/nvtxs=  44.87 adjwgtsum     35260582
+level  8: nvtxs       8908 nedges     320358 nedges/nvtxs=  35.96 adjwgtsum     32015924
+level  9: nvtxs       5854 nedges     161910 nedges/nvtxs=  27.66 adjwgtsum     28663210
+level 10: nvtxs       4167 nedges      85650 nedges/nvtxs=  20.55 adjwgtsum     25146436
+level 11: nvtxs       3221 nedges      49270 nedges/nvtxs=  15.30 adjwgtsum     21572446
+level 12: nvtxs       2671 nedges      31062 nedges/nvtxs=  11.63 adjwgtsum     18275080
+level 13: nvtxs       2393 nedges      22664 nedges/nvtxs=   9.47 adjwgtsum     15656404
+Coarsen end:cnvtxs=2393 cnedges=22664
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x7a1098ec4700
+global_where=0x7a109e0dc500
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              5.412 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x74c718000000
+back_pointer=   0x74c805520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576275 nedges   33897550 nedges/nvtxs=  58.82 adjwgtsum     52148022
+level  2: nvtxs     300569 nedges   18958416 nedges/nvtxs=  63.08 adjwgtsum     50418110
+level  3: nvtxs     157634 nedges   10286274 nedges/nvtxs=  65.25 adjwgtsum     47890574
+level  4: nvtxs      83800 nedges    5411446 nedges/nvtxs=  64.58 adjwgtsum     44854132
+level  5: nvtxs      45281 nedges    2721736 nedges/nvtxs=  60.11 adjwgtsum     41646838
+level  6: nvtxs      25194 nedges    1340186 nedges/nvtxs=  53.19 adjwgtsum     38451260
+level  7: nvtxs      14617 nedges     656714 nedges/nvtxs=  44.93 adjwgtsum     35280412
+level  8: nvtxs       8948 nedges     325810 nedges/nvtxs=  36.41 adjwgtsum     32044748
+level  9: nvtxs       5915 nedges     167346 nedges/nvtxs=  28.29 adjwgtsum     28684032
+level 10: nvtxs       4192 nedges      89838 nedges/nvtxs=  21.43 adjwgtsum     25199810
+level 11: nvtxs       3226 nedges      51318 nedges/nvtxs=  15.91 adjwgtsum     21649334
+level 12: nvtxs       2686 nedges      33102 nedges/nvtxs=  12.32 adjwgtsum     18389674
+level 13: nvtxs       2359 nedges      23514 nedges/nvtxs=   9.97 adjwgtsum     15650770
+Coarsen end:cnvtxs=2359 cnedges=23514
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x74c756dc7180
+global_where=0x74c75bd8d800
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              5.874 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x7be5d0000000
+back_pointer=   0x7be6bd520000
+begin partition
+Coarsen begin
+level  1: nvtxs     576004 nedges   33942558 nedges/nvtxs=  58.93 adjwgtsum     52147480
+level  2: nvtxs     300616 nedges   18998370 nedges/nvtxs=  63.20 adjwgtsum     50417770
+level  3: nvtxs     157923 nedges   10351064 nedges/nvtxs=  65.55 adjwgtsum     47892130
+level  4: nvtxs      83897 nedges    5436504 nedges/nvtxs=  64.80 adjwgtsum     44858720
+level  5: nvtxs      45334 nedges    2728022 nedges/nvtxs=  60.18 adjwgtsum     41657328
+level  6: nvtxs      25237 nedges    1344730 nedges/nvtxs=  53.28 adjwgtsum     38449900
+level  7: nvtxs      14738 nedges     666920 nedges/nvtxs=  45.25 adjwgtsum     35281762
+level  8: nvtxs       9076 nedges     332272 nedges/nvtxs=  36.61 adjwgtsum     32045512
+level  9: nvtxs       6043 nedges     171956 nedges/nvtxs=  28.46 adjwgtsum     28713490
+level 10: nvtxs       4346 nedges      93672 nedges/nvtxs=  21.55 adjwgtsum     25170686
+level 11: nvtxs       3361 nedges      54430 nedges/nvtxs=  16.19 adjwgtsum     21633356
+level 12: nvtxs       2789 nedges      34950 nedges/nvtxs=  12.53 adjwgtsum     18311660
+level 13: nvtxs       2472 nedges      25244 nedges/nvtxs=  10.21 adjwgtsum     15524240
+Coarsen end:cnvtxs=2472 cnedges=25244
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x7be60ef79f00
+global_where=0x7be6146fee00
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              2.708 100.000%
+graph:/media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 1090664 53176800
+hunyuangraph_admin->Coarsen_threshold=        16
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  3981574144B 3888256KB 3797MB 3GB
+front_pointer=  0x708820000000
+back_pointer=   0x70890d520000
+begin partition
+Coarsen begin
+level  1: nvtxs     575887 nedges   33871024 nedges/nvtxs=  58.82 adjwgtsum     52147246
+level  2: nvtxs     300670 nedges   19006368 nedges/nvtxs=  63.21 adjwgtsum     50417950
+level  3: nvtxs     158005 nedges   10369238 nedges/nvtxs=  65.63 adjwgtsum     47891822
+level  4: nvtxs      84027 nedges    5450122 nedges/nvtxs=  64.86 adjwgtsum     44859330
+level  5: nvtxs      45494 nedges    2737970 nedges/nvtxs=  60.18 adjwgtsum     41656208
+level  6: nvtxs      25404 nedges    1350300 nedges/nvtxs=  53.15 adjwgtsum     38445864
+level  7: nvtxs      14804 nedges     663472 nedges/nvtxs=  44.82 adjwgtsum     35275076
+level  8: nvtxs       9115 nedges     329126 nedges/nvtxs=  36.11 adjwgtsum     32030566
+level  9: nvtxs       6092 nedges     170014 nedges/nvtxs=  27.91 adjwgtsum     28694876
+level 10: nvtxs       4352 nedges      90764 nedges/nvtxs=  20.86 adjwgtsum     25152436
+level 11: nvtxs       3382 nedges      52388 nedges/nvtxs=  15.49 adjwgtsum     21589692
+level 12: nvtxs       2805 nedges      32896 nedges/nvtxs=  11.73 adjwgtsum     18300030
+level 13: nvtxs       2502 nedges      24360 nedges/nvtxs=   9.74 adjwgtsum     15757720
+Coarsen end:cnvtxs=2502 cnedges=24360
+hunyuangraph_gpu_RecursiveBisection begin
+tnum=0x70885ef3b780
+global_where=0x708864909100
+hunyuangraph_gpu_Bisection begin
+hunyuangraph_gpu_Bisection end
+        gpu_Bisection_time              4.267 100.000%
