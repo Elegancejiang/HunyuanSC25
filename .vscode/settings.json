@@ -4,6 +4,9 @@
         "cmath": "cpp",
         "array": "cpp",
         "initializer_list": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "__config": "cpp",
+        "ratio": "cpp",
+        "random": "cpp"
     }
 }

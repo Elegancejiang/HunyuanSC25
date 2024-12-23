@@ -12,6 +12,21 @@ int main(int argc, char **argv)
 	hunyuangraph_graph_t *graph = hunyuangraph_readgraph(filename);
 
 	printf("graph:%s %d %d\n", filename, graph->nvtxs, graph->nedges);
+	// for(int i = 0;i <= graph->nvtxs; i++)
+	// 	printf("%d ", graph->xadj[i]);
+	// printf("\n");
+	// for(int i = 0;i < graph->nvtxs; i++)
+	// 	printf("%d ", graph->vwgt[i]);
+	// printf("\n");
+	// for(int i = 0;i < graph->nvtxs;i++)
+	// {
+	// 	for(int j = graph->xadj[i]; j < graph->xadj[i + 1]; j++)
+	// 		printf("%d ", graph->adjncy[j]);
+	// 	printf("\n");
+	// 	for(int j = graph->xadj[i]; j < graph->xadj[i + 1]; j++)
+	// 		printf("%d ", graph->adjwgt[j]);
+	// 	printf("\n");
+	// }
 
 	int *part = (int *)malloc(sizeof(int) * graph->nvtxs);
 

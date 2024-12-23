@@ -112,6 +112,7 @@ hunyuangraph_graph_t *hunyuangraph_set_first_level_graph(int nvtxs, int *xadj, i
   graph->tvwgt = (int *)malloc(sizeof(int));
   graph->tvwgt_reverse = (float *)malloc(sizeof(float));
   graph->tvwgt[0] = nvtxs;
+  graph->tvwgt[0] = hunyuangraph_int_sum(nvtxs, graph->vwgt);
   graph->tvwgt_reverse[0] = 1.0 / (graph->tvwgt[0] > 0 ? graph->tvwgt[0] : 1);
 
   return graph;

@@ -12,36 +12,37 @@
 /*Graph kway-partition algorithm*/
 void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *part)
 {
-	hunyuangraph_graph_t *cgraph;
+	// hunyuangraph_graph_t *cgraph;
 
-	printf("Coarsen begin\n");
+	// printf("Coarsen begin\n");
 
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_part_coarsen, NULL);
-	cgraph = hunyuangarph_coarsen(hunyuangraph_admin, graph);
-	cudaDeviceSynchronize();
-	gettimeofday(&end_part_coarsen, NULL);
-	part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
+	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_part_coarsen, NULL);
+	// cgraph = hunyuangarph_coarsen(hunyuangraph_admin, graph);
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_part_coarsen, NULL);
+	// part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
 
-	printf("Coarsen end:cnvtxs=%d cnedges=%d\n", cgraph->nvtxs, cgraph->nedges);
+	// printf("Coarsen end:cnvtxs=%d cnedges=%d\n", cgraph->nvtxs, cgraph->nedges);
 
-	/*FILE *fp = fopen("graph.txt","w");
-    fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
-    for(int a = 0; a < cgraph->nvtxs; a++)
-    {
-    	fprintf(fp, "%d ",cgraph->vwgt[a]);
-        for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
-        	fprintf(fp, "%d %d ",cgraph->adjncy[b] + 1, cgraph->adjwgt[b]);
-        fprintf(fp, "\n");
-    }
-    fclose(fp);*/
+	// FILE *fp = fopen("graph.txt","w");
+    // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
+    // for(int a = 0; a < cgraph->nvtxs; a++)
+    // {
+    // 	fprintf(fp, "%d ",cgraph->vwgt[a]);
+    //     for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+    //     	fprintf(fp, "%d %d ",cgraph->adjncy[b] + 1, cgraph->adjwgt[b]);
+    //     fprintf(fp, "\n");
+    // }
+    // fclose(fp);
 
 	// exit(0);
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_init, NULL);
 	// hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
-	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
+	// hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
+	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, graph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
@@ -55,7 +56,7 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_uncoarsen, NULL);
-	hunyuangraph_GPU_uncoarsen(hunyuangraph_admin, graph, cgraph);
+	// hunyuangraph_GPU_uncoarsen(hunyuangraph_admin, graph, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_uncoarsen, NULL);
 	part_uncoarsen += (end_part_uncoarsen.tv_sec - begin_part_uncoarsen.tv_sec) * 1000 + (end_part_uncoarsen.tv_usec - begin_part_uncoarsen.tv_usec) / 1000.0;
@@ -105,22 +106,22 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 	cudaMemcpy(graph->cuda_adjncy, graph->adjncy, nedges * sizeof(int), cudaMemcpyHostToDevice);
 
 	// ����CUDA��
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
+	// cudaStream_t stream;
+	// cudaStreamCreate(&stream);
 
-	// ���õ�һ���˺���
-	init_vwgt<<<(nvtxs + 127) / 128, 128, 0, stream>>>(graph->cuda_vwgt, nvtxs);
-	// ���õڶ����˺���
-	init_adjwgt<<<(nedges + 127) / 128, 128, 0, stream>>>(graph->cuda_adjwgt, nedges);
+	// // ���õ�һ���˺���
+	// init_vwgt<<<(nvtxs + 127) / 128, 128, 0, stream>>>(graph->cuda_vwgt, nvtxs);
+	// // ���õڶ����˺���
+	// init_adjwgt<<<(nedges + 127) / 128, 128, 0, stream>>>(graph->cuda_adjwgt, nedges);
 
-	// �ȴ����������??
-	cudaStreamSynchronize(stream);
+	// // �ȴ����������??
+	// cudaStreamSynchronize(stream);
 
-	// ����CUDA��
-	cudaStreamDestroy(stream);
+	// // ����CUDA��
+	// cudaStreamDestroy(stream);
 
-	// cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
-	// cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
+	cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
+	cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
 }
 
 /*Graph partition algorithm*/
@@ -161,6 +162,9 @@ void hunyuangraph_PartitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt, 
 	// cu_que = (int *)lmalloc_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2,"cu_que");
 
 	hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin, graph);
+	// cudaDeviceSynchronize();
+	// exam_csr<<<1,1>>>(graph->nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+	// cudaDeviceSynchronize();
 
 	printf("begin partition\n");
 	cudaDeviceSynchronize();

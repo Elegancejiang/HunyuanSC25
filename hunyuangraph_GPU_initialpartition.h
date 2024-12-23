@@ -268,6 +268,8 @@ __device__ void compute_v_ed_id_bnd(int v, int *xadj, int *adjncy, int *adjwgt, 
     begin = xadj[v];
     end = xadj[v + 1];
     me = where[v];
+    // if(me != 0 && me != 1)
+    //     printf("Error: v = %d, where[v] = %d\n", v, me);
     ted = 0;
     tid = 0;
 
@@ -281,8 +283,8 @@ __device__ void compute_v_ed_id_bnd(int v, int *xadj, int *adjncy, int *adjwgt, 
 
     for(int i = begin;i < end; i++)
     {
-        int wgt = adjwgt[i];
         int j = adjncy[i];
+        int wgt = adjwgt[i];
         other = where[j];
 
         if(me != other) 
@@ -308,6 +310,61 @@ __device__ void warpReduction(volatile int *reduce_num, int tid ,int blocksize)
     if(blocksize >= 8) reduce_num[tid] += reduce_num[tid + 4];
     if(blocksize >= 4) reduce_num[tid] += reduce_num[tid + 2];
     if(blocksize >= 2) reduce_num[tid] += reduce_num[tid + 1];
+}
+
+__device__ void WarpGetMax(volatile int *warp_reduce, int lane_id, int val)
+{
+    int compare = val;
+    compare = __shfl_down_sync(0xffffffff, val, 16, 32);
+    if(lane_id < 16)
+    {
+        if(compare > val)
+        {
+            val = compare;
+            compare = val;
+            warp_reduce[lane_id] = warp_reduce[lane_id + 16];
+        }
+    }
+    compare = __shfl_down_sync(0xffffffff, val, 8, 32);
+    if(lane_id < 8)
+    {
+        if(compare > val)
+        {
+            val = compare;
+            compare = val;
+            warp_reduce[lane_id] = warp_reduce[lane_id + 8];
+        }
+    }
+    compare = __shfl_down_sync(0xffffffff, val, 4, 32);
+    if(lane_id < 4)
+    {
+        if(compare > val)
+        {
+            val = compare;
+            compare = val;
+            warp_reduce[lane_id] = warp_reduce[lane_id + 4];
+        }
+    }
+    compare = __shfl_down_sync(0xffffffff, val, 2, 32);
+    if(lane_id < 2)
+    {
+        if(compare > val)
+        {
+            val = compare;
+            compare = val;
+            warp_reduce[lane_id] = warp_reduce[lane_id + 2];
+        }
+    }
+    compare = __shfl_down_sync(0xffffffff, val, 1, 32);
+    if(lane_id < 1)
+    {
+        if(compare > val)
+        {
+            val = compare;
+            compare = val;
+            warp_reduce[lane_id] = warp_reduce[lane_id + 1];
+        }
+    }
 }
 
 __device__ int hunyuangraph_gpu_int_min(int first, int second)
@@ -1092,13 +1149,15 @@ __global__ void hunyuangraph_gpu_Bisection_warp(int nvtxs, int *vwgt, int *xadj,
 
 __device__ bool can_moved(int *tpwgts, int vertex, int oneminpwgt, int *vwgt, hunyuangraph_int8_t *moved, int *drain)
 {
-    if(moved[vertex] > 1)
+    if(moved[vertex] != 1)
     {
-        moved[vertex] = 1;
+        // printf("moved[%d]=%d\n",vertex, moved[vertex]);
+        // moved[vertex] = 1;
         return false;
     }
     if(tpwgts[0] > 0 && tpwgts[1] - vwgt[vertex] < oneminpwgt)
     {
+        // printf("tpwgts[0] > 0 && tpwgts[1] - vwgt[vertex] < oneminpwgt\n");
         drain[0] = 1;
         return false;
         // continue;
@@ -1107,9 +1166,9 @@ __device__ bool can_moved(int *tpwgts, int vertex, int oneminpwgt, int *vwgt, hu
     return true;
 }
 
-__device__ bool is_balanced(int *tpwgts, int onemaxpwgt)
+__device__ bool is_balanced(int *tpwgts, int onemaxpwgt, int oneminpwgt)
 {
-    if(tpwgts[1] <= onemaxpwgt)
+    if(tpwgts[1] <= onemaxpwgt && tpwgts[0] >= oneminpwgt)
         return true;
     else 
         return false;
@@ -1221,7 +1280,7 @@ __global__ void hunyuangraph_gpu_BFS_warp(int nvtxs, int *vwgt, int *xadj, int *
             // __syncwarp();
             // printf("p=%d 1207\n", p);
             __syncwarp();
-            if(is_balanced(tpwgts, onemaxpwgt))
+            if(is_balanced(tpwgts, onemaxpwgt, oneminpwgt))
                 break;
             
             vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
@@ -1267,7 +1326,7 @@ __global__ void hunyuangraph_gpu_BFS_warp(int nvtxs, int *vwgt, int *xadj, int *
         // }
         
         //  compute ed, id, bnd
-        /*int *id;
+        int *id;
         id = queue;
         for(int i = lane_id;i < nvtxs; i += 32)
         {
@@ -1298,6 +1357,627 @@ __global__ void hunyuangraph_gpu_BFS_warp(int nvtxs, int *vwgt, int *xadj, int *
     }
 }
 
+__global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *xadj, int *adjncy, int *adjwgt, int tvwgt, double tpwgts0, \
+    hunyuangraph_int8_t *num, int *global_edgecut, hunyuangraph_int8_t *global_where, int oneminpwgt, int onemaxpwgt, curandState *state)
+{
+    int p = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
+    int lane_id = threadIdx.x & 31;
+	int ii = blockIdx.x * 4 + (tid >> 5);
+    int exam = blockIdx.x;
+
+    int shared_size = sizeof(hunyuangraph_int8_t) * nvtxs * 3 + sizeof(int) * (nvtxs * 3 + 2);
+    shared_size = shared_size + hunyuangraph_GPU_cacheline - shared_size % hunyuangraph_GPU_cacheline;
+    // if(lane_id == 0)
+    //     printf("p=%d exam=%d tid=%d ii=%d %d shared_size=%d\n", p, exam, tid, ii, exam * 4 + tid / 32, shared_size);
+    // __syncwarp();
+    // extern __shared__ hunyuangraph_int8_t num[];
+    // __shared__ hunyuangraph_int8_t twhere[nvtxs];
+    // __shared__ hunyuangraph_int8_t moved[nvtxs];
+    // __shared__ hunyuangraph_int8_t bnd[nvtxs];
+    // __shared__ int queue[nvtxs];
+    // __shared__ int ed[nvtxs];
+    // __shared__ int swaps[nvtxs]; 
+    // __shared__ int tpwgts[2];
+    if(ii < nvtxs)
+    {
+        num += ii * shared_size;
+        int *queue = (int *)num;
+        int *ed = queue + nvtxs;
+        int *swaps = ed + nvtxs;
+        int *tpwgts = (int *)(swaps + nvtxs);
+        hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
+        hunyuangraph_int8_t *moved = twhere + nvtxs;
+        hunyuangraph_int8_t *bnd = moved + nvtxs;
+        // if(lane_id == 0)
+        //     printf("gpu i=%d where=%p\n", ii, twhere);
+        // if(lane_id == 0)
+        // {
+        //     // printf("gpu i=%d nvtxs=%d\n", ii, nvtxs);
+        //     printf("p=%d exam=%d tid=%d ii=%d %d shared_size=%d\n", p, exam, tid, ii, exam * 4 + tid / 32, shared_size);
+        //     printf("gpu i=%d num=%p\n", ii, num);
+        //     printf("gpu i=%d queue=%p\n", ii, queue);
+        //     printf("gpu i=%d ed=%p\n", ii, ed); 
+        //     printf("gpu i=%d swaps=%p\n", ii, swaps);
+        //     printf("gpu i=%d tpwgts=%p\n", ii, tpwgts);
+        //     printf("gpu i=%d twhere=%p\n", ii, twhere);
+        //     printf("gpu i=%d moved=%p\n", ii, moved);
+        //     printf("gpu i=%d bnd=%p\n", ii, bnd);
+        // }
+        // int *queue = (int *)(bnd + nvtxs);
+        // int *ed = queue + nvtxs;
+        // int *swaps = ed + nvtxs;
+        // int *tpwgts = (int *)(swaps + nvtxs);
+        __syncwarp();
+        for(int i = lane_id;i < nvtxs; i += 32)
+        {
+            twhere[i] = 1;
+            moved[i] = 0;
+        }
+        if(lane_id == 0)
+            tpwgts[0] = 0;
+        else if(lane_id == 1)
+            tpwgts[1] = tvwgt;
+        __syncthreads();
+        // if(lane_id == 0)
+        // {
+        //     for(int i = 0;i < nvtxs;i++)
+        //         if(twhere[i] != 1)
+        //             printf("init v=%d i=%d where is wrong where=%d\n", ii, i, twhere[i]);
+        // }
+
+        int vertex, first, nleft, drain;
+        int v, k, begin, end, length, flag;
+        __shared__ int last_all[4];
+        int *last = last_all + (tid >> 5);
+        
+        if(lane_id == 0)
+        {
+            vertex = ii;
+            queue[0] = vertex;
+            moved[vertex] = 1;
+            first = 0;
+            last[0] = 1;
+            drain = 0;
+        }
+        // if(ii == 0 && lane_id == 0)
+        // {
+        //     for(int i = 0;i < nvtxs;i++)
+        //         if(twhere[i] != 1)
+        //             printf("begin v=%d i=%d where is wrong where=%d\n", ii, i, twhere[i]);
+        // }
+        int mark = 0;
+        while(1)
+        {
+            //  moved: 0: not moved, 1: pushed, 2: moved
+            __syncwarp();
+            first  = __shfl_sync(0xffffffff, first, 0, 32);
+            // last   = __shfl_sync(0xffffffff, last, 0, 32);
+            if(first == last[0])
+            {
+                mark = 1;
+                break;
+            }
+            flag = 0;
+            if(lane_id == 0)
+            {
+                // if(ii == 0)
+                //     printf("first=%d last=%d begin\n", first, last[0]);
+                vertex = queue[first];
+                first++;
+
+                // if(ii == 0 && moved[vertex] >= 1)
+                //     printf("moved[%d]=%d\n", vertex, moved[vertex]);
+                if(vertex == -1 || !can_moved(tpwgts, vertex, oneminpwgt, vwgt, moved, &drain))
+                    flag = 1;
+            }
+            // if(ii == 0 && lane_id == 0)
+            //     printf("flag=%d\n", flag);
+            __syncwarp();
+            flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+            // if(ii == 0 && lane_id == 0)
+            //     printf("flag=%d\n", flag);
+            if(flag)
+                continue;
+            flag = 0;
+            if(lane_id == 0)
+            {
+                twhere[vertex] = 0;
+                moved[vertex] = 2;
+                tpwgts[0] += vwgt[vertex];
+                tpwgts[1] -= vwgt[vertex];
+                if(is_balanced(tpwgts, onemaxpwgt, oneminpwgt))
+                    flag = 1;
+            }
+            __syncwarp();
+            flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+            if(flag)
+            {
+                mark = 2;
+                break;
+            }
+            // printf("p=%d 1207\n", p);
+            
+            __syncwarp();
+            vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
+            begin = xadj[vertex];
+            end   = xadj[vertex + 1];
+            length = end - begin;
+            // first  = __shfl_sync(0xffffffff, first, 0, 32);
+            // last   = __shfl_sync(0xffffffff, last, 0, 32);
+            // if(lane_id == 0)
+            //     printf("BFS first=%d v=%d vertex=%d moved=%d where=%x\n", first, ii, vertex, moved[vertex], twhere[vertex]);
+            // if(ii == 0 && lane_id == 0)
+            // {
+            //     printf("BFS first=%d vertex=%d moved=%d\n", first, vertex, moved[vertex]);
+            // }
+            // printf("p=%d 1218\n", p);
+            //  push_queue
+            __syncwarp();
+            for(int i = lane_id;i < length; i += 32)
+            {
+                k = adjncy[begin + i];
+                if(moved[k] == 0)
+                {
+                    queue[atomicAdd(last, 1)] = k;
+                    moved[k] = 1;
+                }
+            }
+            // last[0] += length;
+            // if(lane_id == 0)
+            // {
+            //     printf("first=%d last=%d begin\n", first, last[0]);
+            //     // for(int t = first;t < last;t++)
+            //     //     printf("queue[%d]=%d\n", t, queue[t]);
+            // }
+            __syncwarp();
+
+            // printf("p=%d 1227\n", p);
+        }
+
+        // printf("tid=%d\n", tid);
+        // __syncwarp();
+
+        // if(lane_id == 0)
+        // {
+        //     for(int i = 0;i < nvtxs;i++)
+        //         if(twhere[i] != 0 && twhere[i] != 1)
+        //             printf("v=%d i=%d where=%p where is wrong where=%x\n", ii, i, twhere, twhere[i]);
+        // }
+
+        // for(int i = tid;i < nvtxs;i += blockDim.x)
+        //     global_where[i] = twhere[i];
+        // hunyuangraph_int8_t *ptr = global_where + ii * nvtxs;
+        // if(ii == 1 && tid == 0)
+        //     printf("ptr=%p\n", ptr);
+        // for(int i = lane_id;i < nvtxs; i += 32)
+        //     ptr[i] = twhere[i];
+        // __syncthreads();
+        // if(tid == 0)
+        //     printf("gpu p=%d v=%d\n", p, ii);
+
+        // printf("tid=%d\n", tid);
+        // __syncwarp();
+        // if(lane_id == 0)
+        // {
+        //     printf("ii=%d tpwgts[0]=%d tpwgts[1]=%d\n", ii, tpwgts[0], tpwgts[1]);
+        //     // for(int i = 0;i < nvtxs;i++)
+        //     //     printf("i=%d where=%d\n",i, twhere[i]);
+        // //         printf("pu i=%d where=%p\n", ii, twhere);
+        // }
+        
+        //  compute ed, id, bnd
+        __syncwarp();
+        int *id;
+        id = queue;
+        for(int i = lane_id;i < nvtxs; i += 32)
+        {
+            compute_v_ed_id_bnd(i, xadj, adjncy, adjwgt, twhere, ed, id, bnd);
+            // int begin, end, ted, tid;
+            // hunyuangraph_int8_t me, other;
+            // begin = xadj[i];
+            // end = xadj[i + 1];
+            // me = twhere[i];
+            // if(me != 0 && me != 1)
+            //     printf("Error: v = %d, where[v] = %d\n", i, me);
+            // ted = 0;
+            // tid = 0;
+            // if(ii == 0 && i == 3971)
+            //     printf("begin=%d end=%d\n", begin, end);
+            // if(begin == end)
+            // {
+            //     bnd[i] = 1;
+            //     ed[i] = 0;
+            //     id[i] = 0;
+            //     return ;
+            // }
+
+            // for(int ptr = begin;ptr < end; ptr++)
+            // {
+            //     int j = adjncy[ptr];
+            //     int wgt = adjwgt[ptr];
+            //     other = twhere[j];
+
+            //     if(me != other) 
+            //         ted += wgt;
+            //     else 
+            //         tid += wgt;
+            // }
+
+            // ed[i] = ted;
+            // id[i] = tid;
+
+            // if(ted > 0)
+            //     bnd[i] = 1;
+            // else
+            //     bnd[i] = 0;
+        }
+        __syncwarp();
+
+        //  reduce ed to acquire the edgecut
+        int edgecut = 0;
+            //  add to the first blockDim.x threads
+        // int *reduce_num = swaps;
+        extern __shared__ int reduce_num[];
+        int *warp_reduce = reduce_num + (tid >> 5) * 32;
+        if(lane_id < nvtxs)
+            warp_reduce[lane_id] = ed[lane_id];
+        else 
+            warp_reduce[lane_id] = 0;
+        for(int i = lane_id + 32;i < nvtxs; i += 32)
+            warp_reduce[lane_id] += ed[i];
+        __syncwarp();
+
+        // if(lane_id == 0 && ii == 0) 
+        // {
+        //     for(int i = 0;i < 32;i++)
+        //         printf("%d warp_reduce=%d\n", i, warp_reduce[i]);
+        //     for(int i = 1;i < 32;i++)
+        //         warp_reduce[0] += warp_reduce[i];
+        //     for(int i = 0;i < 32;i++)
+        //         printf("%d warp_reduce=%d\n", i, warp_reduce[i]);
+        // }
+
+            //  if nvtxs < 32
+        // if(lane_id < 32 && lane_id < nvtxs) 
+        warpReduction(warp_reduce, lane_id, 32);
+        if(lane_id == 0) 
+        {
+            // for(int i = 0;i < nvtxs;i++)
+            // {
+            //     edgecut += ed[i];
+            //     for(int j = xadj[i];j < xadj[i + 1];j++)
+            //     {
+            //         int jj = adjncy[j];
+            //         if(twhere[jj] != twhere[i])
+            //             edgecut += adjwgt[j];
+            //     }
+            // }
+            // edgecut /= 2;
+            edgecut = warp_reduce[0] / 2;
+            // global_edgecut[ii] = edgecut;
+        }
+
+        edgecut = __shfl_sync(0xffffffff, edgecut, 0, 32);
+        // if(lane_id == 0)
+        //     printf("gpu p=%d v=%d edgecut=%d mark=%d first\n", lane_id, ii, edgecut, mark);
+
+        //  2wayrefine
+        // if(lane_id == 0)
+        //     printf("v=%d warp_reduce=%p reduce_num=%p\n", ii, warp_reduce, reduce_num);
+        for(int i = lane_id;i < nvtxs; i += 32)
+            moved[i] = 0;
+        int ideal_pwgts[2];
+        int nswaps, from, to, val, big_num;
+        int limit, avgvwgt, origdiff;
+        int newcut, mincut, initcut, mincutorder, mindiff;
+        ideal_pwgts[0] = tvwgt * tpwgts0;
+        ideal_pwgts[1] = tvwgt - ideal_pwgts[0];
+
+        limit = hunyuangraph_gpu_int_min(hunyuangraph_gpu_int_max(0.01 * nvtxs, 15), 100);
+        avgvwgt = hunyuangraph_gpu_int_min((tpwgts[0] + tpwgts[1]) / 20, 2 * (tpwgts[0]+tpwgts[1]) / nvtxs);
+        origdiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+        big_num = -xadj[nvtxs];
+        
+        __syncwarp();
+        for(int pass = 0;pass < 1;pass++)
+        {
+            mincutorder=-1;
+            newcut = mincut = initcut = edgecut;
+            mindiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+            flag = 0;
+            
+            // if(lane_id == 0)
+            //     printf("pass=%d v=%d 1658\n", pass, ii);
+            
+            for(nswaps = 0;nswaps < nvtxs;nswaps++)
+            {
+                // if(nswaps > 16)
+                //     break;
+                //  partition
+                from = (ideal_pwgts[0] - tpwgts[0] < ideal_pwgts[1] - tpwgts[1] ? 0 : 1);
+                to = from ^ 1;
+
+                //  select vertex
+                warp_reduce[lane_id] = -1;
+                val = big_num;
+                __syncwarp();
+                // if(lane_id == 0)
+                //     printf("pass=%d nswaps=%d v=%d 1673\n", pass, nswaps, ii);
+                // printf("init p=%d v=%d lane_id=%d warp_reduce=%d val=%d\n", p, ii, lane_id, warp_reduce[lane_id], val);
+                for(int i = lane_id;i < nvtxs; i += 32)
+                {
+                    if(twhere[i] == from && bnd[i] == 1 && moved[i] == 0)
+                    {
+                        int t = warp_reduce[lane_id];
+                        if(t == -1 || val < ed[i] - id[i])
+                        {
+                            warp_reduce[lane_id] = i;
+                            val = ed[i] - id[i];
+                        }
+                    }
+                    // printf("vertex=%d twhere=%d bnd=%d moved=%d p=%d v=%d lane_id=%d warp_reduce=%d val=%d\n", i, twhere[i], bnd[i], moved[i], p, ii, lane_id, warp_reduce[lane_id], val);
+                }
+                // printf("p=%d v=%d lane_id=%d warp_reduce=%d\n", p, ii, lane_id, warp_reduce[lane_id]);
+                __syncwarp();
+
+                // if(lane_id == 0)
+                //     printf("pass=%d nswaps=%d v=%d 1690\n", pass, nswaps, ii);
+
+                WarpGetMax(warp_reduce, lane_id, val);
+                if(lane_id == 0)
+                    vertex = warp_reduce[0];
+                // if(lane_id == 0)
+                // {
+                //     printf("v=%d vertex=%d where=%d length=%d\n", ii, vertex, twhere[vertex], xadj[vertex + 1] - xadj[vertex]);
+                //     if(ii == 3)
+                //     {
+                //         for(int i = xadj[vertex];i < xadj[vertex + 1];i++)
+                //             printf("v=%d i=%d adjncy=%d adjwgt=%d where=%d\n", vertex, i - xadj[vertex], adjncy[i], adjwgt[i], twhere[adjncy[i]]);
+                //     }
+                // }
+
+                //  boardcast vertex
+                __syncwarp();
+                vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
+                flag = 0;
+                if(lane_id == 0)
+                {
+                    if(vertex == -1)
+                    {
+                        // if(lane_id == 0)
+                        // {
+                        //     printf("v=%d vertex=-1 from=%d to=%d\n", ii, from, to);
+                        //     for(int x = 0;x < nvtxs;x++)
+                        //     {
+                        //         printf("x=%d where_x=%d ed=%d id=%d bnd=%d moved=%d\n", x, twhere[x], ed[x], id[x], bnd[x], moved[x]);
+                        //     }
+                        // }
+                        // printf("p=%d v=%d lane_id=%d warp_reduce=%d\n", p, ii, lane_id, warp_reduce[lane_id]);
+                        flag = 1;
+                    }
+                }
+                __syncwarp();
+                flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+                if(flag)
+                    break;
+
+                // if(lane_id == 0)
+                //     printf("pass=%d nswaps=%d v=%d 1726\n", pass, nswaps, ii);
+                
+                //  judge the vertex
+                flag = 0;
+                if(lane_id == 0)
+                {
+                    // int answer = 0;
+                    // printf("v=%d ed0-id0=%d\n", ii, ed[answer] - id[answer]);
+                    // for(int t = 1;t < nvtxs;t++)
+                    // {
+                    //     if(twhere[t] == from && bnd[t] == 1 && moved[t] == 0)
+                    //     {
+                    //         int tt = ed[t] - id[t];
+                    //         printf("v=%d t=%d tt=%d\n", v, t, tt);
+                    //         if(tt > ed[answer] - id[answer])
+                    //         {
+                    //             answer = t;
+                    //         }
+                    //     }
+                    // }
+                    // printf("v=%d answer=%d end\n", ii, answer);
+
+                    newcut -= (ed[vertex] - id[vertex]);
+                    if(newcut < mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) <= origdiff + avgvwgt
+                        || newcut == mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) < mindiff)
+                    {
+                        mincut  = newcut;
+                        // if(ii == 500)
+                        //     printf("nswaps=%d v=%d mincut=%d vertex=%d ed=%d id=%d\n", nswaps, ii, mincut, vertex, ed[vertex], id[vertex]);
+                        mindiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+                        mincutorder = nswaps;
+                    }
+                    else if(nswaps - mincutorder > limit)
+                    {
+                        // printf("v=%d nswaps=%d mincutorder=%d limit=%d\n", ii, nswaps, mincutorder, limit);
+                        flag = 1;
+                        newcut += (ed[vertex] - id[vertex]);
+                    }
+
+                    // if(ii == 500)
+                    //     printf("nswaps=%d v=%d newcut=%d vertex=%d ed=%d id=%d\n", nswaps, ii, newcut, vertex, ed[vertex], id[vertex]);
+                        
+                }
+                // if(lane_id == 0)
+                //     printf("v=%d mincut=%d\n", v, mincut);
+                __syncwarp();
+                flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+                // if(lane_id == 0)
+                //     printf("gpu p=%d v=%d flag=%d\n", p, ii, flag);
+                if(flag)
+                    break;
+                
+                // if(lane_id == 0)
+                //     printf("pass=%d nswaps=%d v=%d 1778\n", pass, nswaps, ii);
+                
+                //  move the vertex
+                if(lane_id == 0)
+                {
+                    // printf("gpu p=%d v=%d vertex=%d vwgt=%d tpwgts0=%d tpwgts1=%d twhere=%d moved=%d ed=%d id=%d bnd=%d\n", \
+                    //     p, ii, vertex, vwgt[vertex], tpwgts[0], tpwgts[1], twhere[vertex], moved[vertex], ed[vertex], id[vertex], bnd[vertex]);
+                    tpwgts[to] += vwgt[vertex];
+                    tpwgts[from] -= vwgt[vertex];
+                    twhere[vertex] = to;
+                    moved[vertex] = 1;
+                    swaps[nswaps] = vertex;
+                    hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
+                    
+                    if(ed[vertex] == 0 && xadj[vertex] < xadj[vertex + 1])
+                        bnd[vertex] = 0;
+                    // if(ii == 500)
+                    //     printf("gpu p=%d v=%d vertex=%d vwgt=%d tpwgts0=%d tpwgts1=%d twhere=%d moved=%d ed=%d id=%d bnd=%d\n", \
+                    //         p, ii, vertex, vwgt[vertex], tpwgts[0], tpwgts[1], twhere[vertex], moved[vertex], ed[vertex], id[vertex], bnd[vertex]);
+                }
+                __syncwarp();
+
+                //  the adj vertex
+                begin = xadj[vertex];
+                end = xadj[vertex + 1];
+                length = end - begin;
+                for(int i = lane_id;i < length;i += 32)
+                {
+                    int adj_vertex = adjncy[begin + i];
+                    int kwgt;
+                    if(twhere[adj_vertex] == from)
+                        kwgt = -adjwgt[begin + i];
+                    else 
+                        kwgt = adjwgt[begin + i];
+                    // if(ii == 500 && adj_vertex == 328)
+                    //     printf("nswaps=%d v=%d k=%d kwgt=%d ed=%d id=%d bnd=%d before\n", nswaps, ii, adj_vertex, kwgt, ed[adj_vertex], id[adj_vertex], bnd[adj_vertex]);
+                    id[adj_vertex] += kwgt;
+                    ed[adj_vertex] -= kwgt;
+
+                    if(bnd[adj_vertex] == 1)
+                    {
+                        if(ed[adj_vertex] == 0)
+                        {
+                            bnd[adj_vertex] = 0;
+                        }
+                    }
+                    else
+                    {
+                        if(ed[adj_vertex] > 0)
+                        {
+                            bnd[adj_vertex] = 1;
+                        }
+                    }
+                    // if(ii == 500 && adj_vertex == 328)
+                    // if(ii == 500)
+                    //     printf("nswaps=%d v=%d k=%d kwgt=%d ed=%d id=%d bnd=%d after\n", nswaps, ii, adj_vertex, kwgt, ed[adj_vertex], id[adj_vertex], bnd[adj_vertex]);
+                }
+                __syncwarp();
+                // if(lane_id == 0 && ii == 0)
+                //     printf("gpu p=%d v=%d edgecut=%d nswaps=%d\n", lane_id, ii, mincut, nswaps);
+            }
+            __syncwarp();
+
+            // if(lane_id == 0)
+            //     printf("pass=%d v=%d 1839\n", pass, ii);
+
+            // for(int i = lane_id;i < nswaps;i += 32)
+            //     moved[swaps[i]] = 0;
+            
+            // for(nswaps--; nswaps > mincutorder; nswaps--)
+            // {
+            //     if(lane_id == 0)
+            //     {
+            //         vertex = swaps[nswaps];
+            //         from = twhere[vertex];
+            //         to = from ^ 1;
+            //         twhere[vertex] = to;
+            //         // int t = ed[vertex];
+            //         // ed[vertex] = id[vertex];
+            //         // id[vertex] = t;
+            //         hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
+
+            //         if(ed[vertex] == 0 && bnd[vertex] == 1 && xadj[vertex] < xadj[vertex + 1])
+            //             bnd[vertex] = 0;
+            //         else if(ed[vertex] > 0 && bnd[vertex] == 0)
+            //             bnd[vertex] = 1;
+                    
+            //         tpwgts[to] += vwgt[vertex];
+            //         tpwgts[from] -= vwgt[vertex];
+            //     }
+                
+            //     __syncwarp();
+            //     vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
+            //     begin = xadj[vertex];
+            //     end = xadj[vertex + 1];
+            //     length = end - begin;
+            //     for(int i = lane_id;i < length; i += 32)
+            //     {
+            //         int adj_vertex = adjncy[begin + i];
+            //         int kwgt;
+            //         if(twhere[adj_vertex] == from)
+            //             kwgt = -adjwgt[begin + i];
+            //         else 
+            //             kwgt = adjwgt[begin + i];
+                    
+            //         if(bnd[adj_vertex] == 1 && ed[adj_vertex] == 0)
+            //             bnd[adj_vertex] = 0;
+            //         else if(bnd[adj_vertex] == 0 && ed[adj_vertex] > 0)
+            //             bnd[adj_vertex] = 1;
+            //     }
+            // }
+
+            // if(lane_id == 0)
+            //     printf("pass=%d v=%d 1887\n", pass, ii);
+
+            flag = 0;
+            if(lane_id == 0)
+            {
+                // edgecut = mincut;
+                edgecut = newcut;   // rollback is no exist
+                // printf("gpu p=%d v=%d edgecut=%d nswaps=%d\n", lane_id, ii, edgecut, nswaps);
+
+                if(mincutorder <= 0 || mincut == initcut)
+                    flag = 1;
+            }
+            __syncwarp();
+            flag    = __shfl_sync(0xffffffff, flag, 0, 32);
+            edgecut = __shfl_sync(0xffffffff, edgecut, 0, 32);
+            if(flag)
+                break;
+            
+            // if(lane_id == 0)
+            //     printf("pass=%d v=%d 1904\n", pass, ii);
+        }
+
+        // if(lane_id == 0 && ii == 0)
+        // {
+        //     for(int i = 0;i < nvtxs;i++)
+        //     {
+        //         printf("i=%d where=%d\n", i, twhere[i]);
+        //     }
+        // }
+        __syncwarp();
+        if(lane_id == 0)
+        {
+            // printf("gpu p=%d v=%d edgecut=%d end\n", lane_id, ii, edgecut);
+            global_edgecut[ii] = edgecut;
+        }
+        // if(lane_id == 0)
+        //     printf("ii=%d tpwgts[0]=%d tpwgts[1]=%d\n", ii, tpwgts[0], tpwgts[1]);
+        // if(lane_id == 0 && ii == 0)
+        // {
+        //     // printf("gpu i=%d id=%p ed=%p\n", ii, id, ed);
+        //     // printf("cpu i=%d id=%p ed=%p\n", a, queue, ted);
+        //     for(int i = 0;i < nvtxs;i++)
+        //     {
+        //         printf("i=%7d ed=%7d id=%7d\n", i, ed[i], id[i]);
+        //     }
+        // }
+        
+    }
+}
 
 __device__ void warpGetMin(int *shared_edgecut, int *shared_id, int tid, int blocksize)
 {
@@ -1466,8 +2146,10 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     global_edgecut = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_edgecut");
     global_where   = (hunyuangraph_int8_t *)lmalloc_with_check(sizeof(hunyuangraph_int8_t) * graph->nvtxs * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_where");
     printf("global_where=%p\n", global_where);
+    printf("shared_size=%d\n", shared_size);
     onemaxpwgt = ubvec[0] * graph->tvwgt[0] * tpwgts2[1];
     oneminpwgt = (1.0 / ubvec[0])*graph->tvwgt[0] * tpwgts2[1];
+    printf("oneminpwgt=%d onemaxpwgt=%d\n", oneminpwgt, onemaxpwgt);
 
         //  CUDA Random number
     curandState *devStates;
@@ -1488,8 +2170,12 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
     // hunyuangraph_gpu_Bisection_warp<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
     //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
-    hunyuangraph_gpu_BFS_warp<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
+    // hunyuangraph_gpu_BFS_warp<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
+    //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
+    hunyuangraph_gpu_BFS_warp_2wayrefine<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
         tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
+    // hunyuangraph_gpu_BFS_warp_2wayrefine<<<2, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
+    //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_bisection, NULL);
     bisection_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
@@ -1505,8 +2191,12 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     printf("        gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / bisection_gpu_time * 100);
     
     exit(0);
-
+    cudaDeviceSynchronize();
+    int *gpu_edgecut;
+    gpu_edgecut = (int *)malloc(sizeof(int) * graph->nvtxs);
+    cudaMemcpy(gpu_edgecut, global_edgecut, sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToHost);
     for(int a = 0;a < graph->nvtxs;a++)
+    // for(int a = 0;a < 8;a++)
     {
         hunyuangraph_int8_t *num;
         num = (hunyuangraph_int8_t *)malloc(sizeof(hunyuangraph_int8_t) * graph->nvtxs);
@@ -1517,18 +2207,50 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
         int *tpwgts = (int *)(swaps + graph->nvtxs);
         hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
         twhere += a * shared_size;
-        // printf("pu i=%d where=%p\n", a, twhere);
+        // queue  += a * shared_size;
+        // queue = (int *)((int *)twhere - graph->nvtxs * 3  - 2);
+        // cudaMemcpy(tid, queue, sizeof(int) * graph->nvtxs * 2, cudaMemcpyDeviceToHost);
+        // if(a == 500)
+        //     printf("cpu i=%d id=%p ed=%p\n", a, queue, queue + graph->nvtxs);
         cudaMemcpy(num, twhere, sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
         // cudaMemcpy(num, &global_where[a * graph->nvtxs], sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
-        // if(a == 1)
+        // if(a == 0)
         // {
+        //     // for(int i = 0;i < graph->nvtxs;i++)
+        //     //     printf("i=%d where=%d\n", i, num[i]);
+        //     int *ted, *tid;
+        //     ted = (int *)malloc(sizeof(int) * graph->nvtxs);
+        //     tid = (int *)malloc(sizeof(int) * graph->nvtxs);
         //     for(int i = 0;i < graph->nvtxs;i++)
-        //         printf("i=%d where=%d\n", i, num[i]);
+        //     {
+        //         hunyuangraph_int8_t me = num[i];
+        //         ted[i] = 0, tid[i] = 0;
+        //         for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+        //         {
+        //             hunyuangraph_int8_t other = num[graph->adjncy[j]];
+        //             if(me == other)
+        //                 tid[i] += graph->adjwgt[j];
+        //             else 
+        //                 ted[i] += graph->adjwgt[j];
+        //             if(i == 3971)
+        //             {
+        //                 printf("i=%d j=%d me=%d other=%d adjwgt=%d\n", i, j, me, other, graph->adjwgt[j]);
+        //             }
+        //         }
+        //         printf("i=%7d ed=%7d id=%7d\n", i, ted[i], tid[i]);
+        //     }
+        //     free(ted);
+        //     free(tid);
         // }
         int e = 0;
+        int pwgts[2];
+        pwgts[0] = 0;
+        pwgts[1] = 0;
         for(int i = 0;i < graph->nvtxs;i++)
         {
             hunyuangraph_int8_t me = num[i];
+            if(me == 0) pwgts[0] += graph->vwgt[i];
+            else pwgts[1] += graph->vwgt[i];
             for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
             {
                 hunyuangraph_int8_t other = num[graph->adjncy[j]];
@@ -1536,10 +2258,15 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
                     e += graph->adjwgt[j];
             }
         }
-
-        printf("cpu v=%d edgecut=%d\n", a, e);
+        bool flag = true;
+        if(pwgts[0] >= oneminpwgt && pwgts[1] >= oneminpwgt
+            && pwgts[0] <= onemaxpwgt && pwgts[1] <= onemaxpwgt)
+            flag = false;
+        printf("gpu p=%d v=%d edgecut=%d\n", a, a, gpu_edgecut[a]);
+        printf("cpu v=%d edgecut=%d pwgts0=%d pwgts1=%d flag=%d\n", a, e / 2, pwgts[0], pwgts[1], flag);
         free(num);
     }
+    free(gpu_edgecut);
 
     exit(0);
 
