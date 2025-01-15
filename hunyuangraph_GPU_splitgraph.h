@@ -576,4 +576,635 @@ void splitgraph_GPU(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph
 	*r_rgraph=rgraph;
 }
 
+__device__ int warpGetSum(int val, int tid, int blocksize)
+{
+	val += __shfl_down_sync(0xffffffff, val, 16, 32);
+	val += __shfl_down_sync(0xffffffff, val, 8, 32);
+	val += __shfl_down_sync(0xffffffff, val, 4, 32);
+	val += __shfl_down_sync(0xffffffff, val, 2, 32);
+	val += __shfl_down_sync(0xffffffff, val, 1, 32);
+
+	return val;
+}
+
+__global__ void reduction_sum(int nvtxs, int *rnvtxs_gpu, int *where)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = threadIdx.x;
+
+    __shared__ int num[1024];
+	if(ii < nvtxs)
+		num[tid] = where[ii];
+	else 
+		num[tid] = 0;
+	__syncthreads();
+
+	// if(tid == 0)
+	// 	for(int i = 0;i < 1024;i++)
+	// 		printf("%d %d \n", i, num[i]);
+	// __syncthreads();
+
+	for(int i = tid + blockDim.x; i < nvtxs; i += blockDim.x)
+		num[tid] += where[i];
+	__syncthreads();
+
+	// if(tid == 0)
+	// {
+	// 	rnvtxs_gpu[0] = 0;
+	// 	for(int i = 0;i < 1024;i++)
+	// 		rnvtxs_gpu[0] += num[i];
+	// 	printf("exam %d\n", rnvtxs_gpu[0]);
+	// }
+	// __syncthreads();
+
+	if(tid < nvtxs)
+	{
+		if(blockDim.x >= 1024)
+		{
+			if(tid < 512)
+				num[tid] += num[tid + 512];
+		}
+		__syncthreads();
+
+		if(blockDim.x >= 512)
+		{
+			if(tid < 256)
+				num[tid] += num[tid + 256];
+		}
+		__syncthreads();
+
+		if(blockDim.x >= 256)
+		{
+			if(tid < 128)
+				num[tid] += num[tid + 128];
+		}
+		__syncthreads();
+
+		if(blockDim.x >= 128)
+		{
+			if(tid < 64)
+				num[tid] += num[tid + 64];
+		}
+		__syncthreads();
+
+		int val;
+		if(blockDim.x >= 64)
+		{
+			if(tid < 32)
+			{	
+				num[tid] += num[tid + 32];
+				val = num[tid];
+			}
+		}
+		__syncthreads();
+
+		// if(tid == 0)
+		// {
+		// 	rnvtxs_gpu[0] = 0;
+		// 	for(int i = 0;i < 32;i++)
+		// 		rnvtxs_gpu[0] += num[i];
+		// 	printf("exam %d\n", rnvtxs_gpu[0]);
+		// }
+		// __syncthreads();
+
+		if(tid < 32)
+			val = warpGetSum(val, tid, blockDim.x);
+
+		// if(tid < 32)
+		// 	warpGetSum(num, tid, blockDim.x);
+		
+		if(tid == 0)
+			rnvtxs_gpu[0] = val;
+	}
+}
+
+__global__ void compute_map_1(int nvtxs, int *where, int *map)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 0)
+			map[ii] = 1;
+		else 
+			map[ii] = 0;
+	}
+}
+
+__global__ void compute_map_2(int nvtxs, int *where, int *map)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 1)
+			map[ii] = ii + 1 - map[ii];
+	}
+}
+
+__global__ void compute_xadj(int nvtxs, int *temp, int *map, int *where, int *lxadj, int *rxadj)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me, index;
+		me = where[ii];
+		index = map[ii];
+
+		if(me == 0)
+			lxadj[index] = temp[ii];
+		else
+			rxadj[index] = temp[ii];
+	}
+	else if(ii == nvtxs)
+	{
+		lxadj[0] = 0;
+		rxadj[0] = 0;
+	}
+}
+
+__global__ void compute_nedges(int nvtxs, int *xadj, int *adjncy, int *where, int *temp)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int begin, end, me, other, cnt;
+		begin = xadj[ii];
+		end = xadj[ii + 1];
+		me = where[ii];
+		cnt = 0;
+
+		for(int i = begin;i < end;i++)
+		{
+			other = where[adjncy[i]];
+			if(me == other)
+				cnt++;
+		}
+
+		temp[ii] = cnt;
+	}
+}
+
+__global__ void compute_adjncy_adjwgt_vwgt_label(int nvtxs, int *xadj, int *adjncy, int *adjwgt, int *where, int *vwgt, int *label, int *map, \
+	int *lxadj, int *ladjncy, int *ladjwgt, int *lvwgt, int *llabel, int *rxadj, int *radjncy, int *radjwgt, int *rvwgt, int *rlabel)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int begin, end, me, other, wptr, wnvtxs;
+		begin = xadj[ii];
+		end = xadj[ii + 1];
+		me = where[ii];
+		wnvtxs = map[ii] - 1;
+		
+		if(me == 0)
+		{
+			lvwgt[wnvtxs] = vwgt[ii];
+			llabel[wnvtxs] = label[ii];
+			wptr = lxadj[wnvtxs];
+
+			for(int i = begin;i < end;i++)
+			{
+				int j = adjncy[i];
+				if(where[j] == 0)
+				{
+					ladjncy[wptr] = map[j] - 1;
+					ladjwgt[wptr] = adjwgt[i];
+					wptr++;
+				}
+			}
+		}
+		else 
+		{
+			rvwgt[wnvtxs] = vwgt[ii];
+			rlabel[wnvtxs] = label[ii];
+			wptr = rxadj[wnvtxs];
+
+			for(int i = begin;i < end;i++)
+			{
+				int j = adjncy[i];
+				if(where[j] == 1)
+				{
+					radjncy[wptr] = map[j] - 1;
+					radjwgt[wptr] = adjwgt[i];
+					wptr++;
+				}
+			}
+		}
+	}
+}
+
+void hunyuangraph_gpu_SplitGraph_intersect(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *where,\
+	hunyuangraph_graph_t **r_lgraph, hunyuangraph_graph_t **r_rgraph)
+{
+	int nvtxs, nedges;
+	nvtxs = graph->nvtxs;
+	nedges = graph->nedges;
+
+	hunyuangraph_graph_t *lgraph, *rgraph;
+	lgraph = hunyuangraph_create_cpu_graph();
+	rgraph = hunyuangraph_create_cpu_graph();
+
+	int lnvtxs, rnvtxs, lnedges, rnedges;
+	
+	int *rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	reduction_sum<<<1, 1024, sizeof(int) * 1024>>>(nvtxs, rnvtxs_gpu, where);
+	cudaMemcpy(&rnvtxs, rnvtxs_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	lfree_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	lnvtxs = nvtxs - rnvtxs;
+	// printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
+
+	int *map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
+	int *temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	compute_nedges<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, where, temp);
+
+	compute_map_1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, where, map);
+	
+	prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	compute_map_2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, where, map);
+
+	lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
+	lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+	rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
+	rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+	compute_xadj<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, where, lgraph->cuda_xadj, rgraph->cuda_xadj);
+
+	prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	cudaMemcpy(&lnedges, &lgraph->cuda_xadj[lnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&rnedges, &rgraph->cuda_xadj[rnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+
+	// printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
+	lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
+	lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
+	lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
+	rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
+	rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
+	rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+
+	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
+
+	// exit(0);
+	compute_adjncy_adjwgt_vwgt_label<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, where, graph->cuda_vwgt, graph->cuda_label, map,\
+		lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
+	
+	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");			//	map
+
+	// cudaDeviceSynchronize();
+	// exam_csr_where<<<1, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
+
+	// cudaDeviceSynchronize();
+	// exam_csr_vwgt_label<<<1, 1>>>(lnvtxs, lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label);
+	
+	// cudaDeviceSynchronize();
+	// exam_csr_vwgt_label<<<1, 1>>>(rnvtxs, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
+
+	graph->pwgts = (int *)malloc(sizeof(int) * 2);	
+	cudaMemcpy(graph->pwgts, graph->cuda_pwgts, sizeof(int) * 2, cudaMemcpyDeviceToHost);
+
+	// exit(0);
+
+	set_subgraph_tvwgt(graph, lgraph, rgraph);
+
+	// exit(0);
+
+	lgraph->nvtxs  = lnvtxs;
+	lgraph->nedges = lnedges;
+	rgraph->nvtxs  = rnvtxs;
+	rgraph->nedges = rnedges;
+
+	*r_lgraph = lgraph;
+	*r_rgraph = rgraph;
+}
+
+__global__ void compute_map_l(int nvtxs, int *where, int *map)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 0)
+			map[ii] = 1;
+		else 
+			map[ii] = 0;
+	}
+}
+
+__global__ void compute_map_r(int nvtxs, int *where, int *map)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 1)
+			map[ii] = ii + 1 - map[ii];
+	}
+}
+
+__global__ void compute_xadj_l(int nvtxs, int *temp, int *map, int *where, int *lxadj)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 0)
+			lxadj[map[ii]] = temp[ii];
+	}
+	if(ii == nvtxs)
+		lxadj[0] = 0;
+}
+
+__global__ void compute_xadj_r(int nvtxs, int *temp, int *map, int *where, int *rxadj)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		int me = where[ii];
+		if(me == 1)
+			rxadj[map[ii]] = temp[ii];
+	}
+	if(ii == nvtxs)
+		rxadj[0] = 0;
+}
+
+void hunyuangraph_gpu_SplitGraph_separate(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, \
+	hunyuangraph_graph_t **r_lgraph, hunyuangraph_graph_t **r_rgraph)
+{
+	int nvtxs, nedges;
+	nvtxs = graph->nvtxs;
+	nedges = graph->nedges;
+
+	hunyuangraph_graph_t *lgraph,*rgraph;
+	lgraph = hunyuangraph_create_cpu_graph();
+	rgraph = hunyuangraph_create_cpu_graph();
+
+	int lnvtxs, rnvtxs, lnedges, rnedges;
+	
+	int *rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	reduction_sum<<<1, 1024, sizeof(int) * 1024>>>(nvtxs, rnvtxs_gpu, graph->cuda_where);
+	cudaMemcpy(&rnvtxs, rnvtxs_gpu, sizeof(int), cudaMemcpyDeviceToHost);
+	lfree_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	lnvtxs = nvtxs - rnvtxs;
+	printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
+
+	int *map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
+	int *temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	compute_nedges<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_where, temp);
+
+	compute_map_l<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, map);
+	prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	// cudaDeviceSynchronize();
+	// exam_map<<<1, 1>>>(nvtxs, map, graph->cuda_where);
+
+	lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
+	lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+	compute_xadj_l<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, lgraph->cuda_xadj);
+	prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	cudaMemcpy(&lnedges, &lgraph->cuda_xadj[lnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+
+	lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
+	lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
+	lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
+
+	rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
+	rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+	compute_map_r<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, map);
+	
+	// cudaDeviceSynchronize();
+	// exam_map<<<1, 1>>>(nvtxs, map, graph->cuda_where);
+	
+	compute_xadj_r<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, rgraph->cuda_xadj);
+	prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	cudaMemcpy(&rnedges, &rgraph->cuda_xadj[rnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+	
+	printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
+
+	rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
+	rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
+	rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+
+	// lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+	// compute_xadj_l<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, lgraph->cuda_xadj, rgraph->cuda_xadj);
+
+	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
+
+	// prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	// prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	// cudaMemcpy(&lnedges, &lgraph->cuda_xadj[lnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+	// cudaMemcpy(&rnedges, &rgraph->cuda_xadj[rnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+	printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
+
+	// exit(0);
+	compute_adjncy_adjwgt_vwgt_label<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, graph->cuda_vwgt, graph->cuda_label, map,\
+		lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
+	
+	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");			//	map
+
+	// cudaDeviceSynchronize();
+	// exam_csr_where<<<1, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
+
+	// cudaDeviceSynchronize();
+	// exam_csr_vwgt_label<<<1, 1>>>(lnvtxs, lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label);
+	
+	// cudaDeviceSynchronize();
+	// exam_csr_vwgt_label<<<1, 1>>>(rnvtxs, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
+
+
+	graph->pwgts = (int *)malloc(sizeof(int) * 2);
+	cudaMemcpy(graph->pwgts, graph->cuda_pwgts, sizeof(int) * 2, cudaMemcpyDeviceToHost);
+
+	set_subgraph_tvwgt(graph, lgraph, rgraph);
+
+	lgraph->nvtxs  = lnvtxs;
+	lgraph->nedges = lnedges;
+	rgraph->nvtxs  = rnvtxs;
+	rgraph->nedges = rnedges;
+
+	*r_lgraph = lgraph;
+	*r_rgraph = rgraph;
+}
+
+void exam_cpu_subgraph(hunyuangraph_graph_t *graph)
+{
+	int nvtxs, nedges;
+
+	hunyuangraph_graph_t *lgraph,*rgraph;
+	lgraph=hunyuangraph_create_cpu_graph();
+	rgraph=hunyuangraph_create_cpu_graph();
+
+	int *rename;
+	rename = (int *)malloc(sizeof(int) * graph->nvtxs);
+
+	int lnvtxs, rnvtxs, lnedges, rnedges;
+	lnvtxs = rnvtxs = 0;
+	lnedges = rnedges = 0;
+	for(int i = 0;i < graph->nvtxs;i++)
+	{
+		int me = graph->where[i];
+		int cnt = 0;
+		for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+			if(graph->where[graph->adjncy[j]] == me)
+				cnt++;
+		if(me == 0)
+		{
+			rename[i] = lnvtxs;
+			lnvtxs++;
+			lnedges += cnt;
+		}
+		else
+		{
+			rename[i] = rnvtxs;
+			rnvtxs++;
+			rnedges += cnt;
+		}
+	}
+
+	printf("cpu\n");
+	printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
+	printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
+
+	// exit(0);
+
+	lgraph->xadj = (int *)malloc(sizeof(int) * (lnvtxs + 1));
+	lgraph->vwgt = (int *)malloc(sizeof(int) * lnvtxs);
+	lgraph->adjncy = (int *)malloc(sizeof(int) * lnedges);
+	lgraph->adjwgt = (int *)malloc(sizeof(int) * lnedges);
+	lgraph->label = (int *)malloc(sizeof(int) * lnvtxs);
+	rgraph->xadj = (int *)malloc(sizeof(int) * (rnvtxs + 1));
+	rgraph->vwgt = (int *)malloc(sizeof(int) * rnvtxs);
+	rgraph->adjncy = (int *)malloc(sizeof(int) * rnedges);
+	rgraph->adjwgt = (int *)malloc(sizeof(int) * rnedges);
+	rgraph->label = (int *)malloc(sizeof(int) * rnvtxs);
+
+	int lptr = 0;
+	int rptr = 0;
+	lgraph->xadj[0] = 0;
+	rgraph->xadj[0] = 0;
+	for(int i = 0;i < graph->nvtxs;i++)
+	{
+		int me = graph->where[i];
+		
+		if(me == 0)
+		{
+			lgraph->vwgt[rename[i]] = graph->vwgt[i];
+			lgraph->label[rename[i]] = graph->label[i];
+			for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+			{
+				if(graph->where[graph->adjncy[j]] == me)
+				{
+					lgraph->adjncy[lptr] = rename[graph->adjncy[j]];
+					lgraph->adjwgt[lptr] = graph->adjwgt[j]; 
+					lptr++;
+				}
+			}
+			lgraph->xadj[rename[i] + 1] = lptr;
+		}
+		else 
+		{
+			rgraph->vwgt[rename[i]] = graph->vwgt[i];
+			rgraph->label[rename[i]] = graph->label[i];
+			for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+			{
+				if(graph->where[graph->adjncy[j]] == me)
+				{
+					rgraph->adjncy[rptr] = rename[graph->adjncy[j]];
+					rgraph->adjwgt[rptr] = graph->adjwgt[j]; 
+					rptr++;
+				}
+			}
+			rgraph->xadj[rename[i] + 1] = rptr;
+		}
+	}
+
+	// exit(0);
+	printf("cpu\n");
+	printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
+	printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
+
+	printf("cpu lgraph\n");
+	for(int i = 0;i < lnvtxs;i++)
+	{
+		printf("%7d ", i);
+	}
+	printf("\n");
+	for(int i = 0;i < lnvtxs;i++)
+	{
+		printf("%7d ", lgraph->vwgt[i]);
+	}
+	printf("\n");
+	for(int i = 0;i < lnvtxs;i++)
+	{
+		printf("%7d ", lgraph->label[i]);
+	}
+	printf("\n");
+	for(int i = 0;i <= lnvtxs;i++)
+	{
+		printf("%7d ", lgraph->xadj[i]);
+	}
+	printf("\n");
+	printf("adjncy/adjwgt/where:\n");
+	for(int i = 0;i < lnvtxs;i++)
+	{
+		for(int j = lgraph->xadj[i];j < lgraph->xadj[i + 1];j++)
+		{
+			printf("%7d ", lgraph->adjncy[j]);
+		}
+		printf("\n");
+		for(int j = lgraph->xadj[i];j < lgraph->xadj[i + 1];j++)
+		{
+			printf("%7d ", lgraph->adjwgt[j]);
+		}
+		printf("\n");
+	}
+
+	printf("cpu rgraph\n");
+	for(int i = 0;i < rnvtxs;i++)
+	{
+		printf("%7d ", i);
+	}
+	printf("\n");
+	for(int i = 0;i < rnvtxs;i++)
+	{
+		printf("%7d ", rgraph->vwgt[i]);
+	}
+	printf("\n");
+	for(int i = 0;i < rnvtxs;i++)
+	{
+		printf("%7d ", rgraph->label[i]);
+	}
+	printf("\n");
+	for(int i = 0;i <= rnvtxs;i++)
+	{
+		printf("%7d ", rgraph->xadj[i]);
+	}
+	printf("\n");
+	printf("adjncy/adjwgt/where:\n");
+	for(int i = 0;i < rnvtxs;i++)
+	{
+		for(int j = rgraph->xadj[i];j < rgraph->xadj[i + 1];j++)
+		{
+			printf("%7d ", rgraph->adjncy[j]);
+		}
+		printf("\n");
+		for(int j = rgraph->xadj[i];j < rgraph->xadj[i + 1];j++)
+		{
+			printf("%7d ", rgraph->adjwgt[j]);
+		}
+		printf("\n");
+	}
+}
+
 #endif

@@ -119,7 +119,7 @@ hunyuangraph_graph_t *hunyuangraph_set_first_level_graph(int nvtxs, int *xadj, i
 }
 
 /*Compute Partition result edge-cut*/
-int hunyuangraph_computecut(hunyuangraph_graph_t *graph, int *where)
+int hunyuangraph_computecut_cpu(hunyuangraph_graph_t *graph, int *where)
 {
   int i, j, cut = 0;
   for (i = 0; i < graph->nvtxs; i++)
@@ -130,6 +130,20 @@ int hunyuangraph_computecut(hunyuangraph_graph_t *graph, int *where)
         cut += graph->adjwgt[j];
   }
   return cut / 2;
+}
+
+__global__ void hunyuangraph_computecut_gpu(int nvtxs, int *xadj, int *adjncy, int *adjwgt, int *where)
+{
+	int ans = 0;
+
+	for (int i = 0; i < nvtxs; i++)
+	{
+		// printf("i=%d\n",i);
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			if (where[i] != where[adjncy[j]])
+				ans += adjwgt[j];
+	}
+	printf("edgecut=%d\n", ans / 2);
 }
 
 int compute_graph_adjwgtsum_cpu(hunyuangraph_graph_t *graph)
@@ -229,27 +243,98 @@ void hunyuangraph_free_graph(hunyuangraph_graph_t **r_graph)
 
 __global__ void exam_csr(int nvtxs, int *xadj, int *adjncy, int *adjwgt)
 {
-  for (int i = 0; i <= nvtxs && i < 200; i++)
-    printf("%d ", xadj[i]);
+	// for (int i = 0; i <= nvtxs && i < 200; i++)
+	// 	printf("%7d ", xadj[i]);
 
-  printf("\nadjncy/adjwgt:\n");
-  for (int i = 0; i < nvtxs && i < 200; i++)
-  {
-    for (int j = xadj[i]; j < xadj[i + 1]; j++)
-      printf("%d ", adjncy[j]);
-    printf("\n");
-    for (int j = xadj[i]; j < xadj[i + 1]; j++)
-      printf("%d ", adjwgt[j]);
-    printf("\n");
-  }
-  // printf("\n");
-  // for (int i = 0; i < nvtxs; i++)
-  // {
-  // 	for (int j = xadj[i]; j < xadj[i + 1]; j++)
-  // 		printf("%d ", adjwgt[j]);
-  // 	printf("\n");
-  // }
-  // printf("\n");
+	// printf("\nadjncy/adjwgt:\n");
+	// for (int i = 0; i < nvtxs && i < 200; i++)
+	// {
+	// 	for (int j = xadj[i]; j < xadj[i + 1]; j++)
+	// 		printf("%7d ", adjncy[j]);
+	// 	printf("\n");
+	// 	for (int j = xadj[i]; j < xadj[i + 1]; j++)
+	// 		printf("%7d ", adjwgt[j]);
+	// 	printf("\n");
+	// }
+
+	for (int i = 0; i <= nvtxs; i++)
+		printf("%7d ", xadj[i]);
+
+	printf("\nadjncy/adjwgt:\n");
+	for (int i = 0; i < nvtxs; i++)
+	{
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjncy[j]);
+		printf("\n");
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjwgt[j]);
+		printf("\n");
+	}
+}
+
+__global__ void exam_csr_vwgt_label(int nvtxs, int *xadj, int *adjncy, int *adjwgt, int *vwgt, int *label)
+{
+	for (int i = 0; i < nvtxs; i++)
+		printf("%7d ", i);
+	printf("\n");
+	for (int i = 0; i < nvtxs; i++)
+		printf("%7d ", vwgt[i]);
+	printf("\n");
+	for (int i = 0; i < nvtxs; i++)
+		printf("%7d ", label[i]);
+	printf("\n");
+	for (int i = 0; i <= nvtxs; i++)
+		printf("%7d ", xadj[i]);
+	printf("\n");
+	printf("adjncy/adjwgt:\n");
+	for (int i = 0; i < nvtxs; i++)
+	{
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjncy[j]);
+		printf("\n");
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjwgt[j]);
+		printf("\n");
+	}
+}
+
+__global__ void exam_csr_where(int nvtxs, int *xadj, int *adjncy, int *adjwgt, int *where)
+{
+	for (int i = 0; i <= nvtxs && i < 200; i++)
+		printf("%7d ", i);
+	printf("\n");
+	for (int i = 0; i <= nvtxs && i < 200; i++)
+		printf("%7d ", xadj[i]);
+	printf("\n");
+	for (int i = 0; i < nvtxs && i < 200; i++)
+		printf("%7d ", where[i]);
+	printf("\n");
+	printf("adjncy/adjwgt/where:\n");
+	for (int i = 0; i < nvtxs && i < 200; i++)
+	{
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjncy[j]);
+		printf("\n");
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", adjwgt[j]);
+		printf("\n");
+		for (int j = xadj[i]; j < xadj[i + 1]; j++)
+			printf("%7d ", where[adjncy[j]]);
+		printf("\n");
+	}
+}
+
+__global__ void exam_map(int nvtxs, int *map, int *where)
+{
+	for(int i = 0;i < nvtxs;i++)
+		printf("%7d ", i);
+	printf("\n");
+	for(int i = 0;i < nvtxs;i++)
+		printf("%7d ", map[i]);
+	printf("\n");
+	for(int i = 0;i < nvtxs;i++)
+		printf("%7d ", where[i]);
+	printf("\n");
 }
 
 #endif

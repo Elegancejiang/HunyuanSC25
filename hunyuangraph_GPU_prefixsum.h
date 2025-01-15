@@ -143,6 +143,9 @@ void prefixsum(int *num, int *num_out, int length, size_t blocksize, bool is_rig
     size_t blocknum  = (length + blocksize - 1) / blocksize;
     size_t sharesize = 32 * sizeof(int);
 
+    if(blocknum == 0)
+        return ;
+
     int *firstresult;
     // malloc_GPU(blocknum * sizeof(int));
     // printf("malloc firstresult length=%d\n",length);

@@ -139,9 +139,19 @@ struct timeval end_free;
 double coarsen_else = 0;
 
 // init
+double set_initgraph_time = 0;
 double bisection_gpu_time = 0;
+double splitgraph_gpu_time = 0;
+double select_where_gpu_time = 0;
+double update_where_gpu_time = 0;
+double update_answer_gpu_time = 0;
+double before_time = 0;
+double update_tpwgts_time = 0;
+double computecut_time = 0;
 struct timeval begin_gpu_bisection;
 struct timeval end_gpu_bisection;
+
+double init_else = 0;
 
 double set_cpu_graph = 0;
 struct timeval begin_set_cpu_graph;
@@ -273,8 +283,8 @@ void print_time_coarsen()
     printf("\n");
 
     coarsen_else = part_coarsen - (init_gpu_match_time + hem_gpu_match_time + resolve_conflict_1_time + resolve_conflict_2_time + inclusive_scan_time1 +
-                                   resolve_conflict_4_time + exclusive_scan_time + set_tadjncy_tadjwgt_time + ncy_segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
-                                   set_cxadj_time + init_cadjwgt_time + set_cadjncy_cadjwgt_time + coarsen_malloc + coarsen_memcpy + coarsen_free);
+                                    resolve_conflict_4_time + exclusive_scan_time + set_tadjncy_tadjwgt_time + ncy_segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
+                                    set_cxadj_time + init_cadjwgt_time + set_cadjncy_cadjwgt_time + coarsen_malloc + coarsen_memcpy + coarsen_free);
     printf("Coarsen_time=              %10.3lf ms\n", part_coarsen);
     printf("    part_match                 %10.3lf %7.3lf%\n", part_match, part_match / part_coarsen * 100);
     printf("        init_gpu_match_time        %10.3lf %7.3lf%\n", init_gpu_match_time, init_gpu_match_time / part_coarsen * 100);
@@ -309,7 +319,20 @@ void print_time_init()
 {
     printf("\n");
 
-    printf("        gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / bisection_gpu_time * 100);
+    init_else = part_init - (set_initgraph_time + bisection_gpu_time + splitgraph_gpu_time + select_where_gpu_time + update_where_gpu_time + update_answer_gpu_time + 
+                                before_time + update_tpwgts_time + computecut_time);
+    
+    printf("Init_time=                 %10.3lf ms\n", part_init);
+    printf("    set_initgraph_time         %10.3lf %7.3lf%\n", set_initgraph_time, set_initgraph_time / part_init * 100);
+    printf("    before_time                %10.3lf %7.3lf%\n", before_time, before_time / part_init * 100);
+    printf("    update_tpwgts_time         %10.3lf %7.3lf%\n", update_tpwgts_time, update_tpwgts_time / part_init * 100);
+    printf("    gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / part_init * 100);
+    printf("    splitgraph_gpu_time        %10.3lf %7.3lf%\n", splitgraph_gpu_time, splitgraph_gpu_time / part_init * 100);
+    printf("    select_where_gpu_time      %10.3lf %7.3lf%\n", select_where_gpu_time, select_where_gpu_time / part_init * 100);
+    printf("    update_where_gpu_time      %10.3lf %7.3lf%\n", update_where_gpu_time, update_where_gpu_time / part_init * 100);
+    printf("    update_answer_gpu_time     %10.3lf %7.3lf%\n", update_answer_gpu_time, update_answer_gpu_time / part_init * 100);
+    printf("    computecut_time            %10.3lf %7.3lf%\n", computecut_time, computecut_time / part_init * 100);
+    printf("    else                       %10.3lf %7.3lf%\n", init_else, init_else / part_init * 100);
 }
 
 void print_time_uncoarsen()

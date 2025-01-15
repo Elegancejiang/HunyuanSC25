@@ -290,7 +290,7 @@ int hunyuangraph_mlevel_rbbisection(hunyuangraph_admin_t *hunyuangraph_admin, \
 	hunyuangraph_graph_t *lgraph,*rgraph;
 	float wsum,*tpwgts2;
 
-	if(graph->nvtxs==0){
+	if(graph->nvtxs == 0){
 		printf("****You are trying to partition too many parts!****\n");
 		return 0;
 	}

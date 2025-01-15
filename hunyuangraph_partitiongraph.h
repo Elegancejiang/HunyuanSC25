@@ -47,6 +47,8 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
 
+	print_time_init();
+
 	exit(0);
 
 	// hunyuangraph_memcpy_coarsentoinit(cgraph);
@@ -111,8 +113,10 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 
 	// // ���õ�һ���˺���
 	// init_vwgt<<<(nvtxs + 127) / 128, 128, 0, stream>>>(graph->cuda_vwgt, nvtxs);
+	init_vwgt<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_vwgt, nvtxs);
 	// // ���õڶ����˺���
 	// init_adjwgt<<<(nedges + 127) / 128, 128, 0, stream>>>(graph->cuda_adjwgt, nedges);
+	init_adjwgt<<<(nedges + 127) / 128, 128>>>(graph->cuda_adjwgt, nedges);
 
 	// // �ȴ����������??
 	// cudaStreamSynchronize(stream);

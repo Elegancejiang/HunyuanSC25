@@ -5,6 +5,7 @@
 #include "hunyuangraph_common.h"
 #include "hunyuangraph_admin.h"
 #include "hunyuangraph_GPU_priorityqueue.h"
+#include "hunyuangraph_GPU_splitgraph.h"
 
 #include <cuda_runtime.h>
 #include <cstdint> 
@@ -1147,7 +1148,7 @@ __global__ void hunyuangraph_gpu_Bisection_warp(int nvtxs, int *vwgt, int *xadj,
     }
 }
 
-__device__ bool can_moved(int *tpwgts, int vertex, int oneminpwgt, int *vwgt, hunyuangraph_int8_t *moved, int *drain)
+__device__ bool can_moved(int *tpwgts, int vertex, int onemaxpwgt, int oneminpwgt, int *vwgt, hunyuangraph_int8_t *moved, int *drain)
 {
     if(moved[vertex] != 1)
     {
@@ -1155,7 +1156,7 @@ __device__ bool can_moved(int *tpwgts, int vertex, int oneminpwgt, int *vwgt, hu
         // moved[vertex] = 1;
         return false;
     }
-    if(tpwgts[0] > 0 && tpwgts[1] - vwgt[vertex] < oneminpwgt)
+    if(tpwgts[0] + vwgt[vertex] > onemaxpwgt || tpwgts[1] - vwgt[vertex] < oneminpwgt)
     {
         // printf("tpwgts[0] > 0 && tpwgts[1] - vwgt[vertex] < oneminpwgt\n");
         drain[0] = 1;
@@ -1166,9 +1167,24 @@ __device__ bool can_moved(int *tpwgts, int vertex, int oneminpwgt, int *vwgt, hu
     return true;
 }
 
+__device__ bool can_moved_end(int *tpwgts, int vertex, int onemaxpwgt, int oneminpwgt, int *vwgt, hunyuangraph_int8_t *moved)
+{
+    // printf("%p\n", &moved[vertex]);
+    if(moved[vertex] != 1)
+    {
+        return false;
+    }
+    if(tpwgts[0] + vwgt[vertex] > onemaxpwgt || tpwgts[1] - vwgt[vertex] < oneminpwgt)
+    {
+        return false;
+    }
+    return true;
+}
+
 __device__ bool is_balanced(int *tpwgts, int onemaxpwgt, int oneminpwgt)
 {
-    if(tpwgts[1] <= onemaxpwgt && tpwgts[0] >= oneminpwgt)
+    if(tpwgts[1] <= onemaxpwgt && tpwgts[1] >= oneminpwgt
+        && tpwgts[0] <= onemaxpwgt && tpwgts[0] >= oneminpwgt)
         return true;
     else 
         return false;
@@ -1260,7 +1276,7 @@ __global__ void hunyuangraph_gpu_BFS_warp(int nvtxs, int *vwgt, int *xadj, int *
                 first++;
                 flag = 0;
 
-                if(!can_moved(tpwgts, vertex, oneminpwgt, vwgt, moved, &drain))
+                if(!can_moved(tpwgts, vertex, onemaxpwgt, oneminpwgt, vwgt, moved, &drain))
                     flag = 1;
             }
             // if(ii == 0 && lane_id == 0)
@@ -1357,8 +1373,53 @@ __global__ void hunyuangraph_gpu_BFS_warp(int nvtxs, int *vwgt, int *xadj, int *
     }
 }
 
+__device__ bool fm_can_balanced(int *tpwgts, int vertex, int to, int from, int onemaxpwgt, int oneminpwgt, int *vwgt)
+{
+    if(tpwgts[to] + vwgt[vertex] <= onemaxpwgt && tpwgts[to] + vwgt[vertex] >= oneminpwgt
+        && tpwgts[from] - vwgt[vertex] <= onemaxpwgt && tpwgts[from] - vwgt[vertex] >= oneminpwgt)
+    {
+        // printf("tpwgts[0] > 0 && tpwgts[1] - vwgt[vertex] < oneminpwgt\n");
+        return true;
+        // continue;
+        // return ;
+    }
+    return false;
+}
+
+__device__ bool can_continue_partition_BFS(int to, int from, int nparts, int nvtxs0, int nvtxs1)
+{
+    int less0 = nparts >> 1;
+    int less1 = nparts - less0;
+
+    if(less1 > (nvtxs1 - 1))
+        return false;
+    else
+        return true;
+}
+
+__device__ bool can_continue_partition(int to, int from, int nparts, int nvtxs0, int nvtxs1)
+{
+    int less0 = nparts >> 1;
+    int less1 = nparts - less0;
+
+    if(to == 0)
+    {
+        if(less0 > (nvtxs0 + 1) || less1 > (nvtxs1 - 1))
+            return false;
+        else
+            return true;
+    }
+    else
+    {
+        if(less1 > (nvtxs1 + 1) || less0 > (nvtxs0 - 1))
+            return false;
+        else
+            return true;
+    }
+}
+
 __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *xadj, int *adjncy, int *adjwgt, int tvwgt, double tpwgts0, \
-    hunyuangraph_int8_t *num, int *global_edgecut, hunyuangraph_int8_t *global_where, int oneminpwgt, int onemaxpwgt, curandState *state)
+    hunyuangraph_int8_t *num, int *global_edgecut, int oneminpwgt, int onemaxpwgt, curandState *state)
 {
     int p = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;
@@ -1389,9 +1450,11 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
         hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
         hunyuangraph_int8_t *moved = twhere + nvtxs;
         hunyuangraph_int8_t *bnd = moved + nvtxs;
+
         // if(lane_id == 0)
+        //     printf("gpu i=%d num=%p\n", ii, num);
         //     printf("gpu i=%d where=%p\n", ii, twhere);
-        // if(lane_id == 0)
+        // if(ii == 18 && lane_id == 0)
         // {
         //     // printf("gpu i=%d nvtxs=%d\n", ii, nvtxs);
         //     printf("p=%d exam=%d tid=%d ii=%d %d shared_size=%d\n", p, exam, tid, ii, exam * 4 + tid / 32, shared_size);
@@ -1426,19 +1489,27 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
         //             printf("init v=%d i=%d where is wrong where=%d\n", ii, i, twhere[i]);
         // }
 
-        int vertex, first, nleft, drain;
+        int vertex, first, nleft;
+        // int drain;
         int v, k, begin, end, length, flag;
-        __shared__ int last_all[4];
-        int *last = last_all + (tid >> 5);
+        // extern __shared__ int reduce_num[];
+        __shared__ int last_id[4];
+        int *last = last_id + (tid >> 5);
+        // int *last = reduce_num + (tid >> 5);
+        // if(lane_id == 0)
+        //     printf("ii=%d last=%p\n", ii, last);
         
         if(lane_id == 0)
         {
             vertex = ii;
+            if(vertex >= nvtxs)
+                printf("error ii=%d vertex=%d nvtxs=%d begin \n", ii, vertex, nvtxs);
             queue[0] = vertex;
             moved[vertex] = 1;
             first = 0;
             last[0] = 1;
-            drain = 0;
+            nleft = nvtxs - 1;
+            // drain = 0;
         }
         // if(ii == 0 && lane_id == 0)
         // {
@@ -1447,31 +1518,96 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
         //             printf("begin v=%d i=%d where is wrong where=%d\n", ii, i, twhere[i]);
         // }
         int mark = 0;
+        __syncwarp();
+        int step = 0;
         while(1)
         {
             //  moved: 0: not moved, 1: pushed, 2: moved
+            // if(lane_id == 0)
+            //     printf("begin ii=%d step=%d first=%d last=%d tpwgts0=%d tpwgts1=%d\n", ii, step, first, last[0], tpwgts[0], tpwgts[1]);
+            step++;
+            if(step >= 2 * nvtxs)
+                break;
             __syncwarp();
             first  = __shfl_sync(0xffffffff, first, 0, 32);
             // last   = __shfl_sync(0xffffffff, last, 0, 32);
-            if(first == last[0])
+
+            __syncwarp();
+            flag = 0;
+            if(lane_id == 0)
             {
-                mark = 1;
-                break;
+                if(first == last[0])
+                {
+                    k = get_random_number_range(nleft, &state[ii]);
+
+                    for(v = 0;v < nvtxs;v++)
+                    {
+                        if(moved[v] == 0)
+                        {
+                            if(k == 0)
+                                break;
+                            else 
+                                k--;
+                        }
+                    }
+                    vertex = v;
+                    if(vertex >= nvtxs)
+                        printf("error ii=%d vertex=%d nvtxs=%d == \n", ii, vertex, nvtxs);
+
+                    if(flag == 0)
+                    {
+                        queue[0] = vertex;
+                        moved[vertex] = 1;
+                        first = 0;
+                        last[0] = 1;
+                        nleft--;
+
+                        // flag = 1;
+                        mark = 1;
+                        // break;
+                    }
+                //     // else
+                //     // {
+                //     //     int sum = 0, moved1 = 0, moved2 = 0;
+                //     //     for(int i = 0;i < nvtxs;i++)
+                //     //     {
+                //     //         if(moved[i] == 1)
+                //     //             moved1++;
+                //     //         else if(moved[i] == 2)
+                //     //             moved2++;
+                //     //         sum += moved[i];
+                //     //     }
+                //     //     // printf("ii=%d nvtxs=%d first=%d last=%d moved1=%d moved2=%d sum=%d\n", ii, nvtxs, first, last[0], moved1, moved2, sum);
+                //     // }
+                }
             }
+            __syncwarp();
+            flag = __shfl_sync(0xffffffff, flag, 0, 32);
+            if(flag)
+                break;
+
+            __syncwarp();
+            first  = __shfl_sync(0xffffffff, first, 0, 32);
+
             flag = 0;
             if(lane_id == 0)
             {
                 // if(ii == 0)
                 //     printf("first=%d last=%d begin\n", first, last[0]);
+                // if(first < nvtxs)
                 vertex = queue[first];
+                if(vertex >= nvtxs)
+                    printf("error ii=%d vertex=%d nvtxs=%d judge\n", ii, vertex, nvtxs);
+                // printf("ii=%d vertex=%d first=%d last=%d begin\n", ii, vertex, first, last[0]);
                 first++;
 
                 // if(ii == 0 && moved[vertex] >= 1)
                 //     printf("moved[%d]=%d\n", vertex, moved[vertex]);
-                if(vertex == -1 || !can_moved(tpwgts, vertex, oneminpwgt, vwgt, moved, &drain))
+                if(vertex == -1 || !can_moved_end(tpwgts, vertex, onemaxpwgt, oneminpwgt, vwgt, moved))
                     flag = 1;
+                // printf("ii=%d vertex=%d tpwgts0=%d tpwgts1=%d vwgt=%d flag=%d\n", ii, vertex, tpwgts[0], tpwgts[1], vwgt[vertex], flag);
             }
-            // if(ii == 0 && lane_id == 0)
+            // if(lane_id == 0)
             //     printf("flag=%d\n", flag);
             __syncwarp();
             flag   = __shfl_sync(0xffffffff, flag, 0, 32);
@@ -1482,6 +1618,8 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             flag = 0;
             if(lane_id == 0)
             {
+                if(vertex >= nvtxs)
+                    printf("error ii=%d vertex=%d nvtxs=%d moved\n", ii, vertex, nvtxs);
                 twhere[vertex] = 0;
                 moved[vertex] = 2;
                 tpwgts[0] += vwgt[vertex];
@@ -1500,10 +1638,15 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             
             __syncwarp();
             vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
+            __syncwarp();
+            if(vertex >= nvtxs)
+                printf("error ii=%d vertex=%d nvtxs=%d broadcast\n", ii, vertex, nvtxs);
             begin = xadj[vertex];
             end   = xadj[vertex + 1];
             length = end - begin;
-            // first  = __shfl_sync(0xffffffff, first, 0, 32);
+            first  = __shfl_sync(0xffffffff, first, 0, 32);
+            if(lane_id == 0)
+                printf("ii=%d vertex=%d \n", ii, vertex);
             // last   = __shfl_sync(0xffffffff, last, 0, 32);
             // if(lane_id == 0)
             //     printf("BFS first=%d v=%d vertex=%d moved=%d where=%x\n", first, ii, vertex, moved[vertex], twhere[vertex]);
@@ -1517,9 +1660,14 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             for(int i = lane_id;i < length; i += 32)
             {
                 k = adjncy[begin + i];
+                printf("ii=%d k=%d nvtxs=%d vertex=%d i=%d length=%d begin + i=%d last=%d movedk=%d\n", ii, k, nvtxs, vertex, i, length, begin + i, last[0], moved[k]);
+                if(k >= nvtxs)
+                    printf("push_error ii=%d vertex=%d k=%d nvtxs=%d i=%d length=%d begin + i=%d first=%d last=%d\n", ii, vertex, k, nvtxs, i, length, begin + i, first, last[0]);
                 if(moved[k] == 0)
                 {
-                    queue[atomicAdd(last, 1)] = k;
+                    int ptr = atomicAdd(&last[0], 1);
+                    // printf("ii=%d ptr=%d\n", ii, ptr);
+                    queue[ptr] = k;
                     moved[k] = 1;
                 }
             }
@@ -1531,6 +1679,21 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             //     //     printf("queue[%d]=%d\n", t, queue[t]);
             // }
             __syncwarp();
+            if(lane_id == 0)
+                printf("ii=%d vertex=%d first=%d last=%d end\n", ii, vertex, first, last[0]);
+            // first  = __shfl_sync(0xffffffff, first, 0, 32);
+            // if(lane_id == 0)
+            // {
+            //     int sum = 0, moved1 = 0, moved2 = 0;
+            //     for(int i = 0;i < nvtxs;i++)
+            //     {
+            //         if(moved[i] == 1)
+            //             moved1++;
+            //         else if(moved[i] == 2)
+            //             moved2++;
+            //     }
+            //     // printf("ii=%d nvtxs=%d first=%d last=%d moved1=%d moved2=%d end\n", ii, nvtxs, first, last[0], moved1, moved2);
+            // }
 
             // printf("p=%d 1227\n", p);
         }
@@ -1543,6 +1706,11 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
         //     for(int i = 0;i < nvtxs;i++)
         //         if(twhere[i] != 0 && twhere[i] != 1)
         //             printf("v=%d i=%d where=%p where is wrong where=%x\n", ii, i, twhere, twhere[i]);
+        // }
+
+        // if(lane_id == 0)
+        // {
+        //     printf("ii=%d mark=%d\n", ii, mark);
         // }
 
         // for(int i = tid;i < nvtxs;i += blockDim.x)
@@ -1786,8 +1954,9 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
                     // printf("v=%d answer=%d end\n", ii, answer);
 
                     newcut -= (ed[vertex] - id[vertex]);
-                    if(newcut < mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) <= origdiff + avgvwgt
-                        || newcut == mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) < mindiff)
+                    if(fm_can_balanced(tpwgts, vertex, to, from, onemaxpwgt, oneminpwgt, vwgt) 
+                        && ((newcut < mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) <= origdiff + avgvwgt)
+                        || (newcut == mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) < mindiff)))
                     {
                         mincut  = newcut;
                         // if(ii == 500)
@@ -1801,7 +1970,8 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
                         flag = 1;
                         newcut += (ed[vertex] - id[vertex]);
                     }
-
+                    // if(ii == 0)
+                    //     printf("nswaps=%d mincutorder=%d newcut=%d\n", nswaps, mincutorder, newcut);
                     // if(ii == 500)
                     //     printf("nswaps=%d v=%d newcut=%d vertex=%d ed=%d id=%d\n", nswaps, ii, newcut, vertex, ed[vertex], id[vertex]);
                         
@@ -1828,6 +1998,8 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
                     twhere[vertex] = to;
                     moved[vertex] = 1;
                     swaps[nswaps] = vertex;
+                    // if(ii == 0)
+                    //     printf("tpwgts0=%d tpwgts1=%d\n", tpwgts[0], tpwgts[1]);
                     hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
                     
                     if(ed[vertex] == 0 && xadj[vertex] < xadj[vertex + 1])
@@ -1896,6 +2068,31 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             //         // int t = ed[vertex];
             //         // ed[vertex] = id[vertex];
             //         // id[vertex] = t;
+            //         // hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
+
+            //         // if(ed[vertex] == 0 && bnd[vertex] == 1 && xadj[vertex] < xadj[vertex + 1])
+            //         //     bnd[vertex] = 0;
+            //         // else if(ed[vertex] > 0 && bnd[vertex] == 0)
+            //         //     bnd[vertex] = 1;
+                    
+            //         tpwgts[to] += vwgt[vertex];
+            //         tpwgts[from] -= vwgt[vertex];
+            //         // if(ii == 0)
+            //         //     printf("rollback tpwgts0=%d tpwgts1=%d\n", tpwgts[0], tpwgts[1]);
+            //     }
+            // }
+
+            // for(nswaps--; nswaps > mincutorder; nswaps--)
+            // {
+            //     if(lane_id == 0)
+            //     {
+            //         vertex = swaps[nswaps];
+            //         from = twhere[vertex];
+            //         to = from ^ 1;
+            //         twhere[vertex] = to;
+            //         // int t = ed[vertex];
+            //         // ed[vertex] = id[vertex];
+            //         // id[vertex] = t;
             //         hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
 
             //         if(ed[vertex] == 0 && bnd[vertex] == 1 && xadj[vertex] < xadj[vertex + 1])
@@ -1950,7 +2147,7 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
             // if(lane_id == 0)
             //     printf("pass=%d v=%d 1904\n", pass, ii);
         }
-
+        
         // if(lane_id == 0 && ii == 0)
         // {
         //     for(int i = 0;i < nvtxs;i++)
@@ -1963,19 +2160,399 @@ __global__ void hunyuangraph_gpu_BFS_warp_2wayrefine(int nvtxs, int *vwgt, int *
         {
             // printf("gpu p=%d v=%d edgecut=%d end\n", lane_id, ii, edgecut);
             global_edgecut[ii] = edgecut;
+            // global_edgecut[ii] = ii;
         }
+        // hunyuangraph_int8_t *ptr = global_where + ii * nvtxs;
+        // for(int i = lane_id;i < nvtxs;i += 32)
+        // {
+        //     ptr[i] = twhere[i];
+        // }
         // if(lane_id == 0)
         //     printf("ii=%d tpwgts[0]=%d tpwgts[1]=%d\n", ii, tpwgts[0], tpwgts[1]);
         // if(lane_id == 0 && ii == 0)
         // {
         //     // printf("gpu i=%d id=%p ed=%p\n", ii, id, ed);
         //     // printf("cpu i=%d id=%p ed=%p\n", a, queue, ted);
-        //     for(int i = 0;i < nvtxs;i++)
-        //     {
-        //         printf("i=%7d ed=%7d id=%7d\n", i, ed[i], id[i]);
-        //     }
+        //     // for(int i = 0;i < nvtxs;i++)
+        //     // {
+        //     //     printf("i=%7d ed=%7d id=%7d\n", i, ed[i], id[i]);
+        //     // }
+        //     printf("tpwgts0=%d tpwgts1=%d\n", tpwgts[0], tpwgts[1]);
         // }
         
+    }
+}
+
+__global__ void hunyuangraph_gpu_BFS_warp_2wayrefine_memorytest(int nvtxs, int *vwgt, int *xadj, int *adjncy, int *adjwgt, int tvwgt, double tpwgts0, \
+    hunyuangraph_int8_t *num, int *global_edgecut, int oneminpwgt, int onemaxpwgt, curandState *state, int nparts, \
+    int *temp1, int *temp2, int *temp3, int *temp4, hunyuangraph_int8_t *temp5, hunyuangraph_int8_t *temp6, hunyuangraph_int8_t *temp7)
+{
+    int p = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
+    int lane_id = threadIdx.x & 31;
+	int ii = blockIdx.x * 4 + (tid >> 5);
+    int exam = blockIdx.x;
+
+    int shared_size = sizeof(hunyuangraph_int8_t) * nvtxs * 3 + sizeof(int) * (nvtxs * 3 + 2);
+    shared_size = shared_size + hunyuangraph_GPU_cacheline - shared_size % hunyuangraph_GPU_cacheline;
+
+    if(ii < nvtxs)
+    {
+        num += ii * shared_size;
+        int *queue = (int *)num;
+        int *ed = queue + nvtxs;
+        int *swaps = ed + nvtxs;
+        int *tpwgts = (int *)(swaps + nvtxs);
+        hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
+        hunyuangraph_int8_t *moved = twhere + nvtxs;
+        hunyuangraph_int8_t *bnd = moved + nvtxs;
+        
+        // int *queue = temp1 + nvtxs * ii;
+        // int *ed = temp2 + nvtxs * ii;
+        // int *swaps = temp3 + nvtxs * ii;
+        // int *tpwgts = temp4 + 2 * ii;
+        // hunyuangraph_int8_t *twhere = temp5 + nvtxs * ii;
+        // hunyuangraph_int8_t *moved = temp6 + nvtxs * ii;
+        // hunyuangraph_int8_t *bnd = temp7 + nvtxs * ii;
+
+        __syncwarp();
+        for(int i = lane_id;i < nvtxs; i += 32)
+        {
+            twhere[i] = 1;
+            moved[i] = 0;
+        }
+        if(lane_id == 0)
+            tpwgts[0] = 0;
+        else if(lane_id == 1)
+            tpwgts[1] = tvwgt;
+        __syncthreads();
+
+        int vertex, first, last, nleft, drain, nvtxs0, nvtxs1;
+        int v, k, begin, end, length, flag, mark;
+        nvtxs0 = 0;
+        nvtxs1 = nvtxs;
+        
+        if(lane_id == 0)
+        {
+            mark = 0;
+            
+            vertex = ii;
+            queue[0] = vertex;
+            moved[vertex] = 1;
+            first = 0;
+            last = 1;
+            nleft = nvtxs - 1;
+            drain = 0;
+
+            for(;;)
+            {
+                if(first == last)
+                {
+                    // if (nleft == 0 || drain)
+                    if (nleft == 0)
+                    {
+                        // printf("ii=%d nleft=%d drain=%d\n", ii, nleft, drain);
+                        mark = 1;
+                        break;
+                    }
+
+                    k = get_random_number_range(nleft, &state[ii]);
+
+                    for (v = 0; v < nvtxs; v++) 
+                    {
+                        if (moved[v] == 0) 
+                        {
+                            if (k == 0)
+                                break;
+                            else
+                                k--;
+                        }
+                    }
+
+                    queue[0] = v;
+                    moved[v] = 1;
+                    first    = 0; 
+                    last     = 1;
+                    nleft--;
+                }
+
+                v = queue[first];
+                // if(nvtxs < 10)
+                //     printf("ii=%d v=%d tpwgts0=%d tpwgts1=%d vwgt=%d nleft=%d\n", ii, v, tpwgts[0], tpwgts[1], vwgt[v], nleft);
+                first++;
+                if(nvtxs0 >= (nparts >> 1) && tpwgts[0] > 0 && tpwgts[1] - vwgt[v] < oneminpwgt)
+                {
+                    // drain = 1;
+                    continue;
+                }
+
+                if(!can_continue_partition_BFS(0, 1, nparts, nvtxs0, nvtxs1))
+                {
+                    // printf("BFS ii=%d nvtxs0=%d nvtxs1=%d nparts=%d\n", ii, nvtxs0, nvtxs1, nparts);
+                    break;
+                }
+                if(nvtxs1 == nparts - (nparts >> 1))
+                    break;
+                
+                twhere[v] = 0;
+                nvtxs0++;
+                nvtxs1--;
+                tpwgts[0] += vwgt[v];
+                tpwgts[1] -= vwgt[v];
+                if(nvtxs0 >= (nparts >> 1) && tpwgts[1] <= onemaxpwgt)
+                {
+                    mark = 2;
+                    break;
+                }
+                
+                drain = 0;
+                end = xadj[v + 1];
+                for(begin = xadj[v]; begin < end; begin++)
+                {
+                    k = adjncy[begin];
+                    if(moved[k] == 0)
+                    {
+                        queue[last] = k;
+                        moved[k] = 1;
+                        last++;
+                        nleft--;
+                    }
+                }
+            }
+            // printf("ii=%d mark=%d tpwgts0=%d tpwgts1=%d\n", ii, mark, tpwgts[0], tpwgts[1]);
+        }
+        __syncwarp();
+        int *id;
+        id = queue;
+        for(int i = lane_id;i < nvtxs; i += 32)
+        {
+            compute_v_ed_id_bnd(i, xadj, adjncy, adjwgt, twhere, ed, id, bnd);
+        }
+        __syncwarp();
+
+        //  reduce ed to acquire the edgecut
+        int edgecut = 0;
+            //  add to the first blockDim.x threadss
+        extern __shared__ int reduce_num[];
+        int *warp_reduce = reduce_num + (tid >> 5) * 32;
+        if(lane_id < nvtxs)
+            warp_reduce[lane_id] = ed[lane_id];
+        else 
+            warp_reduce[lane_id] = 0;
+        for(int i = lane_id + 32;i < nvtxs; i += 32)
+            warp_reduce[lane_id] += ed[i];
+        __syncwarp();
+
+            //  if nvtxs < 32
+        // if(lane_id < 32 && lane_id < nvtxs) 
+        warpReduction(warp_reduce, lane_id, 32);
+        if(lane_id == 0) 
+        {
+            edgecut = warp_reduce[0] / 2;
+            // global_edgecut[ii] = edgecut;
+            // printf("ii=%d mark=%d tpwgts0=%d tpwgts1=%d edgecut=%d nvtxs=%d nvtxs0=%d nvtxs1=%d\n", ii, mark, tpwgts[0], tpwgts[1], edgecut, nvtxs, nvtxs0, nvtxs1);
+        }
+
+        __syncwarp();
+        edgecut = __shfl_sync(0xffffffff, edgecut, 0, 32);
+
+         //  2wayrefine
+        // if(lane_id == 0)
+        //     printf("v=%d warp_reduce=%p reduce_num=%p\n", ii, warp_reduce, reduce_num);
+        for(int i = lane_id;i < nvtxs; i += 32)
+            moved[i] = 0;
+        int ideal_pwgts[2];
+        int nswaps, from, to, val, big_num;
+        int limit, avgvwgt, origdiff;
+        int newcut, mincut, initcut, mincutorder, mindiff;
+        ideal_pwgts[0] = tvwgt * tpwgts0;
+        ideal_pwgts[1] = tvwgt - ideal_pwgts[0];
+
+        limit = hunyuangraph_gpu_int_min(hunyuangraph_gpu_int_max(0.01 * nvtxs, 15), 100);
+        avgvwgt = hunyuangraph_gpu_int_min((tpwgts[0] + tpwgts[1]) / 20, 2 * (tpwgts[0]+tpwgts[1]) / nvtxs);
+        origdiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+        big_num = -xadj[nvtxs];
+        
+        __syncwarp();
+        for(int pass = 0;pass < 1;pass++)
+        {
+            mincutorder = -1;
+            newcut = mincut = initcut = edgecut;
+            mindiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+            flag = 0;
+            
+            for(nswaps = 0;nswaps < nvtxs;nswaps++)
+            {
+                //  partition
+                from = (ideal_pwgts[0] - tpwgts[0] < ideal_pwgts[1] - tpwgts[1] ? 0 : 1);
+                to = from ^ 1;
+
+                //  select vertex
+                warp_reduce[lane_id] = -1;
+                val = big_num;
+                __syncwarp();
+
+                for(int i = lane_id;i < nvtxs; i += 32)
+                {
+                    if(twhere[i] == from && bnd[i] == 1 && moved[i] == 0)
+                    {
+                        int t = warp_reduce[lane_id];
+                        if(t == -1 || val < ed[i] - id[i])
+                        {
+                            warp_reduce[lane_id] = i;
+                            val = ed[i] - id[i];
+                        }
+                    }
+                }
+                __syncwarp();
+
+                WarpGetMax(warp_reduce, lane_id, val);
+                if(lane_id == 0)
+                    vertex = warp_reduce[0];
+
+                //  boardcast vertex
+                __syncwarp();
+                vertex = __shfl_sync(0xffffffff, vertex, 0, 32);
+                flag = 0;
+                if(lane_id == 0)
+                {
+                    if(vertex == -1)
+                    {
+                        flag = 1;
+                    }
+                }
+                __syncwarp();
+                flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+                if(flag)
+                    break;
+                
+                //  judge the vertex
+                flag = 0;
+                if(lane_id == 0)
+                {
+                    newcut -= (ed[vertex] - id[vertex]);
+                    if(fm_can_balanced(tpwgts, vertex, to, from, onemaxpwgt, oneminpwgt, vwgt) 
+                        && can_continue_partition(to, from, nparts, nvtxs0, nvtxs1)
+                        && ((newcut < mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) <= origdiff + avgvwgt)
+                        || (newcut == mincut && hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]) < mindiff)))
+                    {
+                        mincut  = newcut;
+                        mindiff = hunyuangraph_gpu_int_abs(ideal_pwgts[0] - tpwgts[0]);
+                        mincutorder = nswaps;
+                    }
+                    else if(nswaps - mincutorder > limit)
+                    {
+                        flag = 1;
+                        newcut += (ed[vertex] - id[vertex]);
+                    }
+                        
+                }
+                __syncwarp();
+                flag   = __shfl_sync(0xffffffff, flag, 0, 32);
+                if(flag)
+                    break;
+                
+                //  move the vertex
+                if(lane_id == 0)
+                {
+                    tpwgts[to] += vwgt[vertex];
+                    tpwgts[from] -= vwgt[vertex];
+                    twhere[vertex] = to;
+                    if(to == 0)
+                        nvtxs0++, nvtxs1--;
+                    else
+                        nvtxs0--, nvtxs1++;
+                    moved[vertex] = 1;
+                    swaps[nswaps] = vertex;
+                    hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
+                    
+                    if(ed[vertex] == 0 && xadj[vertex] < xadj[vertex + 1])
+                        bnd[vertex] = 0;
+                }
+                __syncwarp();
+
+                //  the adj vertex
+                begin = xadj[vertex];
+                end = xadj[vertex + 1];
+                length = end - begin;
+                for(int i = lane_id;i < length;i += 32)
+                {
+                    int adj_vertex = adjncy[begin + i];
+                    int kwgt;
+                    if(twhere[adj_vertex] == from)
+                        kwgt = -adjwgt[begin + i];
+                    else 
+                        kwgt = adjwgt[begin + i];
+                    id[adj_vertex] += kwgt;
+                    ed[adj_vertex] -= kwgt;
+
+                    if(bnd[adj_vertex] == 1)
+                    {
+                        if(ed[adj_vertex] == 0)
+                        {
+                            bnd[adj_vertex] = 0;
+                        }
+                    }
+                    else
+                    {
+                        if(ed[adj_vertex] > 0)
+                        {
+                            bnd[adj_vertex] = 1;
+                        }
+                    }
+                }
+                __syncwarp();
+            }
+            __syncwarp();
+            if(lane_id == 0)
+            // for(nswaps--; nswaps > mincutorder; nswaps--)
+            {
+                for(nswaps--; nswaps > mincutorder; nswaps--)
+                {
+                    vertex = swaps[nswaps];
+                    from = twhere[vertex];
+                    to = from ^ 1;
+                    twhere[vertex] = to;
+                    if(to == 0)
+                        nvtxs0++, nvtxs1--;
+                    else
+                        nvtxs0--, nvtxs1++;
+                    
+                    hunyuangraph_gpu_int_swap(&ed[vertex], &id[vertex]);
+
+                    if(ed[vertex] == 0 && bnd[vertex] == 1 && xadj[vertex] < xadj[vertex + 1])
+                        bnd[vertex] = 0;
+                    else if(ed[vertex] > 0 && bnd[vertex] == 0)
+                        bnd[vertex] = 1;
+                    
+                    tpwgts[to] += vwgt[vertex];
+                    tpwgts[from] -= vwgt[vertex];
+                }
+            }
+
+            __syncwarp();
+            flag = 0;
+            if(lane_id == 0)
+            {
+                edgecut = mincut;
+                // edgecut = newcut;   // rollback is no exist
+
+                if(mincutorder <= 0 || mincut == initcut)
+                    flag = 1;
+            }
+            __syncwarp();
+            flag    = __shfl_sync(0xffffffff, flag, 0, 32);
+            edgecut = __shfl_sync(0xffffffff, edgecut, 0, 32);
+            if(flag)
+                break;
+        }
+        
+        __syncwarp();
+        if(lane_id == 0)
+        {
+            global_edgecut[ii] = edgecut;
+            // printf("ii=%d nvtxs0=%d nvtxs1=%d\n", ii, nvtxs0, nvtxs1);
+        }
     }
 }
 
@@ -2046,20 +2623,40 @@ __global__ void hunyuangraph_gpu_select_where(int nvtxs, int *global_edgecut, in
         shared_edgecut[tid] = global_edgecut[ii];
         shared_id[tid] = ii;
     }
+    else
+    {
+        shared_edgecut[tid] = 2147483647;
+        shared_id[tid] = -1;
+    }
     __syncthreads();
+
+    // printf("tid=%d edgecut=%d id=%d\n", tid, shared_edgecut[tid], shared_id[tid]);
+    // __syncthreads();
 
     for(int i = tid + blockDim.x;i < nvtxs;i += blockDim.x)
     {
-        if(shared_edgecut[tid] > shared_edgecut[i])
+        if(shared_edgecut[tid] > global_edgecut[i])
         {
-            shared_edgecut[tid] = shared_edgecut[i];
-            shared_id[tid] = shared_id[i];
+            shared_edgecut[tid] = global_edgecut[i];
+            shared_id[tid] = i;
         }
     }
     __syncthreads();
 
     if(tid < nvtxs)
     {
+        if(blockDim.x >= 1024) 
+        {
+            if(tid < 512) 
+            {
+                if(shared_edgecut[tid] > shared_edgecut[tid + 512])
+                {
+                    shared_edgecut[tid] = shared_edgecut[tid + 512];
+                    shared_id[tid] = shared_id[tid + 512];
+                }
+            }
+            __syncthreads();
+        }
         if(blockDim.x >= 512) 
         {
             if(tid < 256) 
@@ -2102,31 +2699,140 @@ __global__ void hunyuangraph_gpu_select_where(int nvtxs, int *global_edgecut, in
         
         if(tid == 0)
             best_id[0] = shared_id[0];
+        
+        // if(tid == 0)
+        // {
+        //     printf("best_id=%d best_edgecut=%d\n", best_id[0], global_edgecut[best_id[0]]);
+        // }
     }
 }
 
-void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int nparts, double *ubvec, double *tpwgts, int fpart)
+__global__ void exam_where(int nvtxs, int *where, int *xadj, int *adjncy)
 {
-    int *global_edgecut, *key, *val, *locator;
+    // for(int i = 0;i < nvtxs;i++)
+    // {
+    //     if(where[i] == 0)
+    //     {
+    //         printf("%d %d\n", xadj[i], xadj[i + 1]);
+    //         for(int j = xadj[i];j < xadj[i + 1];j++)
+    //             printf("%d ", adjncy[j]);
+    //         printf("\n");
+    //     }
+    // }
+    for(int i = 0;i < nvtxs;i++)
+        printf("i=%d where=%d\n", i, where[i]);
+}
+
+__global__ void exam_pwgts(int *pwgts, int oneminpwgts, int onemaxpwgts)
+{
+    printf("oneminpwgts=%d onemaxpwgts=%d\n", oneminpwgts, onemaxpwgts);
+    printf("%d %d\n", pwgts[0], pwgts[1]);
+
+    if(pwgts[0] >= oneminpwgts && pwgts[0] <= onemaxpwgts
+        && pwgts[1] >= oneminpwgts && pwgts[1] <= onemaxpwgts)
+        printf("balance!!!\n");
+    else    
+        printf("unbalance!!!\n");
+}
+
+__global__ void exam_answer(int *answer)
+{
+    for(int i = 0;i < 523;i++)
+        printf("%7d %7d\n", i, answer[i]);
+}
+
+__global__ void hunyuangraph_gpu_update_where(int nvtxs, int shared_size, int *where, int *pwgts, hunyuangraph_int8_t *num, int best_id)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(ii < nvtxs)
+    {
+        num += best_id * shared_size;
+        int *queue = (int *)num;
+        int *ed = queue + nvtxs;
+        int *swaps = ed + nvtxs;
+        int *tpwgts = (int *)(swaps + nvtxs);
+        hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
+
+        // if(ii == 0)
+        // {
+        //     // printf("gpu i=%d nvtxs=%d\n", ii, nvtxs);
+        //     printf("gpu i=%d num=%p\n", ii, num);
+        //     printf("gpu i=%d queue=%p\n", ii, queue);
+        //     printf("gpu i=%d ed=%p\n", ii, ed); 
+        //     printf("gpu i=%d swaps=%p\n", ii, swaps);
+        //     printf("gpu i=%d tpwgts=%p\n", ii, tpwgts);
+        //     printf("gpu i=%d twhere=%p\n", ii, twhere);
+        // }
+
+        if(ii < 2)
+            pwgts[ii] = tpwgts[ii];
+        
+        where[ii] = (int)twhere[ii];
+        // printf("gpu i=%d where=%d\n", ii, where[ii]);
+    }
+}
+
+__global__ void hunyuangraph_gpu_update_where_memorytest(int nvtxs, int *where, int *pwgts, int * temp4, hunyuangraph_int8_t *temp5, int best_id)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(ii < nvtxs)
+    {
+        int *tpwgts = temp4 + 2 * best_id;
+        hunyuangraph_int8_t *twhere = temp5 + nvtxs * best_id;
+
+        if(ii < 2)
+            pwgts[ii] = tpwgts[ii];
+        
+        where[ii] = (int)twhere[ii];
+    }
+}
+
+__global__ void hunyuangraph_update_answer(int nvtxs, int fpart, int *where, int *answer, int *label)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(ii < nvtxs)
+        answer[label[ii]] = where[ii] + fpart;
+}
+
+void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int nparts, double *ubvec, double *tpwgts, int *answer, int fpart)
+{
+    // printf("nparts=%d fpart=%d nvtxs=%d\n", nparts, fpart, graph->nvtxs);
+
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+
+    if(graph->nvtxs < nparts)
+    {
+        printf("****You are trying to partition too many parts!****\n");
+        printf("    nparts=%d nvtxs=%d\n", nparts, graph->nvtxs);
+		exit(0);
+    }
+
+    int *global_edgecut;
     hunyuangraph_int8_t *global_where;
     priority_queue_t *queues;
     int oneminpwgt, onemaxpwgt;
 	double *tpwgts2, tpwgts0, tpwgts1;
 
 	tpwgts2 = (double *)malloc(sizeof(double) * 2);
-	tpwgts2[0] = hunyuangraph_double_sum(nparts>>1, tpwgts);
+	tpwgts2[0] = hunyuangraph_double_sum(nparts >> 1, tpwgts);
 	tpwgts2[1] = 1.0 - tpwgts2[0];
+    // printf("%lf %lf %d\n", tpwgts2[0], tpwgts2[1], graph->tvwgt[0]);
     tpwgts0    = tpwgts2[0];
     // exit(0);
     
 	//	GPU Bisection
-    graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_where");
-    // graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * 2, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_pwgts");
+    int *temp_where = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: temp_where");
+    // graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_where");
+    graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * 2, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_pwgts");
     // graph->cuda_ed    = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_ed");
     // graph->cuda_id    = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_id");
     // graph->cuda_bnd   = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->cuda_bnd");
 
-    queues = (priority_queue_t *)lmalloc_with_check(sizeof(priority_queue_t) * graph->nvtxs * 2, "hunyuangraph_gpu_RecursiveBisection: queue");
+    // queues = (priority_queue_t *)lmalloc_with_check(sizeof(priority_queue_t) * graph->nvtxs * 2, "hunyuangraph_gpu_RecursiveBisection: queue");
     // key = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs * graph->nvtxs * 2, "hunyuangraph_gpu_RecursiveBisection: key");
     // val = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs * graph->nvtxs * 2, "hunyuangraph_gpu_RecursiveBisection: val");
     // locator = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs * graph->nvtxs * 2, "hunyuangraph_gpu_RecursiveBisection: locator");
@@ -2134,7 +2840,7 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     shared_size = shared_size + hunyuangraph_GPU_cacheline - shared_size % hunyuangraph_GPU_cacheline;
     hunyuangraph_int8_t *tnum;
     tnum = (hunyuangraph_int8_t *)lmalloc_with_check(shared_size * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: tnum");
-    printf("tnum=%p\n", tnum);
+    // printf("tnum=%p\n", tnum);
     // exit(0);
     // for(int i = 0;i < graph->nvtxs * 2;i++)
     // {
@@ -2144,24 +2850,31 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     // }
     
     global_edgecut = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_edgecut");
-    global_where   = (hunyuangraph_int8_t *)lmalloc_with_check(sizeof(hunyuangraph_int8_t) * graph->nvtxs * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_where");
-    printf("global_where=%p\n", global_where);
-    printf("shared_size=%d\n", shared_size);
+    // global_where   = (hunyuangraph_int8_t *)lmalloc_with_check(sizeof(hunyuangraph_int8_t) * graph->nvtxs * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_where");
+    // printf("global_where=%p\n", global_where);
+    // printf("shared_size=%d\n", shared_size);
     onemaxpwgt = ubvec[0] * graph->tvwgt[0] * tpwgts2[1];
     oneminpwgt = (1.0 / ubvec[0])*graph->tvwgt[0] * tpwgts2[1];
-    printf("oneminpwgt=%d onemaxpwgt=%d\n", oneminpwgt, onemaxpwgt);
+    // printf("oneminpwgt=%d onemaxpwgt=%d\n", oneminpwgt, onemaxpwgt);
+
+    // if(nparts != 8)
+    //     exit(0);
 
         //  CUDA Random number
     curandState *devStates;
-    cudaMalloc(&devStates, graph->nvtxs * sizeof(curandState));
+    // cudaMalloc(&devStates, graph->nvtxs * sizeof(curandState));
+    devStates = (curandState *)lmalloc_with_check(sizeof(curandState) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: devStates");
     initializeCurand<<<(graph->nvtxs + 127) / 128, 128>>>(-1, 0, graph->nvtxs, devStates);
     // curand_init(-1, 0, graph->nvtxs, devStates);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    before_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
     // __global__ void hunyuangraph_gpu_Bisection(int nvtxs, int *vwgt, int *xadj, int *adjncy, int *adjwgt, int tvwgt, double tpwgts0, \
     //     int *global_edgecut, int *global_where, priority_queue_t **queues, int oneminpwgt, int onemaxpwgt, curandState *state)
 	// exit(0);
-    printf("hunyuangraph_gpu_Bisection begin\n");
-    cudaError_t err = cudaGetLastError();
+    // printf("hunyuangraph_gpu_Bisection begin\n");
+    // cudaError_t err = cudaGetLastError();
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_bisection, NULL);
     // hunyuangraph_gpu_Bisection<<<graph->nvtxs, 128, sizeof(hunyuangraph_int8_t) * graph->nvtxs * 3 + sizeof(int) * (graph->nvtxs * 3 + 2)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
@@ -2172,137 +2885,282 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
     // hunyuangraph_gpu_BFS_warp<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
     //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
-    hunyuangraph_gpu_BFS_warp_2wayrefine<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
-        tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
+    // hunyuangraph_gpu_BFS_warp_2wayrefine<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
+    //     tnum, global_edgecut, oneminpwgt, onemaxpwgt, devStates);
+    int *temp1, *temp2, *temp3, *temp4;
+    hunyuangraph_int8_t *temp5, *temp6, *temp7;
+    // cudaMalloc((void**)&temp1, graph->nvtxs * graph->nvtxs * sizeof(int));  //  queue
+    // cudaMalloc((void**)&temp2, graph->nvtxs * graph->nvtxs * sizeof(int));  //  ed
+    // cudaMalloc((void**)&temp3, graph->nvtxs * graph->nvtxs * sizeof(int));  //  swaps
+    // cudaMalloc((void**)&temp4, graph->nvtxs * 2 * sizeof(int));             //  tpwgts
+    // cudaMalloc((void**)&temp5, graph->nvtxs * graph->nvtxs * sizeof(hunyuangraph_int8_t));  //  twhere
+    // cudaMalloc((void**)&temp6, graph->nvtxs * graph->nvtxs * sizeof(hunyuangraph_int8_t));  //  moved
+    // cudaMalloc((void**)&temp7, graph->nvtxs * graph->nvtxs * sizeof(hunyuangraph_int8_t));  //  bnd
+    hunyuangraph_gpu_BFS_warp_2wayrefine_memorytest<<<(graph->nvtxs + 3) / 4, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
+        tnum, global_edgecut, oneminpwgt, onemaxpwgt, devStates, nparts, temp1, temp2, temp3, temp4, temp5, temp6, temp7);
     // hunyuangraph_gpu_BFS_warp_2wayrefine<<<2, 128, 128 * sizeof(int)>>>(graph->nvtxs, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->tvwgt[0], tpwgts0,\
-    //     tnum, global_edgecut, global_where, oneminpwgt, onemaxpwgt, devStates);
+    //     tnum, global_edgecut, oneminpwgt, onemaxpwgt, devStates);
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_bisection, NULL);
     bisection_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
-    err = cudaDeviceSynchronize();
-    checkCudaError(err, "hunyuangraph_gpu_Bisection");
+    // err = cudaDeviceSynchronize();
+    // checkCudaError(err, "hunyuangraph_gpu_Bisection");
     // err = cudaDeviceSynchronize();
     // if (err != cudaSuccess) {
     //     fprintf(stderr, "Kernel execution failed (error code %s)!\n", cudaGetErrorString(err));
     //     // Handle error as appropriate (e.g., exit, throw exception, etc.)
     // }
-    printf("hunyuangraph_gpu_Bisection end\n");
-    printf("        gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / bisection_gpu_time * 100);
+    // printf("hunyuangraph_gpu_Bisection end\n");
+    // printf("        gpu_Bisection_time         %10.3lf %7.3lf%\n", bisection_gpu_time, bisection_gpu_time / bisection_gpu_time * 100);
     
-    exit(0);
-    cudaDeviceSynchronize();
-    int *gpu_edgecut;
-    gpu_edgecut = (int *)malloc(sizeof(int) * graph->nvtxs);
-    cudaMemcpy(gpu_edgecut, global_edgecut, sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToHost);
-    for(int a = 0;a < graph->nvtxs;a++)
-    // for(int a = 0;a < 8;a++)
-    {
-        hunyuangraph_int8_t *num;
-        num = (hunyuangraph_int8_t *)malloc(sizeof(hunyuangraph_int8_t) * graph->nvtxs);
+    // exit(0);
+    // cudaDeviceSynchronize();
+    // int *gpu_edgecut;
+    // gpu_edgecut = (int *)malloc(sizeof(int) * graph->nvtxs);
+    // cudaMemcpy(gpu_edgecut, global_edgecut, sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToHost);
+    // int min_edgecut, min_edgecut_id;
+    // for(int a = 0;a < graph->nvtxs;a++)
+    // // for(int a = 0;a < 8;a++)
+    // {
+    //     hunyuangraph_int8_t *num;
+    //     num = (hunyuangraph_int8_t *)malloc(sizeof(hunyuangraph_int8_t) * graph->nvtxs);
         
-        int *queue = (int *)tnum;
-        int *ed = queue + graph->nvtxs;
-        int *swaps = ed + graph->nvtxs;
-        int *tpwgts = (int *)(swaps + graph->nvtxs);
-        hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
-        twhere += a * shared_size;
-        // queue  += a * shared_size;
-        // queue = (int *)((int *)twhere - graph->nvtxs * 3  - 2);
-        // cudaMemcpy(tid, queue, sizeof(int) * graph->nvtxs * 2, cudaMemcpyDeviceToHost);
-        // if(a == 500)
-        //     printf("cpu i=%d id=%p ed=%p\n", a, queue, queue + graph->nvtxs);
-        cudaMemcpy(num, twhere, sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
-        // cudaMemcpy(num, &global_where[a * graph->nvtxs], sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
-        // if(a == 0)
-        // {
-        //     // for(int i = 0;i < graph->nvtxs;i++)
-        //     //     printf("i=%d where=%d\n", i, num[i]);
-        //     int *ted, *tid;
-        //     ted = (int *)malloc(sizeof(int) * graph->nvtxs);
-        //     tid = (int *)malloc(sizeof(int) * graph->nvtxs);
-        //     for(int i = 0;i < graph->nvtxs;i++)
-        //     {
-        //         hunyuangraph_int8_t me = num[i];
-        //         ted[i] = 0, tid[i] = 0;
-        //         for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
-        //         {
-        //             hunyuangraph_int8_t other = num[graph->adjncy[j]];
-        //             if(me == other)
-        //                 tid[i] += graph->adjwgt[j];
-        //             else 
-        //                 ted[i] += graph->adjwgt[j];
-        //             if(i == 3971)
-        //             {
-        //                 printf("i=%d j=%d me=%d other=%d adjwgt=%d\n", i, j, me, other, graph->adjwgt[j]);
-        //             }
-        //         }
-        //         printf("i=%7d ed=%7d id=%7d\n", i, ted[i], tid[i]);
-        //     }
-        //     free(ted);
-        //     free(tid);
-        // }
-        int e = 0;
-        int pwgts[2];
-        pwgts[0] = 0;
-        pwgts[1] = 0;
-        for(int i = 0;i < graph->nvtxs;i++)
-        {
-            hunyuangraph_int8_t me = num[i];
-            if(me == 0) pwgts[0] += graph->vwgt[i];
-            else pwgts[1] += graph->vwgt[i];
-            for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
-            {
-                hunyuangraph_int8_t other = num[graph->adjncy[j]];
-                if(other != me)
-                    e += graph->adjwgt[j];
-            }
-        }
-        bool flag = true;
-        if(pwgts[0] >= oneminpwgt && pwgts[1] >= oneminpwgt
-            && pwgts[0] <= onemaxpwgt && pwgts[1] <= onemaxpwgt)
-            flag = false;
-        printf("gpu p=%d v=%d edgecut=%d\n", a, a, gpu_edgecut[a]);
-        printf("cpu v=%d edgecut=%d pwgts0=%d pwgts1=%d flag=%d\n", a, e / 2, pwgts[0], pwgts[1], flag);
-        free(num);
-    }
-    free(gpu_edgecut);
+    //     int *queue = (int *)tnum;
+    //     int *ed = queue + graph->nvtxs;
+    //     int *swaps = ed + graph->nvtxs;
+    //     int *tpwgts = (int *)(swaps + graph->nvtxs);
+    //     hunyuangraph_int8_t *twhere = (hunyuangraph_int8_t *)(tpwgts + 2);
+    //     twhere += a * shared_size;
+    //     // queue  += a * shared_size;
+    //     // queue = (int *)((int *)twhere - graph->nvtxs * 3  - 2);
+    //     // cudaMemcpy(tid, queue, sizeof(int) * graph->nvtxs * 2, cudaMemcpyDeviceToHost);
+    //     // if(a == 500)
+    //     //     printf("cpu i=%d id=%p ed=%p\n", a, queue, queue + graph->nvtxs);
+    //     cudaMemcpy(num, twhere, sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
+    //     // cudaMemcpy(num, &global_where[a * graph->nvtxs], sizeof(hunyuangraph_int8_t) * graph->nvtxs, cudaMemcpyDeviceToHost);
+    //     if(a == 330)
+    //     {
+    //         int lnvtxs = 0;
+    //         for(int i = 0;i < graph->nvtxs;i++)
+    //             if(num[i] == 0)
+    //                 lnvtxs++;
+    //         printf("lnvtxs=%d\n", lnvtxs);
+    //     //         printf("i=%d where=%d\n", i, num[i]);
+    //     //     int *ted, *tid;
+    //     //     ted = (int *)malloc(sizeof(int) * graph->nvtxs);
+    //     //     tid = (int *)malloc(sizeof(int) * graph->nvtxs);
+    //     //     for(int i = 0;i < graph->nvtxs;i++)
+    //     //     {
+    //     //         hunyuangraph_int8_t me = num[i];
+    //     //         ted[i] = 0, tid[i] = 0;
+    //     //         for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+    //     //         {
+    //     //             hunyuangraph_int8_t other = num[graph->adjncy[j]];
+    //     //             if(me == other)
+    //     //                 tid[i] += graph->adjwgt[j];
+    //     //             else 
+    //     //                 ted[i] += graph->adjwgt[j];
+    //     //             if(i == 3971)
+    //     //             {
+    //     //                 printf("i=%d j=%d me=%d other=%d adjwgt=%d\n", i, j, me, other, graph->adjwgt[j]);
+    //     //             }
+    //     //         }
+    //     //         printf("i=%7d ed=%7d id=%7d\n", i, ted[i], tid[i]);
+    //     //     }
+    //     //     free(ted);
+    //     //     free(tid);
+    //     }
+    //     int e = 0;
+    //     int pwgts[2];
+    //     pwgts[0] = 0;
+    //     pwgts[1] = 0;
+    //     for(int i = 0;i < graph->nvtxs;i++)
+    //     {
+    //         hunyuangraph_int8_t me = num[i];
+    //         if(me == 0) pwgts[0] += graph->vwgt[i];
+    //         else pwgts[1] += graph->vwgt[i];
+    //         for(int j = graph->xadj[i];j < graph->xadj[i + 1];j++)
+    //         {
+    //             hunyuangraph_int8_t other = num[graph->adjncy[j]];
+    //             if(other != me)
+    //                 e += graph->adjwgt[j];
+    //         }
+    //     }
+    //     int flag = 0;
+    //     if(pwgts[0] >= oneminpwgt && pwgts[1] >= oneminpwgt
+    //         && pwgts[0] <= onemaxpwgt && pwgts[1] <= onemaxpwgt)
+    //         flag = 1;
+    //     // printf("gpu p=%d v=%d edgecut=%d\n", a, a, gpu_edgecut[a]);
+    //     // if(a == 0)
+    //         printf("cpu v=%d edgecut=%d pwgts0=%d pwgts1=%d flag=%d\n", a, e / 2, pwgts[0], pwgts[1], flag);
+    //     if(a == 0) 
+    //     {
+    //         min_edgecut = e / 2;
+    //         min_edgecut_id = a;
+    //     }
+    //     else 
+    //     {
+    //         if(min_edgecut > e / 2)
+    //         {    
+    //             min_edgecut = e / 2;
+    //             min_edgecut_id = a;
+    //         }
+    //     }
+    //     free(num);
+    // }
+    // free(gpu_edgecut);
+    // printf("min_edgecut=%d min_edgecut_id=%d\n", min_edgecut, min_edgecut_id);
 
-    exit(0);
+    // exit(0);
 
     //  select the best where
     int *best_id_gpu, best_id;
-    best_id_gpu = (int *)lmalloc_with_check(sizeof(int), "best_id_gpu");
-    hunyuangraph_gpu_select_where<<<(graph->nvtxs + 1023) / 1024, 1024, 2048 * sizeof(int)>>>(graph->nvtxs, global_edgecut, best_id_gpu);
+    best_id_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_RecursiveBisection: best_id_gpu");
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    hunyuangraph_gpu_select_where<<<1, 1024, 2048 * sizeof(int)>>>(graph->nvtxs, global_edgecut, best_id_gpu);
+    // hunyuangraph_gpu_select_where<<<1, 1024, 2048 * sizeof(int)>>>(8, global_edgecut, best_id_gpu);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    select_where_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
     cudaMemcpy(&best_id, best_id_gpu, sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(graph->cuda_where, &global_where[best_id * graph->nvtxs], sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToDevice);
+    // printf("best_id=%d\n", best_id);
 
+    //	update where
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    hunyuangraph_gpu_update_where<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, shared_size, temp_where, graph->cuda_pwgts, tnum, best_id);
+    // hunyuangraph_gpu_update_where_memorytest<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, graph->cuda_where, graph->cuda_pwgts, temp4, temp5, best_id);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    update_where_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+
+    // exam_where<<<1, 1>>>(graph->nvtxs, graph->cuda_where, graph->cuda_xadj, graph->cuda_adjncy);
+    // exam_pwgts<<<1, 1>>>(graph->cuda_pwgts, oneminpwgt, onemaxpwgt);
     // hunyuangraph_int8_t *answer = (hunyuangraph_int8_t *)malloc(sizeof(hunyuangraph_int8_t) * graph->nvtxs);
+    lfree_with_check(sizeof(int), "hunyuangraph_gpu_RecursiveBisection: best_id_gpu");                      // best_id_gpu 
+    lfree_with_check(sizeof(curandState) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: devStates"); // devStates
+    lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: global_edgecut");    // global_edgecut
+    lfree_with_check(shared_size * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: tnum");              // tnum
+    // cudaFree(temp1);
+    // cudaFree(temp2);
+    // cudaFree(temp3);
+    // cudaFree(temp4);
+    // cudaFree(temp5);
+    // cudaFree(temp6);
+    // cudaFree(temp7);
 
-    cudaFree(devStates);
+    //  update answer
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    hunyuangraph_update_answer<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, fpart, temp_where, answer, graph->cuda_label);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    update_answer_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
-	//	update where
-	// hunyuangraph_gpu_update_where(hunyuangraph_admin, graph, nparts, fpart);
+    // exam_answer<<<1, 1>>>(answer);
+
+    // exit(0);
 
 	//	SplitGraph
-	// hunyuangraph_splitgraph(hunyuangraph_admin, graph, &hunyuangraph_admin->lgraph, &hunyuangraph_admin->rgraph);
+    hunyuangraph_graph_t *lgraph, *rgraph;
+    if(nparts > 2)
+    {
+        // hunyuangraph_splitgraph(hunyuangraph_admin, graph, &hunyuangraph_admin->lgraph, &hunyuangraph_admin->rgraph);
+        //  first is right subgraph, second is left subgraph
+        cudaDeviceSynchronize();
+        gettimeofday(&begin_gpu_bisection, NULL);
+        hunyuangraph_gpu_SplitGraph_intersect(hunyuangraph_admin, graph, temp_where, &lgraph, &rgraph);
+        // hunyuangraph_gpu_SplitGraph_separate(hunyuangraph_admin, graph, &lgraph, &rgraph);
+        cudaDeviceSynchronize();
+        gettimeofday(&end_gpu_bisection, NULL);
+        splitgraph_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+
+        if(lgraph->nvtxs < (nparts >> 1))
+        {
+            printf("lgraph is too small, lgraph->nvtxs=%d should greater than or equal to %d\n", lgraph->nvtxs, (nparts >> 1));
+            exit(0);
+        }
+        if(rgraph->nvtxs < nparts - (nparts >> 1))
+        {
+            printf("rgraph is too small, rgraph->nvtxs=%d should greater than or equal to %d\n", rgraph->nvtxs, nparts - (nparts >> 1));
+            exit(0);
+        }
+
+        // cudaMemcpy(graph->where, graph->cuda_where, sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToHost);
+        // exam_cpu_subgraph(graph);
+    }
+
+    // if(nparts == 8)
+    //     exit(0);
 
 	//	free graph
-	// rfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_RecursiveBisection: graph->where");
+    // intersect: no free
+    // separate: no free idea
+
+    //  update tpwgts
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    double multi0 = 1.0 / tpwgts2[0];
+    double multi1 = 1.0 / tpwgts2[1];
+    for(int i = 0;i < nparts - (nparts >> 1);i++)
+    {
+        double *ptr = tpwgts + (nparts >> 1);
+        ptr[i] = ptr[i] * multi0;
+    }
+    for(int i = 0;i < nparts >> 1;i++)
+    {
+        double *ptr = tpwgts;
+        ptr[i] = ptr[i] * multi1;
+    }
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    update_tpwgts_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+
+    // printf("tpwgts: ");
+    // for(int i = 0;i < nparts;i++)
+    //     printf("%lf ", tpwgts[i]);
+    // printf("\n");
 
 	//	Recursive
 	if(nparts > 3)
 	{
-		// hunyuangraph_gpu_Recursivesisection(hunyuangraph_admin,rgraph,nparts-(nparts>>1),part,tpwgts+(nparts>>1),fpart+(nparts>>1),level);
+        // for(int i = 0;i < nparts - (nparts >> 1);i++)
+        // {
+        //     double *ptr = tpwgts + (nparts >> 1);
+        //     printf("%lf ", ptr[i]);
+        // }
+        // printf("\n");
+        // exit(0);
+        hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin, rgraph, nparts - (nparts >> 1), ubvec, tpwgts + (nparts >> 1), answer, fpart + (nparts >> 1));
+        hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin, lgraph, (nparts >> 1), ubvec, tpwgts, answer, fpart);
 	}
 	else if(nparts == 3)
 	{
-		// hunyuangraph_free_graph(&lgraph);
-		// hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin,rgraph,nparts-(nparts>>1),part,tpwgts+(nparts>>1),fpart+(nparts>>1),level);
+		hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin, rgraph, nparts - (nparts >> 1), ubvec, tpwgts + (nparts >> 1), answer, fpart + (nparts >> 1));
 	}
 
 	free(tpwgts2);
+}
+
+__global__ void set_label(int nvtxs, int *label)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(ii < nvtxs)
+        label[ii] = ii;
+}
+
+__global__ void set_where(int nvtxs, int *where)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(ii < nvtxs)
+    {
+        where[ii] = 0;
+    }
 }
 
 void hunyuangraph_gpu_initialpartition(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
@@ -2310,39 +3168,55 @@ void hunyuangraph_gpu_initialpartition(hunyuangraph_admin_t *hunyuangraph_admin,
 	// allocate memory
 	// GPU已分配 vwgt, xadj, adjncy, adjwgt
 	// CPU已含有 nvtxs, nedges, tvwgt
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
 
-	hunyuangraph_graph_t *t_graph = hunyuangraph_create_cpu_graph();
+	// hunyuangraph_graph_t *t_graph = hunyuangraph_create_cpu_graph();
 
-	t_graph->nvtxs = graph->nvtxs;
-	t_graph->nedges = graph->nedges;
-	t_graph->tvwgt = (int *)malloc(sizeof(int));
-	t_graph->tvwgt[0] = graph->tvwgt[0];
+	// t_graph->nvtxs = graph->nvtxs;
+	// t_graph->nedges = graph->nedges;
+	// t_graph->tvwgt = (int *)malloc(sizeof(int));
+	// t_graph->tvwgt[0] = graph->tvwgt[0];
 
 	graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_initialpartition: graph->cuda_where");
+    graph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_gpu_initialpartition: graph->cuda_label");
 
-	t_graph->cuda_vwgt   = (int *)lmalloc_with_check(sizeof(int) * t_graph->nvtxs, "hunyuangraph_gpu_initialpartition: t_graph->cuda_vwgt");
-	t_graph->cuda_xadj   = (int *)lmalloc_with_check(sizeof(int) * (t_graph->nvtxs + 1), "hunyuangraph_gpu_initialpartition: t_graph->cuda_xadj");
-	t_graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * t_graph->nedges, "hunyuangraph_gpu_initialpartition: t_graph->cuda_adjncy");
-	t_graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * t_graph->nedges, "hunyuangraph_gpu_initialpartition: t_graph->cuda_adjwgt");
-	t_graph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * t_graph->nvtxs, "hunyuangraph_gpu_initialpartition: t_graph->cuda_label");
+	// t_graph->cuda_vwgt   = (int *)lmalloc_with_check(sizeof(int) * t_graph->nvtxs, "hunyuangraph_gpu_initialpartition: t_graph->cuda_vwgt");
+	// t_graph->cuda_xadj   = (int *)lmalloc_with_check(sizeof(int) * (t_graph->nvtxs + 1), "hunyuangraph_gpu_initialpartition: t_graph->cuda_xadj");
+	// t_graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * t_graph->nedges, "hunyuangraph_gpu_initialpartition: t_graph->cuda_adjncy");
+	// t_graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * t_graph->nedges, "hunyuangraph_gpu_initialpartition: t_graph->cuda_adjwgt");
+	// t_graph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * t_graph->nvtxs, "hunyuangraph_gpu_initialpartition: t_graph->cuda_label");
     // t_graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * t_graph->nvtxs, "hunyuangraph_gpu_initialpartition: t_graph->cuda_where");
 
-	cudaMemcpy(t_graph->cuda_vwgt, graph->cuda_vwgt, sizeof(int) * t_graph->nvtxs, cudaMemcpyDeviceToDevice);
-	cudaMemcpy(t_graph->cuda_xadj, graph->cuda_xadj, sizeof(int) * (t_graph->nvtxs + 1), cudaMemcpyDeviceToDevice);
-	cudaMemcpy(t_graph->cuda_adjncy, graph->cuda_adjncy, sizeof(int) * t_graph->nedges, cudaMemcpyDeviceToDevice);
-	cudaMemcpy(t_graph->cuda_adjwgt, graph->cuda_adjwgt, sizeof(int) * t_graph->nedges, cudaMemcpyDeviceToDevice);
+	// cudaMemcpy(t_graph->cuda_vwgt, graph->cuda_vwgt, sizeof(int) * t_graph->nvtxs, cudaMemcpyDeviceToDevice);
+	// cudaMemcpy(t_graph->cuda_xadj, graph->cuda_xadj, sizeof(int) * (t_graph->nvtxs + 1), cudaMemcpyDeviceToDevice);
+	// cudaMemcpy(t_graph->cuda_adjncy, graph->cuda_adjncy, sizeof(int) * t_graph->nedges, cudaMemcpyDeviceToDevice);
+	// cudaMemcpy(t_graph->cuda_adjwgt, graph->cuda_adjwgt, sizeof(int) * t_graph->nedges, cudaMemcpyDeviceToDevice);
 
-    t_graph->vwgt = (int *)malloc(sizeof(int) * t_graph->nvtxs);
-    t_graph->xadj = (int *)malloc(sizeof(int) * (t_graph->nvtxs + 1));
-    t_graph->adjncy = (int *)malloc(sizeof(int) * t_graph->nedges);
-    t_graph->adjwgt = (int *)malloc(sizeof(int) * t_graph->nedges);
+    if(hunyuangraph_admin->nparts < 1)
+        printf("nparts(nparts < 1) is error, please input right nparts(nparts >= 1)!!!\n");
+    if(hunyuangraph_admin->nparts == 1)
+    {
+        set_where<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, graph->cuda_where);
+        return ;
+    }
 
-    memcpy(t_graph->vwgt, graph->vwgt, sizeof(int) * t_graph->nvtxs);
-    memcpy(t_graph->xadj, graph->xadj, sizeof(int) * (t_graph->nvtxs + 1));
-    memcpy(t_graph->adjncy, graph->adjncy, sizeof(int) * t_graph->nedges);
-    memcpy(t_graph->adjwgt, graph->adjwgt, sizeof(int) * t_graph->nedges);
+    // t_graph->vwgt = (int *)malloc(sizeof(int) * t_graph->nvtxs);
+    // t_graph->xadj = (int *)malloc(sizeof(int) * (t_graph->nvtxs + 1));
+    // t_graph->adjncy = (int *)malloc(sizeof(int) * t_graph->nedges);
+    // t_graph->adjwgt = (int *)malloc(sizeof(int) * t_graph->nedges);
+    // t_graph->where = (int *)malloc(sizeof(int) * t_graph->nvtxs);
+    // t_graph->label = (int *)malloc(sizeof(int) * t_graph->nvtxs);
+    // for(int i = 0; i < t_graph->nvtxs; i++)
+    //     t_graph->label[i] = i;
 
+    // memcpy(t_graph->vwgt, graph->vwgt, sizeof(int) * t_graph->nvtxs);
+    // memcpy(t_graph->xadj, graph->xadj, sizeof(int) * (t_graph->nvtxs + 1));
+    // memcpy(t_graph->adjncy, graph->adjncy, sizeof(int) * t_graph->nedges);
+    // memcpy(t_graph->adjwgt, graph->adjwgt, sizeof(int) * t_graph->nedges);
 
+    // set_label<<<(t_graph->nvtxs + 127) / 128, 128>>>(t_graph->nvtxs, t_graph->cuda_label);
+    set_label<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, graph->cuda_label);
 
 	double *ubvec, *tpwgts;
 	ubvec  = (double *)malloc(sizeof(double));
@@ -2351,11 +3225,23 @@ void hunyuangraph_gpu_initialpartition(hunyuangraph_admin_t *hunyuangraph_admin,
 	ubvec[0] = (double)pow(hunyuangraph_admin->ubfactors[0], 1.0 / log(hunyuangraph_admin->nparts));
 	for(int i = 0; i < hunyuangraph_admin->nparts; i++)
 		tpwgts[i] = (double)hunyuangraph_admin->tpwgts[i];
+
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    set_initgraph_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+
     printf("hunyuangraph_gpu_RecursiveBisection begin\n");
-	hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin, t_graph, hunyuangraph_admin->nparts, ubvec, tpwgts, 0);
+	hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin, graph, hunyuangraph_admin->nparts, ubvec, tpwgts, graph->cuda_where, 0);
     printf("hunyuangraph_gpu_RecursiveBisection end\n");
 	free(ubvec);
 	free(tpwgts);
+
+    cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    hunyuangraph_computecut_gpu<<<1, 1>>>(graph->nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 }
 
 

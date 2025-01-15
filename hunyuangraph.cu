@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
 	hunyuangraph_graph_t *graph = hunyuangraph_readgraph(filename);
 
-	printf("graph:%s %d %d\n", filename, graph->nvtxs, graph->nedges);
+	printf("graph:%s %d %d %d\n", filename, graph->nvtxs, graph->nedges, nparts);
 	// for(int i = 0;i <= graph->nvtxs; i++)
 	// 	printf("%d ", graph->xadj[i]);
 	// printf("\n");
@@ -38,13 +38,13 @@ int main(int argc, char **argv)
 	int best_edgecut = graph->nedges;
 	int *best_partition = (int *)malloc(sizeof(int) * graph->nvtxs);
 
-	for (int iter = 0; iter < 21; iter++)
+	for (int iter = 0; iter < 1; iter++)
 	{
 		init_timer();
 
 		hunyuangraph_PartitionGraph(&graph->nvtxs, graph->xadj, graph->adjncy, graph->vwgt, graph->adjwgt, &nparts, tpwgts, &ubvec, part);
 
-		int edgecut = hunyuangraph_computecut(graph, part);
+		int edgecut = hunyuangraph_computecut_cpu(graph, part);
 
 		print_time_all(graph, part, edgecut);
 
@@ -54,8 +54,10 @@ int main(int argc, char **argv)
 			best_edgecut = edgecut;
 		}
 
-		if (iter == 0)
-			print_time_coarsen();
+		// if (iter == 0)
+		// 	print_time_coarsen();
+		// if(iter == 0)
+		// 	print_time_init();
 		// if (iter == 0)
 		// 	print_time_uncoarsen();
 	}

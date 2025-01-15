@@ -28,52 +28,44 @@ int prefixsum_blocksize = 256;
 void Init_GPU_Memory(size_t remainingMem)
 {
 	front_pointer = deviceMemory;
-	back_pointer = deviceMemory + remainingMem;
+	back_pointer = (char *)deviceMemory + remainingMem;
 	lmove_pointer = front_pointer;
 	rmove_pointer = back_pointer;
 }
 
 void Malloc_GPU_Memory(size_t nvtxs, size_t nedges)
 {
-	// 获取设备属性
-	cudaDeviceProp deviceProp;
-	cudaGetDeviceProperties(&deviceProp, 0);
+    // 获取设备属性
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
 
-	// 检测当前程序执行前显存已使用的大小
-	size_t freeMem, totalMem;
-	cudaMemGetInfo(&freeMem, &totalMem);
-	size_t usableMem = totalMem - freeMem;
+    // 检测当前程序执行前显存已使用的大小
+    size_t freeMem, totalMem;
+    cudaMemGetInfo(&freeMem, &totalMem);
+    // size_t usableMem = totalMem - freeMem;
 
-	// 计算剩余的部分显存大小
-	// size_t remainingMem = freeMem - usableMem - 5 * nedges * sizeof(int);
-	// size_t remainingMem = freeMem - usableMem - (nvtxs + nedges) * sizeof(int); // 调试所用
-	size_t remainingMem = (freeMem - usableMem) / 3 * 2;	//调试所用
-	// size_t remainingMem = 2 * 1024 * 1024 * 1024;	//调试所用
+    // 计算剩余的部分显存大小
+    size_t remainingMem = freeMem / 3 * 2;
 
-	//	alingning cache line
-	if (remainingMem % hunyuangraph_GPU_cacheline != 0)
-		remainingMem -= remainingMem % hunyuangraph_GPU_cacheline;
+    // 对齐缓存行
+    if (remainingMem % hunyuangraph_GPU_cacheline != 0)
+        remainingMem = remainingMem - remainingMem % hunyuangraph_GPU_cacheline;
 
-	// 分配对齐的显存空间(先不考虑对齐)
-	// size_t pitch;
-	// cudaMallocPitch(&deviceMemory, &pitch, remainingMem, 1);
+    // 分配显存空间
+    cudaError_t err = cudaMalloc(&deviceMemory, remainingMem);
+    if (err != cudaSuccess) {
+        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+        return;
+    }
 
-	// 分配显存空间
-	// size_t remainingMem = 2 * 1024 * 1024 * 1024;
-	cudaMalloc(&deviceMemory, remainingMem);
+    // 初始化内存指针
+    Init_GPU_Memory(remainingMem);
 
-	// 调整起始地址为对齐地址
-	// size_t alignment = ALIGNMENT;  // 设置对齐要求，以字节为单位
-	// front_pointer = (char*)deviceMemory;
-	// front_pointer = (char*)(((size_t)front_pointer + alignment - 1) & ~(alignment - 1));
-
-	Init_GPU_Memory(remainingMem);
-
-	printf("Total GPU Memory:                   %zuB %zuKB %zuMB %zuGB\n", totalMem, totalMem / 1024, totalMem / 1024 / 1024, totalMem / 1024 / 1024 / 1024);
-	printf("Usable GPU Memory before execution: %zuB %zuKB %zuMB %zuGB\n", freeMem, freeMem / 1024, freeMem / 1024 / 1024, freeMem / 1024 / 1024 / 1024);
-	printf("Malloc GPU Memory:                  %zuB %zuKB %zuMB %zuGB\n", remainingMem, remainingMem / 1024, remainingMem / 1024 / 1024, remainingMem / 1024 / 1024 / 1024);
-	printf("front_pointer=  %p\n", front_pointer);
-	printf("back_pointer=   %p\n", back_pointer);
+    printf("Total GPU Memory:                   %zuB %zuKB %zuMB %zuGB\n", totalMem, totalMem / 1024, totalMem / 1024 / 1024, totalMem / 1024 / 1024 / 1024);
+    printf("Usable GPU Memory before execution: %zuB %zuKB %zuMB %zuGB\n", freeMem, freeMem / 1024, freeMem / 1024 / 1024, freeMem / 1024 / 1024 / 1024);
+    printf("Malloc GPU Memory:                  %zuB %zuKB %zuMB %zuGB\n", remainingMem, remainingMem / 1024, remainingMem / 1024 / 1024, remainingMem / 1024 / 1024 / 1024);
+    printf("front_pointer=  %p\n", front_pointer);
+    printf("back_pointer=   %p\n", back_pointer);
 }
 
 void Free_GPU_Memory()
@@ -97,8 +89,8 @@ void Free_GPU_Memory()
 // l..为左端栈操作，r..为右端栈操作
 void *lmalloc_with_check(size_t size, char *infor)
 {
-	if (size <= 0)
-		printf("error: %s is lmalloc_with_check( %d <= 0)\n", infor, size);
+	if (size < 0)
+		printf("error: %s is lmalloc_with_check( %d < 0)\n", infor, size);
 
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
@@ -136,8 +128,8 @@ void *lmalloc_with_check(size_t size, char *infor)
 
 void *rmalloc_with_check(size_t size, char *infor)
 {
-	if (size <= 0)
-		printf("error: %s is rmalloc_with_check( %d <= 0)\n", infor, size);
+	if (size < 0)
+		printf("error: %s is rmalloc_with_check( %d < 0)\n", infor, size);
 
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
@@ -175,8 +167,8 @@ void *rmalloc_with_check(size_t size, char *infor)
 
 void *lfree_with_check(size_t size, char *infor)
 {
-	if (size <= 0)
-		printf("lfree_with_check( size <= 0)\n");
+	if (size < 0)
+		printf("lfree_with_check( size < 0)\n");
 
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
@@ -216,8 +208,8 @@ void *lfree_with_check(size_t size, char *infor)
 
 void *rfree_with_check(size_t size, char *infor)
 {
-	if (size <= 0)
-		printf("rfree_with_check( size <= 0)\n");
+	if (size < 0)
+		printf("rfree_with_check( size < 0)\n");
 
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
