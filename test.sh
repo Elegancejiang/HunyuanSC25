@@ -9,23 +9,53 @@
 # ./hunyuangraph /media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 2 >> test.txt
 # ./hunyuangraph /media/jiangdie/shm_ssd/graph_10w/vas_stokes_1M.graph 2 >> test.txt
 
-make
+# make
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 2 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 2 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 2 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 2 >> test.txt
+
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 8 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 8 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 8 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 8 >> test.txt
+
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 64 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 64 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 64 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 64 >> test.txt
+
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 256 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 256 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 256 >> test.txt
+./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 256 >> test.txt
+
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/audikw_1.graph 64 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/rgg_n_2_22_s0.graph 64 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 64 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/vas_stokes_2M.graph 64 >> test.txt
+
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/audikw_1.graph 256 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/rgg_n_2_22_s0.graph 256 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 256 >> test.txt
+# ./hunyuangraph /media/jiangdie/新加卷/graph_10w/vas_stokes_2M.graph 256 >> test.txt
 # ./hunyuangraph graph.txt 2 > test.txt
 # ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_1M_gpu.graph 2 > test.txt
 # ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 8 > test.txt
 # ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 2 > test.txt
 # ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 2 > test.txt
 
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 2 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 8 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 32 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 64 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 128 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 256 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 512 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 1024 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 2048 >> test.txt
-./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 4096 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 2 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 4 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 8 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 32 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 64 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 128 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 256 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 512 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 1024 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 2048 >> test.txt
+# ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 4096 >> test.txt
 
 # 循环10次执行命令
 # i=1

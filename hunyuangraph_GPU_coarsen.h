@@ -77,14 +77,14 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         graph = graph->coarser;
         level++;
 
-        printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level, graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
+        // printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level, graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
 
     } while (
         graph->nvtxs > hunyuangraph_admin->Coarsen_threshold &&
         graph->nvtxs < 0.85 * graph->finer->nvtxs &&
         graph->nedges > graph->nvtxs / 2);
 
-    hunyuangraph_memcpy_coarsentoinit(graph);
+    // hunyuangraph_memcpy_coarsentoinit(graph);
 
     return graph;
 }

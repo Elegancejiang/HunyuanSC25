@@ -12,7 +12,7 @@
 /*Graph kway-partition algorithm*/
 void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *part)
 {
-	// hunyuangraph_graph_t *cgraph;
+	hunyuangraph_graph_t *cgraph;
 
 	// printf("Coarsen begin\n");
 
@@ -42,11 +42,20 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&begin_part_init, NULL);
 	// hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
 	// hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
-	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, graph);
+	cgraph = graph;
+	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
 
+	cudaDeviceSynchronize();
+    gettimeofday(&begin_gpu_bisection, NULL);
+    hunyuangraph_computecut_gpu<<<1, 1>>>(cgraph->nvtxs, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
+    cudaDeviceSynchronize();
+    gettimeofday(&end_gpu_bisection, NULL);
+    computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+
+	// print_time_coarsen();
 	print_time_init();
 
 	exit(0);

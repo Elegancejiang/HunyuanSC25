@@ -23,6 +23,8 @@ char *rmove_pointer;
 char *tmove_pointer;
 size_t used_by_me_now = 0;
 size_t used_by_me_max = 0;
+size_t lused = 0;
+size_t rused = 0;
 int prefixsum_blocksize = 256;
 
 void Init_GPU_Memory(size_t remainingMem)
@@ -100,13 +102,14 @@ void *lmalloc_with_check(size_t size, char *infor)
 	void *malloc_address = NULL;
 
 	tmove_pointer = lmove_pointer + used_size;
+	lused += used_size;
 	// printf("lmove_pointer=%p\n",lmove_pointer);
 	// printf("rmove_pointer=%p\n",rmove_pointer);
 	// printf("size=         %d\n",size);
 	// printf("tmove_pointer=%p\n",tmove_pointer);
 
 	if (tmove_pointer > rmove_pointer)
-		printf("error ------------ don't have enough GPU memory %s\n", infor);
+		printf("error ------------ don't have enough GPU memory %s, now uesd memory %zuB\n", infor, used_by_me_now);
 	else
 	{
 		malloc_address = lmove_pointer;
@@ -140,13 +143,14 @@ void *rmalloc_with_check(size_t size, char *infor)
 	void *malloc_address = NULL;
 
 	tmove_pointer = rmove_pointer - used_size;
+	rused += used_size;
 	// printf("lmove_pointer=%p\n",lmove_pointer);
 	// printf("rmove_pointer=%p\n",rmove_pointer);
 	// printf("size=         %d\n",size);
 	// printf("tmove_pointer=%p\n",tmove_pointer);
 
 	if (tmove_pointer < lmove_pointer)
-		printf("error ------------ don't have enough GPU memory %s\n", infor);
+		printf("error ------------ don't have enough GPU memory %s, now uesd memory %zuB\n", infor, used_by_me_now);
 	else
 	{
 		malloc_address = tmove_pointer;
@@ -179,6 +183,7 @@ void *lfree_with_check(size_t size, char *infor)
 	void *malloc_address = NULL;
 
 	tmove_pointer = lmove_pointer - used_size;
+	lused -= used_size;
 
 	// printf("lmove_pointer=%p\n",lmove_pointer);
 	// printf("rmove_pointer=%p\n",rmove_pointer);
@@ -186,7 +191,7 @@ void *lfree_with_check(size_t size, char *infor)
 	// printf("tmove_pointer=%p\n",tmove_pointer);
 
 	if (tmove_pointer < front_pointer)
-		printf("error ------------ don't lmalloc enough GPU memory %s\n", infor);
+		printf("error ------------ don't lmalloc enough GPU memory %s, now uesd memory %zuB\n", infor, used_by_me_now);
 	else
 	{
 		lmove_pointer = tmove_pointer;
@@ -220,6 +225,7 @@ void *rfree_with_check(size_t size, char *infor)
 	void *malloc_address = NULL;
 
 	tmove_pointer = rmove_pointer + used_size;
+	rused -= used_size;
 
 	// printf("lmove_pointer=%p\n",lmove_pointer);
 	// printf("rmove_pointer=%p\n",rmove_pointer);
@@ -227,7 +233,7 @@ void *rfree_with_check(size_t size, char *infor)
 	// printf("tmove_pointer=%p\n",tmove_pointer);
 
 	if (tmove_pointer > back_pointer)
-		printf("error ------------ don't rmalloc enough GPU memory %s\n", infor);
+		printf("error ------------ don't rmalloc enough GPU memory %s, now uesd memory %zuB\n", infor, used_by_me_now);
 	else
 	{
 		rmove_pointer = tmove_pointer;
@@ -245,6 +251,38 @@ void *rfree_with_check(size_t size, char *infor)
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
 	return malloc_address;
+}
+
+void *record_lmove_pointer()
+{
+	// printf("lmove_pointer=%p used_by_me_now=%d lused=%d\n", lmove_pointer, used_by_me_now, lused);
+	return lmove_pointer;
+}
+
+void *record_rmove_pointer()
+{
+	// printf("rmove_pointer=%p used_by_me_now=%d rused=%d\n", rmove_pointer, used_by_me_now, rused);
+	return rmove_pointer;
+}
+
+void return_lmove_pointer(void *lpointer)
+{
+	int less = lmove_pointer - (char *)lpointer;
+	// printf("less=%d lmove_pointer=%p lpointer=%p\n", less, lmove_pointer, lpointer);
+	lmove_pointer = (char *)lpointer;
+	used_by_me_now -= less;
+	lused -= less;
+	// printf("used_by_me_now=%d lused=%d\n", used_by_me_now, lused);
+}
+
+void return_rmove_pointer(void *rpointer)
+{
+	int less = (char *)rpointer - rmove_pointer;
+	// printf("less=%d rmove_pointer=%p rpointer=%p\n", less, rmove_pointer, rpointer);
+	rmove_pointer = (char *)rpointer;
+	used_by_me_now -= less;
+	rused -= less;
+	// printf("used_by_me_now=%d rused=%d\n", used_by_me_now, rused);
 }
 
 #endif
