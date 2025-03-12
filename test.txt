@@ -1,320 +1,280 @@
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 523 2082 2
-hunyuangraph_admin->Coarsen_threshold=        16
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x719eae000000
-back_pointer=   0x719fa05e0000
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00020.graph 21198119 63580358 8 0
+hunyuangraph_admin->Coarsen_threshold=        64
 begin partition
-edgecut=325932
+Coarsen end: level=28 cnvtxs=55 cnedges=578 adjwgtsum=63580358
 
-Init_time=                      1.524 ms
-    set_initgraph_time              0.023   1.509%
-    update_tpwgts_time              0.001   0.066%
-    initcurand_gpu_time             0.001   0.066%
-    gpu_Bisection_time              1.437  94.291%
-    splitgraph_gpu_time             0.000   0.000%
-    select_where_gpu_time           0.021   1.378%
-    update_where_gpu_time           0.014   0.919%
-    update_answer_gpu_time          0.012   0.787%
-    else                            0.015   0.984%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 3983 10926 2
-hunyuangraph_admin->Coarsen_threshold=        16
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7ccc74000000
-back_pointer=   0x7ccd665e0000
-begin partition
-edgecut=13435
-
-Init_time=                    382.516 ms
-    set_initgraph_time              0.031   0.008%
-    update_tpwgts_time              0.000   0.000%
-    initcurand_gpu_time             0.000   0.000%
-    gpu_Bisection_time            382.364  99.960%
-    splitgraph_gpu_time             0.000   0.000%
-    select_where_gpu_time           0.064   0.017%
-    update_where_gpu_time           0.015   0.004%
-    update_answer_gpu_time          0.013   0.003%
-    else                            0.029   0.008%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 8135 24716 2
-hunyuangraph_admin->Coarsen_threshold=        16
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x72cdde000000
-back_pointer=   0x72ced05e0000
-begin partition
-edgecut=2467
-
-Init_time=                   2786.235 ms
-    set_initgraph_time              0.019   0.001%
-    update_tpwgts_time              0.000   0.000%
-    initcurand_gpu_time             0.000   0.000%
-    gpu_Bisection_time           2786.068  99.994%
-    splitgraph_gpu_time             0.000   0.000%
-    select_where_gpu_time           0.083   0.003%
-    update_where_gpu_time           0.017   0.001%
-    update_answer_gpu_time          0.015   0.001%
-    else                            0.033   0.001%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 3397 37582 2
-hunyuangraph_admin->Coarsen_threshold=        16
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x784fae000000
-back_pointer=   0x7850a05e0000
-begin partition
-edgecut=358629
-
-Init_time=                    753.179 ms
-    set_initgraph_time              0.021   0.003%
-    update_tpwgts_time              0.001   0.000%
-    initcurand_gpu_time             0.000   0.000%
-    gpu_Bisection_time            753.023  99.979%
-    splitgraph_gpu_time             0.000   0.000%
-    select_where_gpu_time           0.073   0.010%
-    update_where_gpu_time           0.015   0.002%
-    update_answer_gpu_time          0.015   0.002%
-    else                            0.031   0.004%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 523 2082 8
+Coarsen_time=                 411.647 ms
+    part_match                    203.310  49.389%
+        init_gpu_match_time             0.773   0.188%
+        check_length_time               1.938   0.471%
+        set_bin_time                    2.064   0.501%
+        hem_gpu_match_time            170.638  41.453%
+            random_match_time              31.947  18.722%
+            init_gpu_receive_send_time      2.865   1.679%
+            wgt_segmentsort_gpu_time       32.092  18.807%
+            segmentsort_memcpy_time         0.000   0.000%
+            set_receive_send_time          41.795  24.493%
+            set_match_topk_time             8.710   5.104%
+            leaf_matches                    0.349   0.205%
+                step1                           0.109   0.064%
+                step2                           0.240   0.141%
+            isolate_matches                 0.017   0.010%
+            twin_matches                    0.101   0.059%
+            relative_matches                0.229   0.134%
+                step1                           0.103   0.060%
+                step2                           0.126   0.074%
+            match_malloc_time               4.360   2.555%
+            match_memcpy_time               0.000   0.000%
+            match_free_time                13.674   8.013%
+        resolve_conflict_1_time         4.038   0.981%
+        resolve_conflict_2_time         1.371   0.333%
+        inclusive_scan_time             2.435   0.592%
+        resolve_conflict_4_time        10.020   2.434%
+    part_contruction              196.863  47.823%
+        exclusive_scan_time             1.311   0.318%
+        set_tadjncy_tadjwgt_time       66.818  16.232%
+        ncy_segmentsort_gpu_time       38.384   9.324%
+        mark_edges_time                18.225   4.427%
+        inclusive_scan_time2            6.654   1.616%
+        set_cxadj_time                  2.757   0.670%
+        init_cadjwgt_time               1.448   0.352%
+        set_cadjncy_cadjwgt_time       26.150   6.353%
+    coarsen_malloc                 34.356   8.346%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                   38.708   9.403%
+    else                            1.593   0.387%
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00020.graph 21198119 63580358 8 1
 hunyuangraph_admin->Coarsen_threshold=        64
 Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
 Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
 Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x769b6e000000
-back_pointer=   0x769c605e0000
+front_pointer=  0x7788b6000000
+back_pointer=   0x7789a85e0000
 begin partition
-edgecut=2129778
+Coarsen end: level=29 cnvtxs=42 cnedges=390 adjwgtsum=63580358
 
-Init_time=                      3.699 ms
-    set_initgraph_time              0.016   0.433%
-    update_tpwgts_time              0.003   0.081%
-    initcurand_gpu_time             0.001   0.027%
-    gpu_Bisection_time              3.210  86.780%
-    splitgraph_gpu_time             0.271   7.326%
-    select_where_gpu_time           0.056   1.514%
-    update_where_gpu_time           0.041   1.108%
-    update_answer_gpu_time          0.041   1.108%
-    else                            0.060   1.622%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 3983 10926 8
+Coarsen_time=                 306.344 ms
+    part_match                    160.294  52.325%
+        init_gpu_match_time             0.726   0.237%
+        check_length_time               1.998   0.652%
+        set_bin_time                    2.127   0.694%
+        hem_gpu_match_time            136.697  44.622%
+            random_match_time              32.234  23.581%
+            init_gpu_receive_send_time      2.651   1.939%
+            wgt_segmentsort_gpu_time       12.343   9.029%
+            segmentsort_memcpy_time         5.625   4.115%
+            set_receive_send_time          40.705  29.778%
+            set_match_topk_time             8.875   6.492%
+            leaf_matches                    0.408   0.298%
+                step1                           0.124   0.091%
+                step2                           0.284   0.208%
+            isolate_matches                 0.015   0.011%
+            twin_matches                    0.114   0.083%
+            relative_matches                0.262   0.192%
+                step1                           0.117   0.086%
+                step2                           0.145   0.106%
+            match_malloc_time               0.033   0.024%
+            match_memcpy_time               5.625   4.115%
+            match_free_time                 0.055   0.040%
+        resolve_conflict_1_time         3.642   1.189%
+        resolve_conflict_2_time         1.303   0.425%
+        inclusive_scan_time             2.815   0.919%
+        resolve_conflict_4_time        10.003   3.265%
+    part_contruction              146.007  47.661%
+        exclusive_scan_time             1.652   0.539%
+        set_tadjncy_tadjwgt_time       66.898  21.838%
+        ncy_segmentsort_gpu_time       17.987   5.872%
+        mark_edges_time                18.355   5.992%
+        inclusive_scan_time2            9.294   3.034%
+        set_cxadj_time                  2.774   0.906%
+        init_cadjwgt_time               1.449   0.473%
+        set_cadjncy_cadjwgt_time       27.185   8.874%
+    coarsen_malloc                  0.122   0.040%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                    0.079   0.026%
+    else                            6.951   2.269%
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00020.graph 21198119 63580358 8 1
 hunyuangraph_admin->Coarsen_threshold=        64
 Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
 Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
 Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7dcd6c000000
-back_pointer=   0x7dce5e5e0000
+front_pointer=  0x7d782e000000
+back_pointer=   0x7d79205e0000
 begin partition
-edgecut=51850
+Coarsen end: level=28 cnvtxs=58 cnedges=600 adjwgtsum=63580358
 
-Init_time=                    485.663 ms
-    set_initgraph_time              0.018   0.004%
-    update_tpwgts_time              0.004   0.001%
-    initcurand_gpu_time             0.003   0.001%
-    gpu_Bisection_time            485.051  99.874%
-    splitgraph_gpu_time             0.301   0.062%
-    select_where_gpu_time           0.110   0.023%
-    update_where_gpu_time           0.048   0.010%
-    update_answer_gpu_time          0.046   0.009%
-    else                            0.082   0.017%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 8135 24716 8
+Coarsen_time=                 306.099 ms
+    part_match                    160.229  52.345%
+        init_gpu_match_time             0.722   0.236%
+        check_length_time               1.993   0.651%
+        set_bin_time                    2.134   0.697%
+        hem_gpu_match_time            136.692  44.656%
+            random_match_time              32.224  23.574%
+            init_gpu_receive_send_time      2.643   1.934%
+            wgt_segmentsort_gpu_time       12.277   8.982%
+            segmentsort_memcpy_time         5.616   4.109%
+            set_receive_send_time          40.706  29.779%
+            set_match_topk_time             8.884   6.499%
+            leaf_matches                    0.398   0.291%
+                step1                           0.125   0.091%
+                step2                           0.273   0.200%
+            isolate_matches                 0.016   0.012%
+            twin_matches                    0.108   0.079%
+            relative_matches                0.255   0.187%
+                step1                           0.114   0.083%
+                step2                           0.141   0.103%
+            match_malloc_time               0.029   0.021%
+            match_memcpy_time               5.616   4.109%
+            match_free_time                 0.061   0.045%
+        resolve_conflict_1_time         3.619   1.182%
+        resolve_conflict_2_time         1.314   0.429%
+        inclusive_scan_time             2.794   0.913%
+        resolve_conflict_4_time        10.006   3.269%
+    part_contruction              145.827  47.640%
+        exclusive_scan_time             1.659   0.542%
+        set_tadjncy_tadjwgt_time       66.538  21.737%
+        ncy_segmentsort_gpu_time       17.890   5.845%
+        mark_edges_time                18.511   6.047%
+        inclusive_scan_time2            9.269   3.028%
+        set_cxadj_time                  2.762   0.902%
+        init_cadjwgt_time               1.458   0.476%
+        set_cadjncy_cadjwgt_time       27.319   8.925%
+    coarsen_malloc                  0.102   0.033%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                    0.082   0.027%
+    else                            6.941   2.268%
+all                            87.260 ms%
+top1_time                      34.873  39.964%
+top2_time                      27.428  31.433%
+top3_time                      13.765  15.775%
+top4_time                       9.834  11.270%
+leaf_time                       0.644   0.738%
+isolate_time                    0.085   0.097%
+twin_time                       0.195   0.223%
+relative_time                   0.436   0.500%
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00020.graph 21198119 63580358 8 1
 hunyuangraph_admin->Coarsen_threshold=        64
 Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
 Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
 Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7668ac000000
-back_pointer=   0x76699e5e0000
+front_pointer=  0x795506000000
+back_pointer=   0x7955f85e0000
 begin partition
-edgecut=15264
+Coarsen end: level=28 cnvtxs=57 cnedges=714 adjwgtsum=63580358
 
-Init_time=                   3747.560 ms
-    set_initgraph_time              0.018   0.000%
-    update_tpwgts_time              0.004   0.000%
-    initcurand_gpu_time             0.005   0.000%
-    gpu_Bisection_time           3746.842  99.981%
-    splitgraph_gpu_time             0.336   0.009%
-    select_where_gpu_time           0.149   0.004%
-    update_where_gpu_time           0.054   0.001%
-    update_answer_gpu_time          0.047   0.001%
-    else                            0.105   0.003%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 3397 37582 8
+---------------------------------------------------------
+Coarsen_time=                 306.486 ms
+    part_match                    160.166  52.259%
+        init_gpu_match_time             0.725   0.237%
+        check_length_time               1.997   0.652%
+        set_bin_time                    2.130   0.695%
+        hem_gpu_match_time            136.639  44.582%
+            random_match_time              32.135  23.518%
+            init_gpu_receive_send_time      2.650   1.939%
+            wgt_segmentsort_gpu_time       12.278   8.986%
+            segmentsort_memcpy_time         5.621   4.114%
+            set_receive_send_time          40.724  29.804%
+            set_match_topk_time             8.910   6.521%
+            leaf_matches                    0.396   0.290%
+                step1                           0.118   0.086%
+                step2                           0.278   0.203%
+            isolate_matches                 0.017   0.012%
+            twin_matches                    0.105   0.077%
+            relative_matches                0.246   0.180%
+                step1                           0.110   0.081%
+                step2                           0.136   0.100%
+            match_malloc_time               0.032   0.023%
+            match_memcpy_time               5.621   4.114%
+            match_free_time                 0.057   0.042%
+        resolve_conflict_1_time         3.611   1.178%
+        resolve_conflict_2_time         1.306   0.426%
+        inclusive_scan_time             2.793   0.911%
+        resolve_conflict_4_time        10.016   3.268%
+    part_contruction              146.282  47.729%
+        exclusive_scan_time             1.652   0.539%
+        set_tadjncy_tadjwgt_time       66.977  21.853%
+        ncy_segmentsort_gpu_time       17.956   5.859%
+        mark_edges_time                18.453   6.021%
+        inclusive_scan_time2            9.305   3.036%
+        set_cxadj_time                  2.768   0.903%
+        init_cadjwgt_time               1.452   0.474%
+        set_cadjncy_cadjwgt_time       27.297   8.906%
+    coarsen_malloc                  0.119   0.039%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                    0.074   0.024%
+    else                            6.926   2.260%
+---------------------------------------------------------
+---------------------------------------------------------
+all                            87.283 ms
+top1_time                      34.913  40.000%
+top2_time                      27.428  31.424%
+top3_time                      13.786  15.795%
+top4_time                       9.851  11.286%
+leaf_time                       0.641   0.734%
+isolate_time                    0.078   0.089%
+twin_time                       0.185   0.212%
+relative_time                   0.401   0.459%
+---------------------------------------------------------
+graph:/media/jiangdie/新加卷/graph_10w/wb-edu.graph 9845725 92472210 8 1
 hunyuangraph_admin->Coarsen_threshold=        64
 Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
 Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
 Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x74b37e000000
-back_pointer=   0x74b4705e0000
+front_pointer=  0x764b5c000000
+back_pointer=   0x764c4e5e0000
 begin partition
-edgecut=1764192
+Coarsen end: level=21 cnvtxs=62086 cnedges=419630 adjwgtsum=92472210
 
-Init_time=                    992.785 ms
-    set_initgraph_time              0.018   0.002%
-    update_tpwgts_time              0.003   0.000%
-    initcurand_gpu_time             0.001   0.000%
-    gpu_Bisection_time            991.893  99.910%
-    splitgraph_gpu_time             0.574   0.058%
-    select_where_gpu_time           0.115   0.012%
-    update_where_gpu_time           0.048   0.005%
-    update_answer_gpu_time          0.055   0.006%
-    else                            0.078   0.008%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 523 2082 64
-hunyuangraph_admin->Coarsen_threshold=       512
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x722f74000000
-back_pointer=   0x7230665e0000
-begin partition
-edgecut=5457359
-
-Init_time=                     12.626 ms
-    set_initgraph_time              0.016   0.127%
-    update_tpwgts_time              0.025   0.198%
-    initcurand_gpu_time             0.025   0.198%
-    gpu_Bisection_time              9.162  72.565%
-    splitgraph_gpu_time             1.924  15.238%
-    select_where_gpu_time           0.357   2.827%
-    update_where_gpu_time           0.334   2.645%
-    update_answer_gpu_time          0.315   2.495%
-    else                            0.468   3.707%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 3983 10926 64
-hunyuangraph_admin->Coarsen_threshold=       512
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x78df06000000
-back_pointer=   0x78dff85e0000
-begin partition
-edgecut=218898
-
-Init_time=                    459.097 ms
-    set_initgraph_time              0.018   0.004%
-    update_tpwgts_time              0.023   0.005%
-    initcurand_gpu_time             0.020   0.004%
-    gpu_Bisection_time            455.327  99.179%
-    splitgraph_gpu_time             2.149   0.468%
-    select_where_gpu_time           0.433   0.094%
-    update_where_gpu_time           0.328   0.071%
-    update_answer_gpu_time          0.315   0.069%
-    else                            0.484   0.105%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 8135 24716 64
-hunyuangraph_admin->Coarsen_threshold=       512
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x776124000000
-back_pointer=   0x7762165e0000
-begin partition
-edgecut=65134
-
-Init_time=                   3611.963 ms
-    set_initgraph_time              0.019   0.001%
-    update_tpwgts_time              0.016   0.000%
-    initcurand_gpu_time             0.024   0.001%
-    gpu_Bisection_time           3607.610  99.879%
-    splitgraph_gpu_time             2.546   0.070%
-    select_where_gpu_time           0.516   0.014%
-    update_where_gpu_time           0.345   0.010%
-    update_answer_gpu_time          0.326   0.009%
-    else                            0.561   0.016%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 3397 37582 64
-hunyuangraph_admin->Coarsen_threshold=       512
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7ead34000000
-back_pointer=   0x7eae265e0000
-begin partition
-edgecut=6568246
-
-Init_time=                    974.979 ms
-    set_initgraph_time              0.017   0.002%
-    update_tpwgts_time              0.023   0.002%
-    initcurand_gpu_time             0.025   0.003%
-    gpu_Bisection_time            970.395  99.530%
-    splitgraph_gpu_time             2.933   0.301%
-    select_where_gpu_time           0.432   0.044%
-    update_where_gpu_time           0.336   0.034%
-    update_answer_gpu_time          0.318   0.033%
-    else                            0.500   0.051%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 523 2082 256
-hunyuangraph_admin->Coarsen_threshold=      1024
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7fc01a000000
-back_pointer=   0x7fc10c5e0000
-begin partition
-edgecut=5626739
-
-Init_time=                     23.768 ms
-    set_initgraph_time              0.018   0.076%
-    update_tpwgts_time              0.083   0.349%
-    initcurand_gpu_time             0.081   0.341%
-    gpu_Bisection_time             10.578  44.505%
-    splitgraph_gpu_time             7.289  30.667%
-    select_where_gpu_time           1.366   5.747%
-    update_where_gpu_time           1.267   5.331%
-    update_answer_gpu_time          1.241   5.221%
-    else                            1.845   7.763%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/rgg_n_2_22_s0_gpu.graph 3983 10926 256
-hunyuangraph_admin->Coarsen_threshold=      1024
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7fa06c000000
-back_pointer=   0x7fa15e5e0000
-begin partition
-edgecut=429749
-
-Init_time=                    445.496 ms
-    set_initgraph_time              0.018   0.004%
-    update_tpwgts_time              0.091   0.020%
-    initcurand_gpu_time             0.072   0.016%
-    gpu_Bisection_time            431.705  96.904%
-    splitgraph_gpu_time             7.679   1.724%
-    select_where_gpu_time           1.483   0.333%
-    update_where_gpu_time           1.275   0.286%
-    update_answer_gpu_time          1.237   0.278%
-    else                            1.936   0.435%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/hugebubbles-00000_gpu.graph 8135 24716 256
-hunyuangraph_admin->Coarsen_threshold=      1024
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x6ffc64000000
-back_pointer=   0x6ffd565e0000
-begin partition
-edgecut=163102
-
-Init_time=                   3543.450 ms
-    set_initgraph_time              0.019   0.001%
-    update_tpwgts_time              0.092   0.003%
-    initcurand_gpu_time             0.090   0.003%
-    gpu_Bisection_time           3528.925  99.590%
-    splitgraph_gpu_time             8.277   0.234%
-    select_where_gpu_time           1.545   0.044%
-    update_where_gpu_time           1.335   0.038%
-    update_answer_gpu_time          1.251   0.035%
-    else                            1.916   0.054%
-graph:/home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/vas_stokes_2M_gpu.graph 3397 37582 256
-hunyuangraph_admin->Coarsen_threshold=      1024
-Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
-Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
-Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
-front_pointer=  0x7e123a000000
-back_pointer=   0x7e132c5e0000
-begin partition
-edgecut=11135243
-
-Init_time=                    923.207 ms
-    set_initgraph_time              0.020   0.002%
-    update_tpwgts_time              0.081   0.009%
-    initcurand_gpu_time             0.075   0.008%
-    gpu_Bisection_time            908.324  98.388%
-    splitgraph_gpu_time             8.835   0.957%
-    select_where_gpu_time           1.469   0.159%
-    update_where_gpu_time           1.267   0.137%
-    update_answer_gpu_time          1.287   0.139%
-    else                            1.849   0.200%
+---------------------------------------------------------
+Coarsen_time=                 425.290 ms
+    part_match                    254.982  59.955%
+        init_gpu_match_time             0.557   0.131%
+        check_length_time               3.415   0.803%
+        set_bin_time                    3.699   0.870%
+        hem_gpu_match_time            239.285  56.264%
+            random_match_time              46.867  19.586%
+            init_gpu_receive_send_time      2.678   1.119%
+            wgt_segmentsort_gpu_time       29.359  12.269%
+            segmentsort_memcpy_time        10.865   4.541%
+            set_receive_send_time          41.278  17.251%
+            set_match_topk_time             7.430   3.105%
+            leaf_matches                   34.315  14.341%
+                step1                           1.537   0.642%
+                step2                          32.778  13.698%
+            isolate_matches                 0.180   0.075%
+            twin_matches                   16.351   6.833%
+            relative_matches               24.638  10.297%
+                step1                           7.288   3.046%
+                step2                          17.350   7.251%
+            match_malloc_time               0.041   0.017%
+            match_memcpy_time              10.865   4.541%
+            match_free_time                 0.057   0.024%
+        resolve_conflict_1_time         0.982   0.231%
+        resolve_conflict_2_time         0.994   0.234%
+        inclusive_scan_time             2.185   0.514%
+        resolve_conflict_4_time         3.141   0.739%
+    part_contruction              170.274  40.037%
+        exclusive_scan_time             1.673   0.393%
+        set_tadjncy_tadjwgt_time       49.157  11.558%
+        ncy_segmentsort_gpu_time       39.807   9.360%
+        mark_edges_time                22.122   5.202%
+        inclusive_scan_time2           16.349   3.844%
+        set_cxadj_time                  2.151   0.506%
+        init_cadjwgt_time               2.653   0.624%
+        set_cadjncy_cadjwgt_time       36.045   8.475%
+    coarsen_malloc                  0.103   0.024%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                    0.070   0.016%
+    else                           11.865   2.790%
+---------------------------------------------------------
+---------------------------------------------------------
+all                           179.645 ms
+top1_time                      49.950  27.805%
+top2_time                      14.273   7.945%
+top3_time                      19.042  10.600%
+top4_time                      18.163  10.110%
+leaf_time                      35.593  19.813%
+isolate_time                    0.297   0.165%
+twin_time                      16.639   9.262%
+relative_time                  25.688  14.299%
+---------------------------------------------------------

@@ -5,17 +5,18 @@ input="graph1.csv"
 	i=1
 	while IFS=',' read -r  Name 
 	do
+	./hunyuangraph /media/jiangdie/新加卷/graph_10w/$Name.graph 8 >> /home/jiangdie/study/HunyuanGraph_SC25_0.0.0/coarsen.txt
 
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
-	./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
+	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240401_8.txt
 	
 	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 8 >> /home/hemeng/Documents/yongjiang/cuGP/20240306_8.txt
 	# ./cuMetis /media/hemeng/2TB1/graph/$Name.graph 32 >> /home/hemeng/Documents/yongjiang/cuGP/20240306_32.txt

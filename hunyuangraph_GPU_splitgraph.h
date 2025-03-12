@@ -599,7 +599,7 @@ __global__ void reduction_sum(int nvtxs, int *rnvtxs_gpu, int *where)
 		num[tid] = 0;
 	__syncthreads();
 
-	// if(tid == 0)
+	// if(nvtxs == 30 && tid == 0)
 	// 	for(int i = 0;i < 1024;i++)
 	// 		printf("%d %d \n", i, num[i]);
 	// __syncthreads();
@@ -812,50 +812,109 @@ void hunyuangraph_gpu_SplitGraph_intersect(hunyuangraph_admin_t *hunyuangraph_ad
 
 	int lnvtxs, rnvtxs, lnedges, rnedges;
 	
-	int *rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	int *rnvtxs_gpu;
+	if(GPU_Memory_Pool)
+		rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	else
+		cudaMalloc((void **)&rnvtxs_gpu, sizeof(int));
+
 	reduction_sum<<<1, 1024, sizeof(int) * 1024>>>(nvtxs, rnvtxs_gpu, where);
+
 	cudaMemcpy(&rnvtxs, rnvtxs_gpu, sizeof(int), cudaMemcpyDeviceToHost);
-	lfree_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	
+	if(GPU_Memory_Pool)
+		lfree_with_check((void *)rnvtxs_gpu, sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");	//	rnvtxs_gpu
+	else
+		cudaFree(rnvtxs_gpu);
+	
 	lnvtxs = nvtxs - rnvtxs;
 	// printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
 
-	int *map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
-	int *temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	int *map, *temp;
+	if(GPU_Memory_Pool)
+	{
+		map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
+		temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	}
+	else
+	{
+		cudaMalloc((void **)&map, sizeof(int) * nvtxs);
+		cudaMalloc((void **)&temp, sizeof(int) * nvtxs);
+	}
+
 	compute_nedges<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, where, temp);
 
 	compute_map_1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, where, map);
 	
-	prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	if(GPU_Memory_Pool)
+		prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, map, map + nvtxs, map);
 
 	compute_map_2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, where, map);
 
-	lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
-	lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
-	rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
-	rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+	if(GPU_Memory_Pool)
+	{
+		lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
+		lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+		rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
+		rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+	}
+	else
+	{
+		cudaMalloc((void **)&lgraph->cuda_vwgt, sizeof(int) * lnvtxs);
+		cudaMalloc((void **)&lgraph->cuda_xadj, sizeof(int) * (lnvtxs + 1));
+		cudaMalloc((void **)&rgraph->cuda_vwgt, sizeof(int) * rnvtxs);
+		cudaMalloc((void **)&rgraph->cuda_xadj, sizeof(int) * (rnvtxs + 1));
+	}
+
 	compute_xadj<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, where, lgraph->cuda_xadj, rgraph->cuda_xadj);
 
-	prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
-	prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	if(GPU_Memory_Pool)
+		prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1 + lnvtxs, lgraph->cuda_xadj + 1);
+	
+	if(GPU_Memory_Pool)
+		prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1 + rnvtxs, rgraph->cuda_xadj + 1);
 
 	cudaMemcpy(&lnedges, &lgraph->cuda_xadj[lnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
 	cudaMemcpy(&rnedges, &rgraph->cuda_xadj[rnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
 
 	// printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
-	lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
-	lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
-	lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
-	rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
-	rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
-	rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+	if(GPU_Memory_Pool)
+	{
+		lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
+		lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
+		lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
+		rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
+		rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
+		rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+	}
+	else
+	{
+		cudaMalloc((void **)&lgraph->cuda_adjncy, sizeof(int) * lnedges);
+		cudaMalloc((void **)&lgraph->cuda_adjwgt, sizeof(int) * lnedges);
+		cudaMalloc((void **)&lgraph->cuda_label, sizeof(int) * lnvtxs);
+		cudaMalloc((void **)&rgraph->cuda_adjncy, sizeof(int) * rnedges);
+		cudaMalloc((void **)&rgraph->cuda_adjwgt, sizeof(int) * rnedges);
+		cudaMalloc((void **)&rgraph->cuda_label, sizeof(int) * rnvtxs);
+	}
 
-	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
-
+	if(GPU_Memory_Pool)
+		rfree_with_check((void *)temp, sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
+	else
+		cudaFree(temp);
 	// exit(0);
 	compute_adjncy_adjwgt_vwgt_label<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, where, graph->cuda_vwgt, graph->cuda_label, map,\
 		lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
 	
-	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");			//	map
+	if(GPU_Memory_Pool)
+		rfree_with_check((void *)map, sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");				//	map
+	else
+		cudaFree(map);
 
 	// cudaDeviceSynchronize();
 	// exam_csr_where<<<1, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
@@ -951,55 +1010,121 @@ void hunyuangraph_gpu_SplitGraph_separate(hunyuangraph_admin_t *hunyuangraph_adm
 
 	int lnvtxs, rnvtxs, lnedges, rnedges;
 	
-	int *rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	int *rnvtxs_gpu;
+	if(GPU_Memory_Pool)
+		rnvtxs_gpu = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
+	else
+		cudaMalloc((void **)&rnvtxs_gpu, sizeof(int));
 	reduction_sum<<<1, 1024, sizeof(int) * 1024>>>(nvtxs, rnvtxs_gpu, graph->cuda_where);
 	cudaMemcpy(&rnvtxs, rnvtxs_gpu, sizeof(int), cudaMemcpyDeviceToHost);
-	lfree_with_check(sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");
-	lnvtxs = nvtxs - rnvtxs;
-	printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
 
-	int *map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
-	int *temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	if(GPU_Memory_Pool)
+		lfree_with_check((void *)rnvtxs_gpu, sizeof(int), "hunyuangraph_gpu_SplitGraph: rnvtxs_gpu");		//	rnvtxs_gpu
+	else
+		cudaFree(rnvtxs_gpu);
+	
+	lnvtxs = nvtxs - rnvtxs;
+	// printf("rnvtxs=%d lnvtxs=%d\n", rnvtxs, lnvtxs);
+
+	int *map, *temp;
+	if(GPU_Memory_Pool)
+	{
+		map = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");
+		temp = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");
+	}
+	else
+	{
+		cudaMalloc((void **)&map, sizeof(int) * nvtxs);
+		cudaMalloc((void **)&temp, sizeof(int) * nvtxs);
+	}
+
 	compute_nedges<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_where, temp);
 
 	compute_map_l<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, map);
-	prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	if(GPU_Memory_Pool)
+		prefixsum(map, map, nvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, map, map + nvtxs, map);
 
 	// cudaDeviceSynchronize();
 	// exam_map<<<1, 1>>>(nvtxs, map, graph->cuda_where);
 
-	lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
-	lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+	if(GPU_Memory_Pool)
+	{
+		lgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_vwgt");
+		lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
+	}
+	else
+	{
+		cudaMalloc((void **)&lgraph->cuda_vwgt, sizeof(int) * lnvtxs);
+		cudaMalloc((void **)&lgraph->cuda_xadj, sizeof(int) * (lnvtxs + 1));
+	}
+
 	compute_xadj_l<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, lgraph->cuda_xadj);
-	prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	if(GPU_Memory_Pool)
+		prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1 + lnvtxs, lgraph->cuda_xadj + 1);
+
 	cudaMemcpy(&lnedges, &lgraph->cuda_xadj[lnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
 
-	lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
-	lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
-	lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
+	if(GPU_Memory_Pool)
+	{
+		lgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjncy");
+		lgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * lnedges, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_adjwgt");
+		lgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * lnvtxs, "hunyuangraph_gpu_SplitGraph: lgraph->cuda_label");
 
-	rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
-	rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+		rgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_vwgt");
+		rgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (rnvtxs + 1), "hunyuangraph_gpu_SplitGraph: rgraph->cuda_xadj");
+	}
+	else
+	{
+		cudaMalloc((void **)&lgraph->cuda_adjncy, sizeof(int) * lnedges);
+		cudaMalloc((void **)&lgraph->cuda_adjwgt, sizeof(int) * lnedges);
+		cudaMalloc((void **)&lgraph->cuda_label, sizeof(int) * lnvtxs);
+
+		cudaMalloc((void **)&rgraph->cuda_vwgt, sizeof(int) * rnvtxs);
+		cudaMalloc((void **)&rgraph->cuda_xadj, sizeof(int) * (rnvtxs + 1));
+	}
+
 	compute_map_r<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, map);
 	
 	// cudaDeviceSynchronize();
 	// exam_map<<<1, 1>>>(nvtxs, map, graph->cuda_where);
 	
 	compute_xadj_r<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, rgraph->cuda_xadj);
-	prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+
+	if(GPU_Memory_Pool)
+		prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	else
+		thrust::inclusive_scan(thrust::device, rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1 + rnvtxs, rgraph->cuda_xadj + 1);
+
 	cudaMemcpy(&rnedges, &rgraph->cuda_xadj[rnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
 	
 	printf("rnedges=%d lnedges=%d\n", rnedges, lnedges);
 
-	rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
-	rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
-	rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+	if(GPU_Memory_Pool)
+	{
+		rgraph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjncy");
+		rgraph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * rnedges, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_adjwgt");
+		rgraph->cuda_label = (int *)lmalloc_with_check(sizeof(int) * rnvtxs, "hunyuangraph_gpu_SplitGraph: rgraph->cuda_label");
+	}
+	else
+	{
+		cudaMalloc((void **)&rgraph->cuda_adjncy, sizeof(int) * rnedges);
+		cudaMalloc((void **)&rgraph->cuda_adjwgt, sizeof(int) * rnedges);
+		cudaMalloc((void **)&rgraph->cuda_label, sizeof(int) * rnvtxs);
+	}
 
 	// lgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (lnvtxs + 1), "hunyuangraph_gpu_SplitGraph: lgraph->cuda_xadj");
 	// compute_xadj_l<<<(nvtxs + 128) / 128, 128>>>(nvtxs, temp, map, graph->cuda_where, lgraph->cuda_xadj, rgraph->cuda_xadj);
 
-	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
-
+	if(GPU_Memory_Pool)
+		rfree_with_check((void *)temp, sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: temp");			//	temp
+	else
+		cudaFree(temp);
 	// prefixsum(lgraph->cuda_xadj + 1, lgraph->cuda_xadj + 1, lnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
 	// prefixsum(rgraph->cuda_xadj + 1, rgraph->cuda_xadj + 1, rnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
 
@@ -1011,8 +1136,10 @@ void hunyuangraph_gpu_SplitGraph_separate(hunyuangraph_admin_t *hunyuangraph_adm
 	compute_adjncy_adjwgt_vwgt_label<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, graph->cuda_vwgt, graph->cuda_label, map,\
 		lgraph->cuda_xadj, lgraph->cuda_adjncy, lgraph->cuda_adjwgt, lgraph->cuda_vwgt, lgraph->cuda_label, rgraph->cuda_xadj, rgraph->cuda_adjncy, rgraph->cuda_adjwgt, rgraph->cuda_vwgt, rgraph->cuda_label);
 	
-	rfree_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");			//	map
-
+	if(GPU_Memory_Pool)
+		rfree_with_check((void *)map, sizeof(int) * nvtxs, "hunyuangraph_gpu_SplitGraph: map");				//	map
+	else
+		cudaFree(map);
 	// cudaDeviceSynchronize();
 	// exam_csr_where<<<1, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
 

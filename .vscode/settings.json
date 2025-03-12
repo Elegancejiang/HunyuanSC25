@@ -7,6 +7,7 @@
         "utility": "cpp",
         "__config": "cpp",
         "ratio": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "numbers": "cpp"
     }
 }

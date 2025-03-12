@@ -15,6 +15,7 @@
 #include "hunyuangraph_timer.h"
 
 /*pointer*/
+int GPU_Memory_Pool = 1;	//	Hunyuan's GPU memory pool is enabled by default
 char *deviceMemory;
 char *front_pointer;
 char *back_pointer;
@@ -93,13 +94,14 @@ void *lmalloc_with_check(size_t size, char *infor)
 {
 	if (size < 0)
 		printf("error: %s is lmalloc_with_check( %d < 0)\n", infor, size);
+	
+	void *malloc_address = NULL;
 
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
 		used_size = size + hunyuangraph_GPU_cacheline - size % hunyuangraph_GPU_cacheline;
 	else
 		used_size = size;
-	void *malloc_address = NULL;
 
 	tmove_pointer = lmove_pointer + used_size;
 	lused += used_size;
@@ -134,13 +136,13 @@ void *rmalloc_with_check(size_t size, char *infor)
 	if (size < 0)
 		printf("error: %s is rmalloc_with_check( %d < 0)\n", infor, size);
 
+	void *malloc_address = NULL;
+
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
 		used_size = size + hunyuangraph_GPU_cacheline - size % hunyuangraph_GPU_cacheline;
 	else
 		used_size = size;
-
-	void *malloc_address = NULL;
 
 	tmove_pointer = rmove_pointer - used_size;
 	rused += used_size;
@@ -166,21 +168,20 @@ void *rmalloc_with_check(size_t size, char *infor)
 	// printf("rmalloc rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
+
 	return malloc_address;
 }
 
-void *lfree_with_check(size_t size, char *infor)
+void *lfree_with_check(void *malloc_address, size_t size, char *infor)
 {
 	if (size < 0)
 		printf("lfree_with_check( size < 0)\n");
-
+	
 	size_t used_size;
 	if (size % hunyuangraph_GPU_cacheline != 0)
 		used_size = size + hunyuangraph_GPU_cacheline - size % hunyuangraph_GPU_cacheline;
 	else
 		used_size = size;
-
-	void *malloc_address = NULL;
 
 	tmove_pointer = lmove_pointer - used_size;
 	lused -= used_size;
@@ -195,7 +196,6 @@ void *lfree_with_check(size_t size, char *infor)
 	else
 	{
 		lmove_pointer = tmove_pointer;
-		// malloc_address = lmove_pointer;
 		used_by_me_now -= used_size;
 		used_by_me_max = hunyuangraph_max(used_by_me_max, used_by_me_now);
 	}
@@ -205,13 +205,15 @@ void *lfree_with_check(size_t size, char *infor)
 	// printf("lmove_pointer= %p\n",lmove_pointer);
 	// printf("lfree   lmove_pointer=%p size=%10d used_size=%10d %s\n", lmove_pointer, size, used_size, infor);
 	// printf("rmove_pointer= %p\n",rmove_pointer);
-	// printf("malloc_address=lfree\n");
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
+
+	malloc_address = NULL;
+
 	return malloc_address;
 }
 
-void *rfree_with_check(size_t size, char *infor)
+void *rfree_with_check(void *malloc_address, size_t size, char *infor)
 {
 	if (size < 0)
 		printf("rfree_with_check( size < 0)\n");
@@ -221,8 +223,6 @@ void *rfree_with_check(size_t size, char *infor)
 		used_size = size + hunyuangraph_GPU_cacheline - size % hunyuangraph_GPU_cacheline;
 	else
 		used_size = size;
-
-	void *malloc_address = NULL;
 
 	tmove_pointer = rmove_pointer + used_size;
 	rused -= used_size;
@@ -237,7 +237,6 @@ void *rfree_with_check(size_t size, char *infor)
 	else
 	{
 		rmove_pointer = tmove_pointer;
-		// malloc_address = rmove_pointer;
 		used_by_me_now -= used_size;
 		used_by_me_max = hunyuangraph_max(used_by_me_max, used_by_me_now);
 	}
@@ -247,9 +246,11 @@ void *rfree_with_check(size_t size, char *infor)
 	// printf("lmove_pointer=  %p\n",lmove_pointer);
 	// printf("rmove_pointer=  %p\n",rmove_pointer);
 	// printf("rfree   rmove_pointer=%p size=%10d used_size=%10d %s\n", rmove_pointer, size, used_size, infor);
-	// printf("malloc_address= rfree\n");
 	// printf("available space %zuKB %zuMB %zuGB\n",(rmove_pointer - lmove_pointer) / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024,(rmove_pointer - lmove_pointer) / 1024 / 1024 / 1024);
 	// printf("\n");
+	
+	malloc_address = NULL;
+	
 	return malloc_address;
 }
 

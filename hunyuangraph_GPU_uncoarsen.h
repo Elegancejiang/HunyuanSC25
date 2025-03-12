@@ -69,19 +69,35 @@ void Mallocinit_refineinfo(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangrap
 	// cudaMalloc((void**)&graph->cuda_maxwgt,nparts * sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_minwgt,nparts * sizeof(int));
 
-	graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "Mallocinit_refineinfo: where");
-	graph->cuda_bnd = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "Mallocinit_refineinfo: bnd");
-	graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: pwgts");
-	graph->cuda_tpwgts = (float *)lmalloc_with_check(sizeof(float) * nparts, "Mallocinit_refineinfo: tpwgts");
-	graph->cuda_maxwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: maxwgt");
-	graph->cuda_minwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: minwgt");
-	graph->cuda_bndnum = (int *)lmalloc_with_check(sizeof(int), "Mallocinit_refineinfo: bndnum");
+	if(GPU_Memory_Pool)
+	{
+		// graph->cuda_where = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "Mallocinit_refineinfo: where");
+		// graph->cuda_bnd = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "Mallocinit_refineinfo: bnd");
+		graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: pwgts");
+		graph->cuda_tpwgts = (float *)lmalloc_with_check(sizeof(float) * nparts, "Mallocinit_refineinfo: tpwgts");
+		graph->cuda_maxwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: maxwgt");
+		graph->cuda_minwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "Mallocinit_refineinfo: minwgt");
+		// graph->cuda_bndnum = (int *)lmalloc_with_check(sizeof(int), "Mallocinit_refineinfo: bndnum");
 
-	graph->cuda_bn = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_bn");
-	graph->cuda_bt = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_bt");
-	graph->cuda_g = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_g");
-	graph->cuda_csr = (int *)lmalloc_with_check(sizeof(int) * 2, "Mallocinit_refineinfo: cuda_csr");
-	graph->cuda_que = (int *)lmalloc_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "Mallocinit_refineinfo: cuda_que");
+		graph->cuda_balance = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_malloc_refineinfo: cuda_balance");
+		// graph->cuda_bn = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_bn");
+		graph->cuda_select = (char *)lmalloc_with_check(sizeof(char) * graph->nvtxs,"cuda_select");
+		graph->cuda_to = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_to");
+		graph->cuda_gain = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_gain");
+		// graph->cuda_csr = (int *)lmalloc_with_check(sizeof(int) * 2, "Mallocinit_refineinfo: cuda_csr");
+		// graph->cuda_que = (int *)lmalloc_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "Mallocinit_refineinfo: cuda_que");
+	}
+	else
+	{
+		cudaMalloc((void **)&graph->cuda_pwgts, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_tpwgts, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_maxwgt, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_minwgt, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_balance, sizeof(int));
+		cudaMalloc((void **)&graph->cuda_select, sizeof(int) * graph->nvtxs);
+		cudaMalloc((void **)&graph->cuda_to, sizeof(int) * graph->nvtxs);
+		cudaMalloc((void **)&graph->cuda_gain, sizeof(int) * graph->nvtxs);
+	}
 
 	cudaMemcpy(graph->cuda_where, graph->where, nvtxs * sizeof(int), cudaMemcpyHostToDevice);
 	cudaMemcpy(graph->cuda_bndnum, &num, sizeof(int), cudaMemcpyHostToDevice);
@@ -90,7 +106,8 @@ void Mallocinit_refineinfo(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangrap
 
 	calculateSum<<<(nvtxs + 127) / 128, 128, nparts * sizeof(int)>>>(nvtxs, nparts, graph->cuda_pwgts, graph->cuda_where, graph->cuda_vwgt);
 
-	inittpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts[0], nparts);
+	// inittpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts[0], nparts);
+	cudaMemcpy(graph->cuda_tpwgts,hunyuangraph_admin->tpwgts,nparts * sizeof(float),cudaMemcpyHostToDevice);
 }
 
 /*Malloc refine params*/
@@ -109,26 +126,42 @@ void hunyuangraph_malloc_refineinfo(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	// cudaMalloc((void**)&graph->cuda_maxwgt,nparts * sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_minwgt,nparts * sizeof(int));
 
-	graph->cuda_bnd = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_malloc_refineinfo: bnd");
-	graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: pwgts");
-	graph->cuda_tpwgts = (float *)lmalloc_with_check(sizeof(float) * nparts, "hunyuangraph_malloc_refineinfo: tpwgts");
-	graph->cuda_maxwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: maxwgt");
-	graph->cuda_minwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: minwgt");
-	graph->cuda_bndnum = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_malloc_refineinfo: bndnum");
+	if(GPU_Memory_Pool)
+	{
+		// graph->cuda_bnd = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_malloc_refineinfo: bnd");
+		graph->cuda_pwgts = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: pwgts");
+		graph->cuda_tpwgts = (float *)lmalloc_with_check(sizeof(float) * nparts, "hunyuangraph_malloc_refineinfo: tpwgts");
+		graph->cuda_maxwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: maxwgt");
+		graph->cuda_minwgt = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_malloc_refineinfo: minwgt");
+		// graph->cuda_bndnum = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_malloc_refineinfo: bndnum");
 
-	graph->cuda_bn = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_malloc_refineinfo: cuda_bn");
-	graph->cuda_bt = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_malloc_refineinfo: cuda_bt");
-	graph->cuda_g = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_malloc_refineinfo: cuda_g");
-	graph->cuda_csr = (int *)lmalloc_with_check(sizeof(int) * 2, "hunyuangraph_malloc_refineinfo: cuda_csr");
-	graph->cuda_que = (int *)lmalloc_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "hunyuangraph_malloc_refineinfo: cuda_que");
-
+		graph->cuda_balance = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_malloc_refineinfo: cuda_balance");
+		// graph->cuda_bn = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_malloc_refineinfo: cuda_bn");
+		graph->cuda_select = (char *)lmalloc_with_check(sizeof(char) * graph->nvtxs,"cuda_select");
+		graph->cuda_to = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_to");
+		graph->cuda_gain = (int *)lmalloc_with_check(sizeof(int) * graph->nvtxs, "Mallocinit_refineinfo: cuda_gain");
+		// graph->cuda_csr = (int *)lmalloc_with_check(sizeof(int) * 2, "hunyuangraph_malloc_refineinfo: cuda_csr");
+		// graph->cuda_que = (int *)lmalloc_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "hunyuangraph_malloc_refineinfo: cuda_que");
+	}
+	else
+	{
+		cudaMalloc((void **)&graph->cuda_pwgts, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_tpwgts, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_maxwgt, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_minwgt, sizeof(int) * nparts);
+		cudaMalloc((void **)&graph->cuda_balance, sizeof(int));
+		cudaMalloc((void **)&graph->cuda_select, sizeof(int) * graph->nvtxs);
+		cudaMalloc((void **)&graph->cuda_to, sizeof(int) * graph->nvtxs);
+		cudaMalloc((void **)&graph->cuda_gain, sizeof(int) * graph->nvtxs);
+	}
 	cudaMemcpy(graph->cuda_bndnum, &num, sizeof(int), cudaMemcpyHostToDevice);
 
 	initpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_pwgts, nparts);
 
 	calculateSum<<<(nvtxs + 127) / 128, 128, nparts * sizeof(int)>>>(nvtxs, nparts, graph->cuda_pwgts, graph->cuda_where, graph->cuda_vwgt);
 
-	inittpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts[0], nparts);
+	// inittpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts[0], nparts);
+	cudaMemcpy(graph->cuda_tpwgts,hunyuangraph_admin->tpwgts,nparts * sizeof(float),cudaMemcpyHostToDevice);
 }
 
 /*CUDA-kway parjection*/
@@ -155,46 +188,59 @@ void hunyuangraph_kway_project(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 /*Free graph uncoarsening phase params*/
 void hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 {
-	// printf("hunyuangraph_uncoarsen_free_krefine nvtxs=%d\n", graph->nvtxs);
-	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "hunyuangraph_uncoarsen_free_krefine: cuda_que"); // cuda_que
-	lfree_with_check(sizeof(int) * 2, "cuda_csr");																	 // cuda_csr
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_g");					 // cuda_g
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_bt");					 // cuda_bt
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_bn");					 // cuda_bn
-	lfree_with_check(sizeof(int), "hunyuangraph_uncoarsen_free_krefine: bndnum");									 // bndnum
-	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: minwgt");		 // minwgt
-	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: maxwgt");		 // maxwgt
-	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: tpwgts");		 // tpwgts
-	lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: pwgts");		 // pwgts
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: bnd");						 // bnd
-
-	// cudaFree(graph->cuda_adjwgt);
-	// cudaFree(graph->cuda_adjncy);
-	// cudaFree(graph->cuda_xadj);
-	// cudaFree(graph->cuda_vwgt);
-	//   cudaFree(graph->cuda_cmap);
-	//   cudaFree(graph->cuda_maxwgt);
-	//   cudaFree(graph->cuda_minwgt);
-	//   cudaFree(graph->cuda_where);
-	//   cudaFree(graph->cuda_pwgts);
-	//   cudaFree(graph->cuda_bnd);
-	//   cudaFree(graph->cuda_bndnum);
-	//   cudaFree(graph->cuda_real_bnd_num);
-	//   cudaFree(graph->cuda_real_bnd);
-	//   cudaFree(graph->cuda_tpwgts);
+	if(GPU_Memory_Pool)
+	{
+		// printf("hunyuangraph_uncoarsen_free_krefine nvtxs=%d\n", graph->nvtxs);
+		// lfree_with_check(sizeof(int) * hunyuangraph_admin->nparts * 2, "hunyuangraph_uncoarsen_free_krefine: cuda_que");	// cuda_que
+		// lfree_with_check(sizeof(int) * 2, "cuda_csr");																	 	// cuda_csr
+		lfree_with_check((void *)graph->cuda_gain, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_gain");					// cuda_gain
+		lfree_with_check((void *)graph->cuda_to, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_to");						// cuda_to
+		lfree_with_check((void *)graph->cuda_select, sizeof(char) * graph->nvtxs, "cuda_select");													// cuda_select
+		// lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: cuda_bn");					 	// cuda_bn
+		lfree_with_check((void *)graph->cuda_balance, sizeof(int), "hunyuangraph_uncoarsen_free_krefine: cuda_balance");							// cuda_balance
+		// lfree_with_check(sizeof(int), "hunyuangraph_uncoarsen_free_krefine: bndnum");									 	// bndnum
+		lfree_with_check((void *)graph->cuda_minwgt, sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: minwgt");		// minwgt
+		lfree_with_check((void *)graph->cuda_maxwgt, sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: maxwgt");		// maxwgt
+		lfree_with_check((void *)graph->cuda_tpwgts, sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: tpwgts");		// tpwgts
+		lfree_with_check((void *)graph->cuda_pwgts, sizeof(int) * hunyuangraph_admin->nparts, "hunyuangraph_uncoarsen_free_krefine: pwgts");		// pwgts
+		// lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_krefine: bnd");						 	// bnd
+	}
+	else
+	{
+		cudaFree(graph->cuda_gain);
+		cudaFree(graph->cuda_to);
+		cudaFree(graph->cuda_select);
+		cudaFree(graph->cuda_balance);
+		cudaFree(graph->cuda_minwgt);
+		cudaFree(graph->cuda_maxwgt);
+		cudaFree(graph->cuda_tpwgts);
+		cudaFree(graph->cuda_pwgts);
+	}
 }
 
 void hunyuangraph_uncoarsen_free_coarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 {
 	// printf("hunyuangraph_uncoarsen_free_coarsen nvtxs=%d\n", graph->nvtxs);
-
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where"); // where
-	if (graph->cuda_cmap != NULL)
-		lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: cmap");	 // cmap;
-	lfree_with_check(sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjwgt");	 // adjwgt
-	lfree_with_check(sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjncy");	 // adjncy
-	lfree_with_check(sizeof(int) * (graph->nvtxs + 1), "hunyuangraph_uncoarsen_free_coarsen: xadj"); // xadj
-	lfree_with_check(sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: vwgt");		 // vwgt
+	if(GPU_Memory_Pool)
+	{
+		lfree_with_check((void *)graph->cuda_where, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where");			// where
+		if (graph->cuda_cmap != NULL)
+			lfree_with_check((void *)graph->cuda_cmap, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: cmap");		// cmap;
+		lfree_with_check((void *)graph->cuda_adjwgt, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjwgt");		// adjwgt
+		lfree_with_check((void *)graph->cuda_adjncy, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjncy");		// adjncy
+		lfree_with_check((void *)graph->cuda_xadj, sizeof(int) * (graph->nvtxs + 1), "hunyuangraph_uncoarsen_free_coarsen: xadj");		// xadj
+		lfree_with_check((void *)graph->cuda_vwgt, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: vwgt");			// vwgt
+	}
+	else
+	{
+		cudaFree(graph->cuda_where);
+		if (graph->cuda_cmap != NULL)
+			cudaFree(graph->cuda_cmap);
+		cudaFree(graph->cuda_adjwgt);
+		cudaFree(graph->cuda_adjncy);
+		cudaFree(graph->cuda_xadj);
+		cudaFree(graph->cuda_vwgt);
+	}
 }
 
 void hunyuangraph_GPU_uncoarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph)
@@ -221,6 +267,41 @@ void hunyuangraph_GPU_uncoarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyua
 			hunyuangraph_malloc_refineinfo(hunyuangraph_admin, cgraph);
 
 			hunyuangraph_k_refinement(hunyuangraph_admin, cgraph);
+			// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
+
+			hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin, cgraph);
+
+			// hunyuangraph_free_uncoarsen(hunyuangraph_admin, cgraph->coarser);
+		}
+		else
+			break;
+	}
+}
+
+void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph)
+{
+	Mallocinit_refineinfo(hunyuangraph_admin, cgraph);
+
+	hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph);
+	// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
+
+	hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin, cgraph);
+
+	for (int i = 0;; i++)
+	{
+		if (cgraph != graph)
+		{
+			cgraph = cgraph->finer;
+
+			// cudaMalloc((void**)&cgraph->cuda_where, cgraph->nvtxs * sizeof(int));
+
+			hunyuangraph_kway_project(hunyuangraph_admin, cgraph);
+
+			hunyuangraph_uncoarsen_free_coarsen(hunyuangraph_admin, cgraph->coarser);
+
+			hunyuangraph_malloc_refineinfo(hunyuangraph_admin, cgraph);
+
+			hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph);
 			// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
 
 			hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin, cgraph);

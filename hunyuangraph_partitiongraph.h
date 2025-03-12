@@ -13,17 +13,21 @@
 void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *part)
 {
 	hunyuangraph_graph_t *cgraph;
+	int level = 0;
 
 	// printf("Coarsen begin\n");
 
-	// cudaDeviceSynchronize();
-	// gettimeofday(&begin_part_coarsen, NULL);
-	// cgraph = hunyuangarph_coarsen(hunyuangraph_admin, graph);
-	// cudaDeviceSynchronize();
-	// gettimeofday(&end_part_coarsen, NULL);
-	// part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
+	cudaDeviceSynchronize();
+	gettimeofday(&begin_part_coarsen, NULL);
+	cgraph = hunyuangarph_coarsen(hunyuangraph_admin, graph, &level);
+	cudaDeviceSynchronize();
+	gettimeofday(&end_part_coarsen, NULL);
+	part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
 
-	// printf("Coarsen end:cnvtxs=%d cnedges=%d\n", cgraph->nvtxs, cgraph->nedges);
+	printf("Coarsen end: level=%d cnvtxs=%d cnedges=%d adjwgtsum=%d\n", level, cgraph->nvtxs, cgraph->nedges, compute_graph_adjwgtsum_gpu(graph));
+
+	// print_time_coarsen();
+	// print_time_topkfour_match();
 
 	// FILE *fp = fopen("graph.txt","w");
     // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
@@ -42,7 +46,7 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&begin_part_init, NULL);
 	// hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
 	// hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
-	cgraph = graph;
+	// cgraph = graph;
 	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_init, NULL);
@@ -50,29 +54,32 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_bisection, NULL);
-    hunyuangraph_computecut_gpu<<<1, 1>>>(cgraph->nvtxs, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
+    // hunyuangraph_computecut_gpu<<<1, 1>>>(cgraph->nvtxs, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_bisection, NULL);
     computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
-	// print_time_coarsen();
-	print_time_init();
-
-	exit(0);
+	// print_time_init();
 
 	// hunyuangraph_memcpy_coarsentoinit(cgraph);
-	// int e = hunyuangraph_computecut(cgraph, cgraph->where);
-	// printf("edgecut=%d\n",e);
-	// printf("Init partition end\n");
+	// int edgecut;
+	// compute_edgecut_gpu(cgraph->nvtxs, &edgecut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
+	// printf("edgecut=%d\n",edgecut);
+	printf("Init partition end\n");
 
-	cudaDeviceSynchronize();
+	// exit(0);
+
+	// cudaDeviceSynchronize();
 	gettimeofday(&begin_part_uncoarsen, NULL);
 	// hunyuangraph_GPU_uncoarsen(hunyuangraph_admin, graph, cgraph);
+	hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin, graph, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_uncoarsen, NULL);
 	part_uncoarsen += (end_part_uncoarsen.tv_sec - begin_part_uncoarsen.tv_sec) * 1000 + (end_part_uncoarsen.tv_usec - begin_part_uncoarsen.tv_usec) / 1000.0;
-
-	// printf("Uncoarsen end\n");
+	
+	// print_time_uncoarsen();
+	printf("Uncoarsen end\n");
+	// exit(0);
 }
 
 /*Set kway balance params*/
@@ -103,10 +110,21 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 {
 	int nvtxs = graph->nvtxs;
 	int nedges = graph->nedges;
-	graph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "vwgt");
-	graph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (nvtxs + 1), "xadj");
-	graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjncy");
-	graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjwgt");
+
+	if(GPU_Memory_Pool)
+	{
+		graph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "vwgt");
+		graph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (nvtxs + 1), "xadj");
+		graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjncy");
+		graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjwgt");
+	}
+	else
+	{
+		cudaMalloc((void**)&graph->cuda_vwgt, sizeof(int) * nvtxs);
+		cudaMalloc((void**)&graph->cuda_xadj, sizeof(int) * (nvtxs + 1));
+		cudaMalloc((void**)&graph->cuda_adjncy, sizeof(int) * nedges);
+		cudaMalloc((void**)&graph->cuda_adjwgt, sizeof(int) * nedges);
+	}
 
 	// cudaMalloc((void**)&graph->cuda_xadj,(nvtxs+1)*sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_vwgt,nvtxs*sizeof(int));
@@ -133,8 +151,8 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 	// // ����CUDA��
 	// cudaStreamDestroy(stream);
 
-	cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
-	cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
+	// cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
+	// cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
 }
 
 /*Graph partition algorithm*/
@@ -160,7 +178,8 @@ void hunyuangraph_PartitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt, 
 	}
 	printf("hunyuangraph_admin->Coarsen_threshold=%10d\n", hunyuangraph_admin->Coarsen_threshold);
 
-	Malloc_GPU_Memory(graph->nvtxs, graph->nedges);
+	if(GPU_Memory_Pool)
+		Malloc_GPU_Memory(graph->nvtxs, graph->nedges);
 
 	// cudaMalloc((void**)&cu_bn, graph->nvtxs * sizeof(int));
 	// cudaMalloc((void**)&cu_bt, graph->nvtxs * sizeof(int));
@@ -197,8 +216,8 @@ void hunyuangraph_PartitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt, 
 	// lfree_with_check(sizeof(int) * graph->nvtxs,"cu_g");						//cu_g
 	// lfree_with_check(sizeof(int) * graph->nvtxs,"cu_bt");						//cu_bt
 	// lfree_with_check(sizeof(int) * graph->nvtxs,"cu_bn");						//cu_bn
-
-	Free_GPU_Memory();
+	if(GPU_Memory_Pool)
+		Free_GPU_Memory();
 }
 
 #endif

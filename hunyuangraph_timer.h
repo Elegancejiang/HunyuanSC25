@@ -76,10 +76,12 @@ struct timeval end_krefine_atomicadd;
 
 // uncoarsen
 double uncoarsen_Sum_maxmin_pwgts = 0;
+double uncoarsen_select_bnd_vertices_warp = 0;
 double uncoarsen_Exnode_part1 = 0;
 double uncoarsen_Exnode_part2 = 0;
+double uncoarsen_compute_edgecut = 0;
 struct timeval begin_general;
-struct timeval end_general;
+struct timeval   end_general;
 
 double bndinfo_Find_real_bnd_info = 0;
 double bndinfo_init_bnd_info = 0;
@@ -93,6 +95,8 @@ struct timeval end_bndinfo;
 
 // match
 double init_gpu_match_time = 0;
+double check_length_time = 0;
+double set_bin_time = 0;
 double hem_gpu_match_time = 0;
 double resolve_conflict_1_time = 0;
 double resolve_conflict_2_time = 0;
@@ -102,6 +106,7 @@ struct timeval begin_gpu_match;
 struct timeval end_gpu_match;
 
 //match kernel
+double match_time = 0;
 double random_match_time = 0;
 double init_gpu_receive_send_time = 0;
 double wgt_segmentsort_gpu_time = 0;
@@ -109,8 +114,29 @@ double segmentsort_memcpy_time = 0;
 double set_receive_send_time = 0;
 double set_match_topk_time = 0;
 double reset_match_array_time = 0;
+double leaf_matches_step1_time = 0;
+double leaf_matches_step2_time = 0;
+double isolate_matches_time = 0;
+double twin_matches_time = 0;
+double relative_matches_step1_time = 0;
+double relative_matches_step2_time = 0;
+double match_malloc_time = 0;
+double match_memcpy_time = 0;
+double match_free_time = 0;
 struct timeval begin_gpu_match_kernel;
 struct timeval end_gpu_match_kernel;
+
+//topk / four match time
+double top1_time = 0;
+double top2_time = 0;
+double top3_time = 0;
+double top4_time = 0;
+double leaf_time = 0;
+double isolate_time = 0;
+double twin_time = 0;
+double relative_time = 0;
+struct timeval begin_gpu_topkfour_match;
+struct timeval end_gpu_topkfour_match;
 
 // contract
 double exclusive_scan_time = 0;
@@ -267,8 +293,9 @@ void init_timer()
     set_cadjncy_cadjwgt_time = 0;
 }
 
-void print_time_all(hunyuangraph_graph_t *graph, int *part, int edgecut)
+void print_time_all(hunyuangraph_graph_t *graph, int *part, int edgecut, float imbalance)
 {
+    printf("---------------------------------------------------------\n");
     printf("Hunyuangraph-Partition-end\n");
     printf("Hunyuangraph_Partition_time= %10.2lf ms\n", part_all);
     printf("------Coarsen_time=          %10.2lf ms\n", part_coarsen);
@@ -276,18 +303,24 @@ void print_time_all(hunyuangraph_graph_t *graph, int *part, int edgecut)
     printf("------Uncoarsen_time=        %10.2lf ms\n", part_uncoarsen);
     printf("------else_time=             %10.2lf ms\n", part_all - (part_coarsen + part_init + part_uncoarsen));
     printf("edge-cut=                    %10d\n", edgecut);
+    printf("imbalance=                   %10.3f\n", imbalance);
+    printf("---------------------------------------------------------\n");
 }
 
 void print_time_coarsen()
 {
     printf("\n");
 
-    coarsen_else = part_coarsen - (init_gpu_match_time + hem_gpu_match_time + resolve_conflict_1_time + resolve_conflict_2_time + inclusive_scan_time1 +
-                                    resolve_conflict_4_time + exclusive_scan_time + set_tadjncy_tadjwgt_time + ncy_segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
+    coarsen_else = part_coarsen - (init_gpu_match_time + check_length_time + set_bin_time + hem_gpu_match_time + resolve_conflict_1_time + resolve_conflict_2_time + inclusive_scan_time1 +
+                                        resolve_conflict_4_time - match_malloc_time - match_memcpy_time - match_free_time + \
+                                   exclusive_scan_time + set_tadjncy_tadjwgt_time + ncy_segmentsort_gpu_time + mark_edges_time + inclusive_scan_time2 +
                                     set_cxadj_time + init_cadjwgt_time + set_cadjncy_cadjwgt_time + coarsen_malloc + coarsen_memcpy + coarsen_free);
+    printf("---------------------------------------------------------\n");
     printf("Coarsen_time=              %10.3lf ms\n", part_coarsen);
     printf("    part_match                 %10.3lf %7.3lf%\n", part_match, part_match / part_coarsen * 100);
     printf("        init_gpu_match_time        %10.3lf %7.3lf%\n", init_gpu_match_time, init_gpu_match_time / part_coarsen * 100);
+    printf("        check_length_time          %10.3lf %7.3lf%\n", check_length_time, check_length_time / part_coarsen * 100);
+    printf("        set_bin_time               %10.3lf %7.3lf%\n", set_bin_time, set_bin_time / part_coarsen * 100);
     printf("        hem_gpu_match_time         %10.3lf %7.3lf%\n", hem_gpu_match_time, hem_gpu_match_time / part_coarsen * 100);
     printf("            random_match_time          %10.3lf %7.3lf%\n", random_match_time, random_match_time / hem_gpu_match_time * 100);
     printf("            init_gpu_receive_send_time %10.3lf %7.3lf%\n", init_gpu_receive_send_time, init_gpu_receive_send_time / hem_gpu_match_time * 100);
@@ -295,7 +328,17 @@ void print_time_coarsen()
     printf("            segmentsort_memcpy_time    %10.3lf %7.3lf%\n", segmentsort_memcpy_time, segmentsort_memcpy_time / hem_gpu_match_time * 100);
     printf("            set_receive_send_time      %10.3lf %7.3lf%\n", set_receive_send_time, set_receive_send_time / hem_gpu_match_time * 100);
     printf("            set_match_topk_time        %10.3lf %7.3lf%\n", set_match_topk_time, set_match_topk_time / hem_gpu_match_time * 100);
-    printf("            reset_match_array_time     %10.3lf %7.3lf%\n", reset_match_array_time, reset_match_array_time / hem_gpu_match_time * 100);
+    printf("            leaf_matches               %10.3lf %7.3lf%\n", leaf_matches_step1_time + leaf_matches_step2_time, (leaf_matches_step1_time + leaf_matches_step2_time) / hem_gpu_match_time * 100);
+    printf("                step1                      %10.3lf %7.3lf%\n", leaf_matches_step1_time, leaf_matches_step1_time / hem_gpu_match_time * 100);
+    printf("                step2                      %10.3lf %7.3lf%\n", leaf_matches_step2_time, leaf_matches_step2_time / hem_gpu_match_time * 100);
+    printf("            isolate_matches            %10.3lf %7.3lf%\n", isolate_matches_time, isolate_matches_time / hem_gpu_match_time * 100);
+    printf("            twin_matches               %10.3lf %7.3lf%\n", twin_matches_time, twin_matches_time / hem_gpu_match_time * 100);
+    printf("            relative_matches           %10.3lf %7.3lf%\n", relative_matches_step1_time + relative_matches_step2_time, (relative_matches_step1_time + relative_matches_step2_time) / hem_gpu_match_time * 100);
+    printf("                step1                      %10.3lf %7.3lf%\n", relative_matches_step1_time, relative_matches_step1_time / hem_gpu_match_time * 100);
+    printf("                step2                      %10.3lf %7.3lf%\n", relative_matches_step2_time, relative_matches_step2_time / hem_gpu_match_time * 100);
+    printf("            match_malloc_time          %10.3lf %7.3lf%\n", match_malloc_time, match_malloc_time / hem_gpu_match_time * 100);
+    printf("            match_memcpy_time          %10.3lf %7.3lf%\n", match_memcpy_time, match_memcpy_time / hem_gpu_match_time * 100);
+    printf("            match_free_time            %10.3lf %7.3lf%\n", match_free_time, match_free_time / hem_gpu_match_time * 100);
     printf("        resolve_conflict_1_time    %10.3lf %7.3lf%\n", resolve_conflict_1_time, resolve_conflict_1_time / part_coarsen * 100);
     printf("        resolve_conflict_2_time    %10.3lf %7.3lf%\n", resolve_conflict_2_time, resolve_conflict_2_time / part_coarsen * 100);
     printf("        inclusive_scan_time        %10.3lf %7.3lf%\n", inclusive_scan_time1, inclusive_scan_time1 / part_coarsen * 100);
@@ -313,6 +356,24 @@ void print_time_coarsen()
     printf("    coarsen_memcpy             %10.3lf %7.3lf%\n", coarsen_memcpy, coarsen_memcpy / part_coarsen * 100);
     printf("    coarsen_free               %10.3lf %7.3lf%\n", coarsen_free, coarsen_free / part_coarsen * 100);
     printf("    else                       %10.3lf %7.3lf%\n", coarsen_else, coarsen_else / part_coarsen * 100);
+    printf("---------------------------------------------------------\n");
+}
+
+void print_time_topkfour_match()
+{
+    double all = top1_time + top2_time + top3_time + top4_time + leaf_time + isolate_time + twin_time + relative_time;
+    
+    printf("---------------------------------------------------------\n");
+    printf("all                        %10.3lf ms\n", all);
+    printf("top1_time                  %10.3lf %7.3lf%\n", top1_time, top1_time / all * 100);
+    printf("top2_time                  %10.3lf %7.3lf%\n", top2_time, top2_time / all * 100);
+    printf("top3_time                  %10.3lf %7.3lf%\n", top3_time, top3_time / all * 100);
+    printf("top4_time                  %10.3lf %7.3lf%\n", top4_time, top4_time / all * 100);
+    printf("leaf_time                  %10.3lf %7.3lf%\n", leaf_time, leaf_time / all * 100);
+    printf("isolate_time               %10.3lf %7.3lf%\n", isolate_time, isolate_time / all * 100);
+    printf("twin_time                  %10.3lf %7.3lf%\n", twin_time, twin_time / all * 100);
+    printf("relative_time              %10.3lf %7.3lf%\n", relative_time, relative_time / all * 100);
+    printf("---------------------------------------------------------\n");
 }
 
 void print_time_init()
@@ -322,6 +383,7 @@ void print_time_init()
     init_else = part_init - (set_initgraph_time + initcurand_gpu_time + bisection_gpu_time + splitgraph_gpu_time + select_where_gpu_time + update_where_gpu_time + update_answer_gpu_time + 
                              update_tpwgts_time);
     
+    printf("---------------------------------------------------------\n");
     printf("Init_time=                 %10.3lf ms\n", part_init);
     printf("    set_initgraph_time         %10.3lf %7.3lf%\n", set_initgraph_time, set_initgraph_time / part_init * 100);
     printf("    update_tpwgts_time         %10.3lf %7.3lf%\n", update_tpwgts_time, update_tpwgts_time / part_init * 100);
@@ -334,6 +396,7 @@ void print_time_init()
     printf("    else                       %10.3lf %7.3lf%\n", init_else, init_else / part_init * 100);
 
     // printf("    computecut_time            %10.3lf %7.3lf%\n", computecut_time, computecut_time / part_init * 100);
+    printf("---------------------------------------------------------\n");
 }
 
 void print_time_uncoarsen()
@@ -342,18 +405,24 @@ void print_time_uncoarsen()
     double Uncoarsen_else = part_uncoarsen - (krefine_atomicadd + uncoarsen_Sum_maxmin_pwgts + bndinfo_Find_real_bnd_info + bndinfo_init_bnd_info +
                                               bndinfo_find_kayparams + bndinfo_initcucsr + bndinfo_bb_segsort + bndinfo_init_cu_que + bndinfo_findcsr +
                                               uncoarsen_Exnode_part1 + uncoarsen_Exnode_part2);
-    printf("Uncoarsen Sumpwgts                     %10.3lf %.3f%\n", krefine_atomicadd, krefine_atomicadd / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen Sum_maxmin_pwgts   %10.3lf %.3f%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen Find_real_bnd_info %10.3lf %.3f%\n", bndinfo_Find_real_bnd_info, bndinfo_Find_real_bnd_info / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen init_bnd_info      %10.3lf %.3f%\n", bndinfo_init_bnd_info, bndinfo_init_bnd_info / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen find_kayparams     %10.3lf %.3f%\n", bndinfo_find_kayparams, bndinfo_find_kayparams / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen initcucsr          %10.3lf %.3f%\n", bndinfo_initcucsr, bndinfo_initcucsr / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen bb_segsort         %10.3lf %.3f%\n", bndinfo_bb_segsort, bndinfo_bb_segsort / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen init_cu_que        %10.3lf %.3f%\n", bndinfo_init_cu_que, bndinfo_init_cu_que / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen findcsr            %10.3lf %.3f%\n", bndinfo_findcsr, bndinfo_findcsr / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen Exnode_part1       %10.3lf %.3f%\n", uncoarsen_Exnode_part1, uncoarsen_Exnode_part1 / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen Exnode_part2       %10.3lf %.3f%\n", uncoarsen_Exnode_part2, uncoarsen_Exnode_part2 / part_uncoarsen * 100);
-    printf("Uncoarsen uncoarsen else               %10.3lf %.3f%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
+    
+    printf("---------------------------------------------------------\n");
+    printf("Uncoarsen_time=            %10.3lf ms\n", part_uncoarsen);
+    printf("Uncoarsen uncoarsen_compute_edgecut    %10.3lf\n", uncoarsen_compute_edgecut);
+    printf("Uncoarsen uncoarsen_select_bnd_vertices_warp    %10.3lf\n", uncoarsen_select_bnd_vertices_warp);
+	// printf("Uncoarsen Sumpwgts                     %10.3lf %.3f%\n", krefine_atomicadd, krefine_atomicadd / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen Sum_maxmin_pwgts   %10.3lf %.3f%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen Find_real_bnd_info %10.3lf %.3f%\n", bndinfo_Find_real_bnd_info, bndinfo_Find_real_bnd_info / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen init_bnd_info      %10.3lf %.3f%\n", bndinfo_init_bnd_info, bndinfo_init_bnd_info / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen find_kayparams     %10.3lf %.3f%\n", bndinfo_find_kayparams, bndinfo_find_kayparams / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen initcucsr          %10.3lf %.3f%\n", bndinfo_initcucsr, bndinfo_initcucsr / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen bb_segsort         %10.3lf %.3f%\n", bndinfo_bb_segsort, bndinfo_bb_segsort / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen init_cu_que        %10.3lf %.3f%\n", bndinfo_init_cu_que, bndinfo_init_cu_que / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen findcsr            %10.3lf %.3f%\n", bndinfo_findcsr, bndinfo_findcsr / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen Exnode_part1       %10.3lf %.3f%\n", uncoarsen_Exnode_part1, uncoarsen_Exnode_part1 / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen Exnode_part2       %10.3lf %.3f%\n", uncoarsen_Exnode_part2, uncoarsen_Exnode_part2 / part_uncoarsen * 100);
+    // printf("Uncoarsen uncoarsen else               %10.3lf %.3f%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
+    printf("---------------------------------------------------------\n");
 }
 
 #endif

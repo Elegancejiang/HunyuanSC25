@@ -8,10 +8,11 @@ int main(int argc, char **argv)
 
 	char *filename = (argv[1]);
 	int nparts = atoi(argv[2]);
+	GPU_Memory_Pool = atoi(argv[3]);
 
 	hunyuangraph_graph_t *graph = hunyuangraph_readgraph(filename);
 
-	printf("graph:%s %d %d %d\n", filename, graph->nvtxs, graph->nedges, nparts);
+	printf("graph:%s %d %d %d %d\n", filename, graph->nvtxs, graph->nedges, nparts, GPU_Memory_Pool);
 	// for(int i = 0;i <= graph->nvtxs; i++)
 	// 	printf("%d ", graph->xadj[i]);
 	// printf("\n");
@@ -45,8 +46,10 @@ int main(int argc, char **argv)
 		hunyuangraph_PartitionGraph(&graph->nvtxs, graph->xadj, graph->adjncy, graph->vwgt, graph->adjwgt, &nparts, tpwgts, &ubvec, part);
 
 		int edgecut = hunyuangraph_computecut_cpu(graph, part);
+		float imbalance = hunyuangraph_compute_imbalance_cpu(graph, part, nparts);
 
-		print_time_all(graph, part, edgecut);
+		print_time_all(graph, part, edgecut, imbalance);
+		print_time_topkfour_match();
 
 		if (edgecut < best_edgecut)
 		{

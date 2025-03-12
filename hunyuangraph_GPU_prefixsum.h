@@ -164,9 +164,9 @@ void prefixsum(int *num, int *num_out, int length, size_t blocksize, bool is_rig
         // printf("free firstresult length=%d\n",length);
         // cudaFree(firstresult);
         if(is_right)
-            rfree_with_check(sizeof(int) * blocknum,"prefixsum: firstresult");
+            rfree_with_check((void *)firstresult, sizeof(int) * blocknum,"prefixsum: firstresult");
         else 
-            lfree_with_check(sizeof(int) * blocknum,"prefixsum: firstresult");
+            lfree_with_check((void *)firstresult, sizeof(int) * blocknum,"prefixsum: firstresult");
         return ;
 	}
 
@@ -182,9 +182,9 @@ void prefixsum(int *num, int *num_out, int length, size_t blocksize, bool is_rig
     // printf("free firstresult length=%d\n",length);
     // cudaFree(firstresult);
     if(is_right)
-        rfree_with_check(sizeof(int) * blocknum,"prefixsum: firstresult");
+        rfree_with_check((void *)firstresult, sizeof(int) * blocknum,"prefixsum: firstresult");
     else 
-        lfree_with_check(sizeof(int) * blocknum,"prefixsum: firstresult");
+        lfree_with_check((void *)firstresult, sizeof(int) * blocknum,"prefixsum: firstresult");
 }
 
 #endif

@@ -64,9 +64,11 @@ typedef struct hunyuangraph_graph_t {
 	float *cuda_tpwgts;
 
 	/*Refinement available generate array*/
+	int *cuda_balance;
 	int *cuda_bn;                             
-	int *cuda_bt;
-	int *cuda_g;		//	???
+	int *cuda_to;
+	int *cuda_gain;		//	???
+	char *cuda_select;
 	int *cuda_csr;
 	int *cuda_que;
 } hunyuangraph_graph_t;
