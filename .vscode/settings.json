@@ -8,6 +8,13 @@
         "__config": "cpp",
         "ratio": "cpp",
         "random": "cpp",
-        "numbers": "cpp"
+        "numbers": "cpp",
+        "thread": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "chrono": "cpp",
+        "algorithm": "cpp"
     }
 }

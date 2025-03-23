@@ -1,0 +1,91 @@
+graph:/media/jiangdie/新加卷/graph_10w/road_usa.graph 23947347 57708624 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x73f2bc000000
+back_pointer=   0x73f3ae5e0000
+begin partition
+nedges / nvtxs:       2.41
+level  1: nvtxs   14276210 nedges   37112818
+level  2: nvtxs    8379793 nedges   23240530
+level  3: nvtxs    5001076 nedges   14650972
+level  4: nvtxs    3044239 nedges    9343334
+level  5: nvtxs    1849701 nedges    5959306
+level  6: nvtxs    1150199 nedges    3872704
+level  7: nvtxs     660989 nedges    2409262
+level  8: nvtxs     411611 nedges    1561246
+level  9: nvtxs     239139 nedges     973826
+level 10: nvtxs     139564 nedges     606448
+level 11: nvtxs      81946 nedges     378856
+level 12: nvtxs      48341 nedges     238788
+level 13: nvtxs      28685 nedges     153256
+level 14: nvtxs      17149 nedges     101334
+level 15: nvtxs      10315 nedges      69474
+level 16: nvtxs       6198 nedges      49802
+level 17: nvtxs       3726 nedges      37378
+level 18: nvtxs       2268 nedges      28994
+level 19: nvtxs       1376 nedges      22932
+level 20: nvtxs        837 nedges      17898
+level 21: nvtxs        511 nedges      13288
+level 22: nvtxs        313 nedges       8538
+level 23: nvtxs        187 nedges       4026
+level 24: nvtxs        113 nedges       1604
+level 25: nvtxs         68 nedges        710
+level 26: nvtxs         41 nedges        296
+Coarsen end: level=26 cnvtxs=41 cnedges=296 adjwgtsum=57708624
+
+---------------------------------------------------------
+Coarsen_time=                 189.020 ms
+    part_match                     85.243  45.097%
+        init_gpu_match_time             0.881   0.466%
+        check_length_time               2.657   1.406%
+        set_bin_time                    6.150   3.254%
+        hem_gpu_match_time             62.197  32.905%
+            random_match_time               6.116   9.833%
+            init_gpu_receive_send_time      0.000   0.000%
+            wgt_segmentsort_gpu_time       20.546  33.034%
+            segmentsort_memcpy_time         0.000   0.000%
+            set_receive_send_time          16.331  26.257%
+            set_match_topk_time             0.000   0.000%
+            reset_match_array_time          5.064   8.142%
+            leaf_matches                    1.517   2.439%
+                step1                           0.595   0.957%
+                step2                           0.922   1.482%
+            isolate_matches                 0.000   0.000%
+            twin_matches                    2.619   4.211%
+            relative_matches                0.940   1.511%
+                step1                           0.470   0.756%
+                step2                           0.470   0.756%
+            match_malloc_time               0.028   0.045%
+            match_memcpy_time               0.000   0.000%
+            match_free_time                 0.039   0.063%
+        resolve_conflict_1_time         0.000   0.000%
+        resolve_conflict_2_time         3.150   1.666%
+        inclusive_scan_time             3.537   1.871%
+        resolve_conflict_4_time         7.901   4.180%
+    part_contruction              103.688  54.856%
+        exclusive_scan_time             2.229   1.179%
+        set_tadjncy_tadjwgt_time       31.673  16.756%
+        ncy_segmentsort_gpu_time       25.530  13.507%
+        mark_edges_time                10.485   5.547%
+        inclusive_scan_time2            8.936   4.728%
+        set_cxadj_time                  2.941   1.556%
+        init_cadjwgt_time               1.379   0.730%
+        set_cadjncy_cadjwgt_time       20.116  10.642%
+    coarsen_malloc                  0.120   0.063%
+    coarsen_memcpy                  0.000   0.000%
+    coarsen_free                    0.073   0.039%
+    else                           -0.868  -0.459%
+---------------------------------------------------------
+---------------------------------------------------------
+all                            47.931 ms
+top1_time                      27.235  56.821%
+top2_time                       6.827  14.243%
+top3_time                       4.011   8.368%
+top4_time                       3.584   7.477%
+leaf_time                       2.098   4.377%
+isolate_time                    0.009   0.019%
+twin_time                       2.816   5.875%
+relative_time                   1.351   2.819%
+---------------------------------------------------------

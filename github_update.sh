@@ -8,7 +8,7 @@ git status
 # 添加所有文件到暂存区
 git add .
 # 描述更改内容
-git commit -m "25.03.12 3060 GPU shell"
+git commit -m "25.03.23 Coarsening acceleration"
 # 移除旧的远程仓库
 # git remote remove origin
 # git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git

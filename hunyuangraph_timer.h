@@ -328,6 +328,7 @@ void print_time_coarsen()
     printf("            segmentsort_memcpy_time    %10.3lf %7.3lf%\n", segmentsort_memcpy_time, segmentsort_memcpy_time / hem_gpu_match_time * 100);
     printf("            set_receive_send_time      %10.3lf %7.3lf%\n", set_receive_send_time, set_receive_send_time / hem_gpu_match_time * 100);
     printf("            set_match_topk_time        %10.3lf %7.3lf%\n", set_match_topk_time, set_match_topk_time / hem_gpu_match_time * 100);
+    printf("            reset_match_array_time     %10.3lf %7.3lf%\n", reset_match_array_time, reset_match_array_time / hem_gpu_match_time * 100);
     printf("            leaf_matches               %10.3lf %7.3lf%\n", leaf_matches_step1_time + leaf_matches_step2_time, (leaf_matches_step1_time + leaf_matches_step2_time) / hem_gpu_match_time * 100);
     printf("                step1                      %10.3lf %7.3lf%\n", leaf_matches_step1_time, leaf_matches_step1_time / hem_gpu_match_time * 100);
     printf("                step2                      %10.3lf %7.3lf%\n", leaf_matches_step2_time, leaf_matches_step2_time / hem_gpu_match_time * 100);

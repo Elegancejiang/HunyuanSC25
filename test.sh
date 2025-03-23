@@ -12,11 +12,13 @@ input="graph1.csv"
 
 i=0 # 初始化计数器
 while IFS=',' read -r Name; do
-    ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> coarsen_SC25_1.txt
+    # ./hunyuangraph_SC24 /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_SC24.txt
+    # ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_syncfree.txt
+    # ./hunyuangraph_randommatch_syncfree /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_syncfree_exam.txt
+    ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> syncfree.txt
+    echo "Processed $i files."
     i=$((i + 1)) # 更新计数器
 done < "$input"
-
-echo "Processed $i files."
 
 # make
 # ./hunyuangraph /home/jiangdie/study/mygp_0.9.9_test_initpartition/graph/audikw_1_gpu.graph 2 >> test.txt

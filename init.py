@@ -30,7 +30,7 @@ def extract_gpu_nvtxs(file_path):
     nvtxs = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
-            match = re.search(r'Coarsen end:cnvtxs=\s*([\d.]+)', line)
+            match = re.search(r'cnvtxs=\s*([\d.]+)', line)
             if match:
                 nvtx_value = int(match.group(1))
                 nvtxs.append(nvtx_value)
@@ -60,7 +60,7 @@ def extract_cpu_BFStimes(file_path):
     BFStimes = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
-            match = re.search(r'BFS:\s*([\d.]+)', line)
+            match = re.search(r'random_match_time\s*([\d.]+)', line)
             if match:
                 BFStime_value = float(match.group(1))
                 BFStimes.append(BFStime_value)
@@ -76,14 +76,14 @@ def extract_cpu_computetimes(file_path):
                 computetimes.append(computetime_value)
     return computetimes
 
-file_path = 'test.txt'
-gpu_edgecuts = extract_gpu_edgecut(file_path)
-cpu_edgecuts = extract_cpu_edgecut(file_path)
+file_path = 'syncfree.txt'
+# gpu_edgecuts = extract_gpu_edgecut(file_path)
+# cpu_edgecuts = extract_cpu_edgecut(file_path)
 gpu_nvtxs = extract_gpu_nvtxs(file_path)
-gpu_nedges = extract_gpu_nedges(file_path)
-gpu_inittimes = extract_gpu_inittimes(file_path)
+# gpu_nedges = extract_gpu_nedges(file_path)
+# gpu_inittimes = extract_gpu_inittimes(file_path)
 cpu_BFStimes = extract_cpu_BFStimes(file_path)
-cpu_computetimes = extract_cpu_computetimes(file_path)
+# cpu_computetimes = extract_cpu_computetimes(file_path)
 
 # sorted(gpu_edgecuts.items())
 # sorted(cpu_edgecuts.items())
@@ -111,12 +111,12 @@ cpu_computetimes = extract_cpu_computetimes(file_path)
 # else:
 #     print("cpu_edgecuts values not found in the file.")
 
-# # nvtxs
-# if gpu_nvtxs:
-#     for nvtx in gpu_nvtxs:
-#         print(nvtx)
-# else:
-#     print("gpu_nvtxs values not found in the file.")
+# nvtxs
+if gpu_nvtxs:
+    for nvtx in gpu_nvtxs:
+        print(nvtx)
+else:
+    print("gpu_nvtxs values not found in the file.")
 
 # # nedges
 # if gpu_nedges:
@@ -126,14 +126,14 @@ cpu_computetimes = extract_cpu_computetimes(file_path)
 #     print("gpu_nedges values not found in the file.")
 
 # inittimes
-if gpu_inittimes:
-    ave = 0
-    for inittime in gpu_inittimes:
-        print(inittime)
-        ave += inittime
-    print(ave/len(gpu_inittimes))
-else:
-    print("gpu_inittimes values not found in the file.")
+# if gpu_inittimes:
+#     ave = 0
+#     for inittime in gpu_inittimes:
+#         print(inittime)
+#         ave += inittime
+#     print(ave/len(gpu_inittimes))
+# else:
+#     print("gpu_inittimes values not found in the file.")
 
 # # BFStimes
 # if cpu_BFStimes:
@@ -143,6 +143,13 @@ else:
 #     print(all_BFStime)
 # else:
 #     print("cpu_BFStimes values not found in the file.")
+
+# BFStimes
+if cpu_BFStimes:
+    for BFStime in cpu_BFStimes:
+        print(BFStime)
+else:
+    print("cpu_BFStimes values not found in the file.")
 
 # # computetimes
 # if cpu_computetimes:

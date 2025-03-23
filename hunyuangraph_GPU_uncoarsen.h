@@ -223,24 +223,36 @@ void hunyuangraph_uncoarsen_free_coarsen(hunyuangraph_admin_t *hunyuangraph_admi
 	// printf("hunyuangraph_uncoarsen_free_coarsen nvtxs=%d\n", graph->nvtxs);
 	if(GPU_Memory_Pool)
 	{
-		lfree_with_check((void *)graph->cuda_where, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where");			// where
+		lfree_with_check((void *)graph->cuda_where, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: where");						// where
 		if (graph->cuda_cmap != NULL)
-			lfree_with_check((void *)graph->cuda_cmap, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: cmap");		// cmap;
-		lfree_with_check((void *)graph->cuda_adjwgt, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjwgt");		// adjwgt
-		lfree_with_check((void *)graph->cuda_adjncy, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjncy");		// adjncy
-		lfree_with_check((void *)graph->cuda_xadj, sizeof(int) * (graph->nvtxs + 1), "hunyuangraph_uncoarsen_free_coarsen: xadj");		// xadj
-		lfree_with_check((void *)graph->cuda_vwgt, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: vwgt");			// vwgt
+			lfree_with_check((void *)graph->cuda_cmap, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: cmap");					// cmap;
+		if (graph->bin_idx != NULL)
+			lfree_with_check((void *)graph->bin_idx, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: bin_idx");					//	bin_idx
+		if (graph->bin_offset != NULL)
+			lfree_with_check((void *)graph->bin_offset, sizeof(int) * 15, "hunyuangraph_uncoarsen_free_coarsen: bin_offset");						//	bin_offset
+		if (graph->length_vertex != NULL)
+			lfree_with_check((void *)graph->length_vertex, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: length_vertex");		//	length_vertex
+		lfree_with_check((void *)graph->cuda_adjwgt, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjwgt");					// adjwgt
+		lfree_with_check((void *)graph->cuda_adjncy, sizeof(int) * graph->nedges, "hunyuangraph_uncoarsen_free_coarsen: adjncy");					// adjncy
+		lfree_with_check((void *)graph->cuda_xadj, sizeof(int) * (graph->nvtxs + 1), "hunyuangraph_uncoarsen_free_coarsen: xadj");					// xadj
+		lfree_with_check((void *)graph->cuda_vwgt, sizeof(int) * graph->nvtxs, "hunyuangraph_uncoarsen_free_coarsen: vwgt");						// vwgt
 	}
 	else
 	{
 		cudaFree(graph->cuda_where);
 		if (graph->cuda_cmap != NULL)
 			cudaFree(graph->cuda_cmap);
+		cudaFree(graph->bin_idx);
+		cudaFree(graph->bin_offset);
+		cudaFree(graph->length_vertex);
 		cudaFree(graph->cuda_adjwgt);
 		cudaFree(graph->cuda_adjncy);
 		cudaFree(graph->cuda_xadj);
 		cudaFree(graph->cuda_vwgt);
 	}
+
+	if(graph->h_bin_offset != NULL)
+		free(graph->h_bin_offset);
 }
 
 void hunyuangraph_GPU_uncoarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph)
@@ -278,11 +290,11 @@ void hunyuangraph_GPU_uncoarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyua
 	}
 }
 
-void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph)
+void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph, int *level)
 {
 	Mallocinit_refineinfo(hunyuangraph_admin, cgraph);
 
-	hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph);
+	hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph, level);
 	// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
 
 	hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin, cgraph);
@@ -292,6 +304,7 @@ void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, h
 		if (cgraph != graph)
 		{
 			cgraph = cgraph->finer;
+			level[0]--;
 
 			// cudaMalloc((void**)&cgraph->cuda_where, cgraph->nvtxs * sizeof(int));
 
@@ -301,7 +314,7 @@ void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, h
 
 			hunyuangraph_malloc_refineinfo(hunyuangraph_admin, cgraph);
 
-			hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph);
+			hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph, level);
 			// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
 
 			hunyuangraph_uncoarsen_free_krefine(hunyuangraph_admin, cgraph);

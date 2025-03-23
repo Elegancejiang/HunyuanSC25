@@ -26,8 +26,8 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	printf("Coarsen end: level=%d cnvtxs=%d cnedges=%d adjwgtsum=%d\n", level, cgraph->nvtxs, cgraph->nedges, compute_graph_adjwgtsum_gpu(graph));
 
-	// print_time_coarsen();
-	// print_time_topkfour_match();
+	print_time_coarsen();
+	print_time_topkfour_match();
 
 	// FILE *fp = fopen("graph.txt","w");
     // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
@@ -52,27 +52,27 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
 
-	cudaDeviceSynchronize();
-    gettimeofday(&begin_gpu_bisection, NULL);
+	// cudaDeviceSynchronize();
+    // gettimeofday(&begin_gpu_bisection, NULL);
     // hunyuangraph_computecut_gpu<<<1, 1>>>(cgraph->nvtxs, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
-    cudaDeviceSynchronize();
-    gettimeofday(&end_gpu_bisection, NULL);
-    computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
+    // cudaDeviceSynchronize();
+    // gettimeofday(&end_gpu_bisection, NULL);
+    // computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
-	// print_time_init();
+	print_time_init();
 
 	// hunyuangraph_memcpy_coarsentoinit(cgraph);
 	// int edgecut;
 	// compute_edgecut_gpu(cgraph->nvtxs, &edgecut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
 	// printf("edgecut=%d\n",edgecut);
-	printf("Init partition end\n");
+	// printf("Init partition end\n");
 
 	// exit(0);
 
 	// cudaDeviceSynchronize();
 	gettimeofday(&begin_part_uncoarsen, NULL);
 	// hunyuangraph_GPU_uncoarsen(hunyuangraph_admin, graph, cgraph);
-	hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin, graph, cgraph);
+	hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin, graph, cgraph, &level);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_uncoarsen, NULL);
 	part_uncoarsen += (end_part_uncoarsen.tv_sec - begin_part_uncoarsen.tv_sec) * 1000 + (end_part_uncoarsen.tv_usec - begin_part_uncoarsen.tv_usec) / 1000.0;
@@ -113,10 +113,13 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 
 	if(GPU_Memory_Pool)
 	{
-		graph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "vwgt");
-		graph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (nvtxs + 1), "xadj");
-		graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjncy");
-		graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * nedges, "adjwgt");
+		graph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_malloc_original_coarseninfo: vwgt");
+		graph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (nvtxs + 1), "hunyuangraph_malloc_original_coarseninfo: xadj");
+		graph->cuda_adjncy = (int *)lmalloc_with_check(sizeof(int) * nedges, "hunyuangraph_malloc_original_coarseninfo: adjncy");
+		graph->cuda_adjwgt = (int *)lmalloc_with_check(sizeof(int) * nedges, "hunyuangraph_malloc_original_coarseninfo: adjwgt");
+		graph->length_vertex = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_malloc_original_coarseninfo: graph->length_vertex");
+        graph->bin_offset = (int *)lmalloc_with_check(sizeof(int) * 15, "hunyuangraph_malloc_original_coarseninfo: graph->bin_offset");
+        graph->bin_idx    = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_malloc_original_coarseninfo: graph->bin_idx");
 	}
 	else
 	{
@@ -124,8 +127,12 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 		cudaMalloc((void**)&graph->cuda_xadj, sizeof(int) * (nvtxs + 1));
 		cudaMalloc((void**)&graph->cuda_adjncy, sizeof(int) * nedges);
 		cudaMalloc((void**)&graph->cuda_adjwgt, sizeof(int) * nedges);
+		cudaMalloc((void**)&graph->length_vertex, sizeof(int) * nvtxs);
+        cudaMalloc((void**)&graph->bin_offset, sizeof(int) * 15);
+        cudaMalloc((void**)&graph->bin_idx, sizeof(int) * nvtxs);
 	}
 
+	graph->h_bin_offset = (int *)malloc(sizeof(int) * 15);
 	// cudaMalloc((void**)&graph->cuda_xadj,(nvtxs+1)*sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_vwgt,nvtxs*sizeof(int));
 	// cudaMalloc((void**)&graph->cuda_adjncy,nedges*sizeof(int));
@@ -144,6 +151,50 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 	// // ���õڶ����˺���
 	// init_adjwgt<<<(nedges + 127) / 128, 128, 0, stream>>>(graph->cuda_adjwgt, nedges);
 	init_adjwgt<<<(nedges + 127) / 128, 128>>>(graph->cuda_adjwgt, nedges);
+
+	int *length_bin, *bin_size;
+	if(GPU_Memory_Pool)
+	{
+		length_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_malloc_original_coarseninfo: length_bin");
+		bin_size   = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_malloc_original_coarseninfo: bin_size");
+	}
+	else 
+	{
+		cudaMalloc((void**)&length_bin, sizeof(int) * 14);
+		cudaMalloc((void**)&bin_size, sizeof(int) * 14);
+	}
+
+	init_bin<<<1, 14>>>(14, length_bin);
+	init_bin<<<1, 14>>>(15, graph->bin_offset);
+	init_bin<<<1, 14>>>(14, bin_size);
+
+	check_length<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->length_vertex, length_bin);
+
+	cudaMemcpy(&graph->bin_offset[1], length_bin, sizeof(int) * 14, cudaMemcpyDeviceToDevice);
+
+	if(GPU_Memory_Pool)
+	{
+		prefixsum(graph->bin_offset, graph->bin_offset, 15, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	}
+	else
+	{
+		thrust::inclusive_scan(thrust::device,graph-> bin_offset, graph->bin_offset + 15, graph->bin_offset);
+	}
+
+	set_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->length_vertex, bin_size, graph->bin_offset, graph->bin_idx);
+
+	cudaMemcpy(graph->h_bin_offset, graph->bin_offset, sizeof(int) * 15, cudaMemcpyDeviceToHost);
+
+	if(GPU_Memory_Pool)
+	{
+		rfree_with_check(bin_size, sizeof(int) * 14, "hunyuangraph_malloc_original_coarseninfo: bin_size");
+		rfree_with_check(length_bin, sizeof(int) * 14, "hunyuangraph_malloc_original_coarseninfo: length_bin");
+	}
+	else 
+	{
+		cudaFree(length_bin);
+		cudaFree(bin_size);
+	}
 
 	// // �ȴ����������??
 	// cudaStreamSynchronize(stream);
@@ -199,6 +250,7 @@ void hunyuangraph_PartitionGraph(int *nvtxs, int *xadj, int *adjncy, int *vwgt, 
 	// cudaDeviceSynchronize();
 
 	printf("begin partition\n");
+	printf("nedges / nvtxs: %10.2lf\n", (double)graph->nedges / (double)graph->nvtxs);
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_all, NULL);
 	hunyuangraph_kway_partition(hunyuangraph_admin, graph, part);

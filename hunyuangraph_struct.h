@@ -41,9 +41,21 @@ typedef struct hunyuangraph_graph_t {
 	//   int *cuda_real_nvtxs;                 //CUDA graph params (i<match[cmap[i]])
 	//   int *cuda_s;                          //CUDA support array (cuda_s[nvtxs])
 	int *tadjwgt;       //CUDA support scan array (tadjwgt[nedges])
+	// int *length_bin;
+	int *length_vertex;
+	// int *bin_size;
+	int *h_bin_offset;
 	int *bin_offset;
-	int *bin_size;
-	int *bin_rowidx;
+	int *bin_idx;
+	//	tgraph
+	int *h_tbin_offset;
+	int *tlength_vertex;
+	int *tbin_offset;
+	int *tbin_idx;
+
+	int *bb_ckeysB_d;
+	int *bb_cvalsB_d;
+
 	//   int *cuda_scan_nedges_original;       //CUDA support scan array (cuda_scan_nedges_original[nedges])
 	int *tadjncy;      //CUDA support scan array (tadjncy[nedges])
 	int *cuda_maxwgt;                     //CUDA part weight array (cuda_maxwgt[npart])

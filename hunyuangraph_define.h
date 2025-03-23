@@ -4,7 +4,7 @@
 /*Define functions*/
 // #define ALIGNMENT 4
 #define hunyuangraph_GPU_cacheline 128
-#define SM_NUM 60
+#define SM_NUM 30
 #define IDX_MAX   INT64_MAX
 #define hunyuangraph_max(m,n) ((m)>=(n)?(m):(n))
 #define hunyuangraph_min(m,n) ((m)>=(n)?(n):(m))

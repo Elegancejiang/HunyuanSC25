@@ -8,27 +8,49 @@
 /*Set graph params*/
 void hunyuangraph_init_cpu_graph(hunyuangraph_graph_t *graph)
 {
-  memset((void *)graph, 0, sizeof(hunyuangraph_graph_t));
-  graph->nvtxs = -1;
-  graph->nedges = -1;
-  graph->xadj = NULL;
-  graph->vwgt = NULL;
-  graph->adjncy = NULL;
-  graph->adjwgt = NULL;
-  graph->label = NULL;
-  graph->cmap = NULL;
-  graph->tvwgt = NULL;
-  graph->tvwgt_reverse = NULL;
-  graph->where = NULL;
-  graph->pwgts = NULL;
-  graph->mincut = -1;
-  graph->nbnd = -1;
-  graph->id = NULL;
-  graph->ed = NULL;
-  graph->bndptr = NULL;
-  graph->bndlist = NULL;
-  graph->coarser = NULL;
-  graph->finer = NULL;
+	memset((void *)graph, 0, sizeof(hunyuangraph_graph_t));
+	graph->nvtxs = -1;
+	graph->nedges = -1;
+	graph->xadj = NULL;
+	graph->vwgt = NULL;
+	graph->adjncy = NULL;
+	graph->adjwgt = NULL;
+	graph->label = NULL;
+	graph->cmap = NULL;
+	graph->tvwgt = NULL;
+	graph->tvwgt_reverse = NULL;
+	graph->where = NULL;
+	graph->pwgts = NULL;
+	graph->mincut = -1;
+	graph->nbnd = -1;
+	graph->id = NULL;
+	graph->ed = NULL;
+	graph->bndptr = NULL;
+	graph->bndlist = NULL;
+	graph->coarser = NULL;
+	graph->finer = NULL;
+	graph->h_bin_offset = NULL;
+
+	//GPU
+	graph->cuda_vwgt = NULL;
+	graph->cuda_xadj = NULL;
+	graph->cuda_adjncy = NULL;
+	graph->cuda_adjwgt = NULL;
+	graph->cuda_match = NULL;
+	graph->length_vertex = NULL;
+	graph->bin_offset = NULL;
+	graph->bin_idx = NULL;
+	graph->cuda_cmap = NULL;
+	graph->cuda_where = NULL;
+
+	graph->cuda_pwgts = NULL;
+	graph->cuda_tpwgts = NULL;
+	graph->cuda_maxwgt = NULL;
+	graph->cuda_minwgt = NULL;
+	graph->cuda_balance = NULL;
+	graph->cuda_select = NULL;
+	graph->cuda_to = NULL;
+	graph->cuda_gain = NULL;
 }
 
 /*Malloc graph*/

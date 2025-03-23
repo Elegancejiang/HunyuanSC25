@@ -4,8 +4,11 @@
 #include "hunyuangraph_struct.h"
 #include "hunyuangraph_graph.h"
 #include "hunyuangraph_GPU_prefixsum.h"
+#include "hunyuangraph_GPU_common.h"
 #include "hunyuangraph_bb_segsort.h"
 #include "bb_segsort.h"
+
+#include "curand_kernel.h"
 
 /*CUDA-init match array*/
 __global__ void init_gpu_match(int *match, int nvtxs)
@@ -126,18 +129,18 @@ __global__ void cuda_hem(int nvtxs_hem, int *match, int *xadj, int *vwgt, int *a
 	}
 }
 
-__global__ void cuda_hem_test(int nvtxs_hem, int *match, int *xadj, int *vwgt, int *adjwgt, int *adjncy, int maxvwgt_hem)
+__global__ void cuda_hem_test(int nvtxs, int *match)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (ii < nvtxs_hem)
+	if (ii < nvtxs)
 	{
 		if (ii % 2 == 0)
 			match[ii] = ii + 1;
 		else
 			match[ii] = ii - 1;
 
-		if (ii == nvtxs_hem - 1 && ii % 2 == 0)
+		if (ii == nvtxs - 1 && ii % 2 == 0)
 			match[ii] = ii;
 	}
 }
@@ -188,19 +191,24 @@ __global__ void cuda_hem_229_3(int nvtxs, int *match, int *xadj, int *vwgt, int 
 	}
 }
 
-__global__ void reset_match(int nvtxs, int *match)
+__global__ void reset_match(int nvtxs, int *__restrict__ match)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (ii < nvtxs)
+	if(ii >= nvtxs)
+		return ;
+	
+	const int t = __ldg(&match[ii]);
+	if(t != -1)
 	{
-		int t = atomicAdd(&match[ii], 0);
-		if (t != -1)
-		{
-			if (match[t] != ii)
-				atomicExch(&match[ii], -1);
-		}
+		int mt = __ldg(&match[t]);
+		if(mt != ii)
+			match[ii] = -1;
 	}
+	
+	// int t = match[ii];
+	// if (t != -1 && match[t] != ii)
+	// 	match[ii] = -1;
 }
 
 __global__ void random_match(int nvtxs, int *xadj, int *adjncy, int *match)
@@ -318,6 +326,344 @@ __global__ void random_match_group(int nvtxs, int *xadj, int *adjncy, int *match
 	}
 }
 
+__global__ void random_match_freesync(int nvtxs, const int *xadj, const int *adjncy, int *match, int *count)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+	
+	int vertex = ii;
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+
+	//	count 
+	int wait = 0;
+	int j, k;
+	for(j = begin; j < end; j++)
+		if(adjncy[j] < vertex)
+			wait++;
+
+	//	wait
+	int cnt, t;
+	int ans = 0;
+	do{ 
+		__threadfence();
+		// __threadfence_block();
+		cnt = atomicAdd(&count[vertex], 0);
+		t   = atomicAdd(&match[vertex], 0);
+		// cnt = v_count[vertex];
+		// t = v_match[vertex];	
+		ans++;
+	} while (cnt < wait && t == -1);
+	
+	//	end wait
+	if(t != -1)
+	{
+		for(j = begin; j < end; j++)
+		{	
+			int k = adjncy[j];
+			if(k > vertex)
+				atomicAdd(&count[k], 1);
+		}
+		// printf("vertex=%d wait=%d count=%d match=%d already\n", vertex, wait, cnt, t);
+		return ;
+	}
+	
+	int flag = 1;
+	for(j = begin; j < end; j++)
+	{
+		int k = adjncy[j];
+		if(k > vertex)
+		{
+			if(flag)
+			{
+				if(atomicCAS(&match[k], -1, vertex) == -1)
+				{
+					atomicExch(&match[vertex], k);
+					flag = 0;
+				}
+			}
+			atomicAdd(&count[k], 1);
+			// if(vertex == 14)
+			// 	printf("vertex=%d wait=%d count=%d match=%d k=%d match_k=%d flag=%d\n", vertex, wait, count[vertex], match[vertex], k, match[k], flag);
+			// printf("vertex=%d wait=%d k=%d count_k=%d match=%d match_k=%d k > vertex\n", vertex, wait, k, count[k], match[vertex], match[k]);
+		}
+	}
+	// printf("vertex=%d wait=%d count=%d match=%d\n", vertex, wait, count[vertex], match[vertex]);
+	// if(ans > 10000)
+	// 	printf("vertex=%d ans=%d wait=%d\n", vertex, ans, wait);
+}
+
+__global__ void random_match_freesync_countpath(int nvtxs, const int *xadj, const int *adjncy, int *match, int *count, int *path_length, int *deeplength)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+	
+	int vertex = ii;
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+
+	//	count 
+	int wait = 0;
+	int j, k;
+	for(j = begin; j < end; j++)
+		if(adjncy[j] < vertex)
+			wait++;
+	
+	//	wait
+	int cnt;
+	int ans = 0;
+	do{ 
+		__threadfence();
+		// __threadfence_block();
+		cnt = atomicAdd(&count[vertex], 0);
+		// cnt = v_count[vertex];
+		// t = v_match[vertex];	
+		ans++;
+	} while (cnt < wait);
+
+	//	compute path_deeplength
+	wait = 0;
+	for(j = begin; j < end; j++)
+	{
+		int k = adjncy[j];
+		if(k < vertex)
+		{
+			wait = max(path_length[k], wait);
+		}
+	}
+
+	wait++;
+	path_length[vertex] = wait;
+
+	for(j = begin; j < end; j++)
+	{
+		int k = adjncy[j];
+		if(k > vertex)
+			atomicAdd(&count[k], 1);
+	}
+
+	if(wait > 100)
+		atomicMax(deeplength, wait);
+		// printf("vertex=%d ans=%d wait=%d\n", vertex, ans, wait);
+}
+
+__global__ void random_match_conflict(int nvtxs, const int *xadj, const int *adjncy, int *match)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+
+	int vertex = ii;
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+	int length = end - begin;
+	int cnt = 0;
+
+	for(int j = begin;j < end && cnt < length;)
+	{
+		if(match[vertex] != -1)
+			return ;
+		int k = adjncy[j];
+		if(atomicCAS(&match[k], -1, vertex) == -1)
+		{
+			atomicExch(&match[vertex], k);
+			break;
+		}
+		else
+			cnt++;
+
+		j++;
+		j = (j == end) ? begin : j;
+	}
+}
+
+__global__ void random_match_conflict_step2(int nvtxs, const int *xadj, const int *adjncy, int *match)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+
+	int vertex = ii;
+	if(match[vertex] != -1)
+		return ;
+
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+
+	for(int j = begin;j < end;j++)
+	{
+		if(match[vertex] != -1)
+			return ;
+		int k = adjncy[j];
+		if(atomicCAS(&match[k], -1, vertex) == -1)
+		{
+			atomicExch(&match[vertex], k);
+			break;
+		}
+	}
+}
+
+//	big write to small			error?
+__global__ void random_match_conflict1(int nvtxs, const int *xadj, const int *adjncy, int *match)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+
+	int vertex = ii;
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+	int length = end - begin;
+	int cnt = 0;
+
+	int t, mt;
+	for(int j = begin;j < end;j++)
+	{
+		int k = adjncy[j];
+		if(vertex < k)
+		{
+			do{
+				__threadfence();
+				t   = atomicAdd(&match[vertex], 0);
+				mt   = atomicAdd(&match[k], 0);
+			} while(t == -1 && mt == -1);
+
+			if(t != -1)	//	one big vertex already write to the vertex
+				break ;
+			
+			//	the big vertex not write to the vertex and is matched
+		}
+		else
+		{
+			if(atomicCAS(&match[k], -1, vertex) == -1)	// the vertex write to the small vertex successfully
+			{
+				match[vertex] = k;
+				break;
+			}
+			// the vertex write to the small vertex failed
+		}
+	}
+	printf("vertex=%d match=%d\n", vertex, match[vertex]);
+}
+
+//	Force matching after grouping
+__global__ void random_match_conflict2(int nvtxs, const int *xadj, const int *adjncy, int *match)
+{
+	int lane_id = threadIdx.x;
+	int group_id = blockIdx.x;
+	int step = (nvtxs + 15) / 16;
+	int vertex = group_id;
+	
+	int begin, end, flag = 0;
+	while(1)
+	{
+		if(match[vertex] != -1)
+			goto next_step;
+		
+		begin = __ldg(&xadj[vertex]);
+		end   = __ldg(&xadj[vertex + 1]);
+
+		for(int j = begin + lane_id;j < end;j += blockDim.x)
+		{
+			int k = adjncy[j];
+			if(atomicCAS(&match[k], -1, vertex) == -1)
+			{
+				atomicExch(&match[vertex], k);
+				goto next_step;
+			}			
+		}
+
+next_step:
+		vertex += step;
+		if(vertex >= nvtxs)
+			break ;
+	}
+}
+
+__device__ int scan_max_degree(int degree, int vertex, int lane_id, int warp_id)
+{
+	int range = 16;
+
+	#pragma unroll
+	while(range > 0)
+	{
+		int val = __shfl_down_sync(0xffffffff, degree, range);
+		int maxidx = __shfl_down_sync(0xffffffff, vertex, range);
+
+		// if(warp_id == 0)
+		// 	printf("lane_id=%d vertex=%d degree=%d vertex_k=%d val=%d maxidx=%d range=%d\n", lane_id, vertex, degree, vertex, val, maxidx, range);
+		if(lane_id < range && val > degree)
+		{
+			degree = val;
+			vertex = maxidx;
+		}
+
+		__syncwarp();
+
+		range >>= 1;
+	}
+
+	return vertex;
+}
+
+__global__ void random_match_degree(int nvtxs, const int *xadj, const int *adjncy, int *match)
+{
+	int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
+	int lane_id = threadIdx.x & 31;
+	int blockwarp_id = threadIdx.x >> 5;
+	int warp_id = blockIdx.x * 4 + blockwarp_id;
+
+	if(warp_id >= nvtxs)
+		return ;
+	
+	int vertex = warp_id;
+	int begin = xadj[vertex];
+	int end   = xadj[vertex + 1];
+	int degree = 0;
+	int vertex_k = -1;
+	// curandState devStates;
+	// curand_init(-1, 0, lane_id, &devStates);
+	for(int i = begin + lane_id;i < end;i += 32)
+	{
+		if(match[vertex] != -1)
+			return ;
+		int k = adjncy[i];
+		if(match[k] != -1)
+			continue;
+		int degree_k = xadj[k + 1] - xadj[k];
+		// int degree_k = get_random_number_range(nvtxs, &devStates);
+		if(degree_k > degree)
+		{
+			vertex_k = k;
+			degree = degree_k;
+		}
+	}
+
+	// if(warp_id == 0)
+	// 	printf("lane_id=%d vertex=%d degree=%d vertex_k=%d\n", lane_id, vertex, degree, vertex_k);
+
+	vertex_k = scan_max_degree(degree, vertex_k, lane_id, warp_id);
+
+	// if(warp_id == 0)
+	// 	printf("lane_id=%d vertex=%d degree=%d vertex_k=%d scan\n", lane_id, vertex, degree, vertex_k);
+
+	if(lane_id == 0 && vertex_k != -1)
+	{
+		// if(vertex < vertex_k)
+		if(atomicCAS(&match[vertex_k], -1, vertex) == -1)
+		{
+			atomicExch(&match[vertex], vertex_k);
+		}
+	}
+}
+
 __global__ void init_gpu_receive_send(int *num, int nvtxs)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
@@ -350,6 +696,166 @@ __global__ void set_receive_send(int nvtxs, int *xadj, int *adjncy, int *adjwgt,
 						break;
 			}
 		}
+	}
+}
+
+__global__ void set_receive_send_topk(int nvtxs, const int *xadj, const int *adjncy, const int *adjwgt, \
+	int *match, int *receive, int *send, int *count, const int offset)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+
+	int j, k, kk;
+	int vertex = ii;
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+	const int wait  = end - begin;
+	int write = 0;
+	int flag = 1;
+
+	if(wait == 0)
+		return ;
+	
+	if(match[vertex] != -1)
+		flag = 0;
+		
+	int register_send[4] = {-1, -1, -1, -1};
+	int send_ptr = 0;
+
+	for(j = end - 1;j >= begin; j--)
+	{
+		int vertex_k = adjncy[j];
+		// if(flag && send_ptr < offset && match[vertex_k] == -1)
+		// {
+		// 	register_send[send_ptr] = vertex_k;
+		// 	send_ptr++;
+
+		// 	for(int ptr_k = 0;ptr_k < offset;ptr_k++)
+		// 		if(atomicCAS(&receive[vertex_k * offset + ptr_k], -1, vertex) == -1)
+		// 			break;
+		// }
+
+		atomicAdd(&count[vertex_k], 1);
+		write++;
+		if(vertex_k == 0)
+			printf("vertex0=%d\n", vertex);
+	}
+
+	if(write != wait)
+		printf("write_error=%d\n", vertex);
+	if(j >= begin)
+		printf("vertex_error=%d\n", vertex);
+
+	// if(ii < 128)
+	// 	printf("vertex=%d wait=%d send=%d send_ptr=%d\n", vertex, wait, register_send[0], send_ptr);
+
+	// wait writing for array receive array 
+	int cnt = 0;
+	int receive_ptr = vertex * offset;
+	int range = min(offset, wait) - 1;
+	int get_ready = -1;
+	int is_matched = -1;
+	do{
+		__threadfence();
+		cnt = atomicAdd(&count[vertex], 0);
+		get_ready = atomicAdd(&receive[receive_ptr + range], 0);
+		is_matched = atomicAdd(&match[vertex], 0);
+		// if(vertex < 32)
+		// 	printf("vertex=%d get_ready=%d is_matched=%d cnt=%d wait=%d receive=%d receive_ptr=%d\n", vertex, get_ready, is_matched, cnt, wait, atomicAdd(&receive[receive_ptr + range], 0), receive_ptr + range);
+	} while(get_ready == -1 && is_matched == -1 && cnt < wait);
+
+	printf("vertex=%d get_ready=%d is_matched=%d cnt<wait=%d cnt=%d wait=%d\n", vertex, get_ready, is_matched, cnt < wait, cnt, wait);
+
+	/*if(is_matched != -1)
+		return ;
+
+	for(int p_send = 0;p_send < send_ptr;p_send++)
+	{
+		int find_k = register_send[p_send];
+		for(int p_receive = 0;p_receive < offset;p_receive++)
+		{
+			int receive_k = receive[receive_ptr + p_receive];
+
+			if(receive_k == -1)
+				break;
+			
+			if(find_k == receive_k)
+			{
+				if (atomicCAS(&match[find_k], -1, vertex) == -1)
+				{
+					atomicExch(&match[vertex], find_k);
+					is_matched = 1;
+					break;
+				}
+			}
+		}
+
+		if(is_matched)
+			break;
+	}*/
+}
+
+__global__ void set_receive_send_topk_one(int nvtxs, const int *xadj, const int *adjncy, int *match, const int offset)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs)
+		return ;
+
+	int vertex = ii;
+	if(match[vertex] != -1)
+		return ;
+	
+	int begin = __ldg(&xadj[vertex]);
+	int end   = __ldg(&xadj[vertex + 1]);
+	int wait  = end - begin;
+
+	if(wait == 0)
+		return ;
+
+	//	find vertex's send array
+	int register_send[4] = {-1, -1, -1, -1};
+	int send_ptr = 0;
+	for(int j = end - 1;j >= begin && send_ptr < offset; j--)
+	{
+		int vertex_k = adjncy[j];
+		if(send_ptr < offset && match[vertex_k] == -1)
+		{
+			register_send[send_ptr] = vertex_k;
+			send_ptr++;
+		}
+	}
+
+	//	find vertex's receive array
+	int flag = 0;
+	for(int j = 0;j < send_ptr;j++)
+	{
+		int vertex_k = register_send[j];
+		int begin_k = __ldg(&xadj[vertex_k]);
+		int end_k   = __ldg(&xadj[vertex_k + 1]);
+		int k_send_ptr = 0;
+		for(int jj = end_k - 1;jj >= begin_k && k_send_ptr < offset;jj--)
+		{
+			int vertex_kk = adjncy[jj];
+			if(k_send_ptr < offset && match[vertex_kk] == -1)
+			{
+				if(vertex_kk == vertex)
+				{
+					if (atomicCAS(&match[vertex_k], -1, vertex) == -1)
+					{
+						atomicExch(&match[vertex], vertex_k);
+						flag = 1;
+						return ;
+					}
+				}
+				k_send_ptr++;
+			}
+		}
+
+		// if(flag)
+		// 	break;
 	}
 }
 
@@ -482,38 +988,43 @@ __global__ void reset_receive_send(int nvtxs, int *receive, int *send)
 __global__ void resolve_conflict_1(int *match, int nvtxs)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
-
-	if (ii < nvtxs)
-	{
-		int t = match[ii];
-		if ((t != -1 && match[t] != ii) || t == -1)
-			match[ii] = ii;
-		// if ((t != -1 && atomicAdd(&match[t],0) != ii) || t == -1)
-		// 	atomicExch(&match[ii], ii);
-	}
+	
+	if(ii >= nvtxs) 
+		return ;
+	
+	int t = match[ii];
+	if (t == -1 || match[t] != ii)
+		match[ii] = ii;
 }
 
 __global__ void resolve_conflict_2(int *match, int *cmap, int nvtxs)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (ii < nvtxs)
-	{
-		if (ii == 0)
-			cmap[ii] = 0;
-		else
-		{
-			int t = match[ii];
-			if (ii <= t)
-				cmap[ii] = 1;
-			else
-				cmap[ii] = 0;
-		}
-	}
+	if(ii >= nvtxs) 
+		return ;
+	
+	int t = (ii != 0) ? match[ii] : -1; // 合并条件的关键
+    cmap[ii] = (ii == 0) ? 0 : (ii <= t);
+}
+
+__global__ void resolve_conflict_12(int *match, int *cmap, int nvtxs)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii >= nvtxs) 
+		return ;
+	
+	int t = match[ii];
+	if (t == -1 || match[t] != ii)
+		match[ii] = ii, t = ii;
+	
+	cmap[ii] = (ii == 0) ? 0 : (ii <= t);
 }
 
 /*CUDA-find cgraph vertex part4-make sure vertex pair real rdge*/ /*findc4*/
-__global__ void resolve_conflict_4(int *match, int *cmap, int *txadj, int *xadj, int *cvwgt, int *vwgt, int nvtxs)
+__global__ void resolve_conflict_4(int *match, int *cmap, int *txadj, int *xadj, int *cvwgt, int *vwgt, int nvtxs, \
+	int *tlength, int *bin)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -537,13 +1048,46 @@ __global__ void resolve_conflict_4(int *match, int *cmap, int *txadj, int *xadj,
 			{
 				begin = xadj[u];
 				end = xadj[u + 1];
-				txadj[t + 1] = length + end - begin;
+				length += (end - begin);
+				txadj[t + 1] = length;
 			}
 			else
 				txadj[t + 1] = length;
 
 			if (ii == u)
 				cvwgt[t] = vwgt[ii];
+			
+			//	tbin
+			tlength[t] = length;
+
+			if(length == 0)
+				atomicAdd(&bin[ 0], 1);
+			else if(length <= 2)
+				atomicAdd(&bin[ 1], 1);
+			else if(length <= 4)
+				atomicAdd(&bin[ 2], 1);
+			else if(length <= 8)
+				atomicAdd(&bin[ 3], 1);
+			else if(length <= 16)
+				atomicAdd(&bin[ 4], 1);
+			else if(length <= 32)
+				atomicAdd(&bin[ 5], 1);
+			else if(length <= 64)
+				atomicAdd(&bin[ 6], 1);
+			else if(length <= 128)
+				atomicAdd(&bin[ 7], 1);
+			else if(length <= 256)
+				atomicAdd(&bin[ 8], 1);
+			else if(length <= 512)
+				atomicAdd(&bin[ 9], 1);
+			else if(length <= 1024)
+				atomicAdd(&bin[10], 1);
+			else if(length <= 2048)
+				atomicAdd(&bin[11], 1);
+			else if(length <= 4096)
+				atomicAdd(&bin[12], 1);
+			else
+				atomicAdd(&bin[13], 1);
 		}
 		if (ii == 0)
 			txadj[0] = 0;
@@ -582,127 +1126,127 @@ __global__ void init_bin(int l, int *bin)
 		bin[ii] = 0;
 }
 
-__global__ void check_length(int nvtxs, int *xadj, int *adjncy, int *length, int *bin)
+__global__ void check_length(int nvtxs, const int *xadj, int *adjncy, int *length, int *bin)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (ii < nvtxs)
-	{
-		int begin = xadj[ii];
-		int end = xadj[ii + 1];
-		int l = end - begin;
-		length[ii] = l;
+	if(ii >= nvtxs)
+		return ;
+	
+	int begin = __ldg(&xadj[ii]);
+	int end = __ldg(&xadj[ii + 1]);
+	int l = end - begin;
+	length[ii] = l;
 		
-		if(l == 0)
-			atomicAdd(&bin[ 0], 1);
-		else if(l < 2)
-			atomicAdd(&bin[ 1], 1);
-		else if(l < 4)
-			atomicAdd(&bin[ 2], 1);
-		else if(l < 8)
-			atomicAdd(&bin[ 3], 1);
-		else if(l < 16)
-			atomicAdd(&bin[ 4], 1);
-		else if(l < 32)
-			atomicAdd(&bin[ 5], 1);
-		else if(l < 64)
-			atomicAdd(&bin[ 6], 1);
-		else if(l < 128)
-			atomicAdd(&bin[ 7], 1);
-		else if(l < 256)
-			atomicAdd(&bin[ 8], 1);
-		else if(l < 256)
-			atomicAdd(&bin[ 9], 1);
-		else if(l < 512)
-			atomicAdd(&bin[10], 1);
-		else if(l < 1024)
-			atomicAdd(&bin[11], 1);
-		else if(l < 2048)
-			atomicAdd(&bin[12], 1);
-		else if(l < 4096)
-			atomicAdd(&bin[13], 1);
-	}
+	if(l == 0)
+		atomicAdd(&bin[ 0], 1);
+	else if(l <= 2)
+		atomicAdd(&bin[ 1], 1);
+	else if(l <= 4)
+		atomicAdd(&bin[ 2], 1);
+	else if(l <= 8)
+		atomicAdd(&bin[ 3], 1);
+	else if(l <= 16)
+		atomicAdd(&bin[ 4], 1);
+	else if(l <= 32)
+		atomicAdd(&bin[ 5], 1);
+	else if(l <= 64)
+		atomicAdd(&bin[ 6], 1);
+	else if(l <= 128)
+		atomicAdd(&bin[ 7], 1);
+	else if(l <= 256)
+		atomicAdd(&bin[ 8], 1);
+	else if(l <= 512)
+		atomicAdd(&bin[ 9], 1);
+	else if(l <= 1024)
+		atomicAdd(&bin[10], 1);
+	else if(l <= 2048)
+		atomicAdd(&bin[11], 1);
+	else if(l <= 4096)
+		atomicAdd(&bin[12], 1);
+	else
+		atomicAdd(&bin[13], 1);
 }
 
-__global__ void set_bin(int nvtxs, int *length, int *size, int *offset, int *idx)
+__global__ void set_bin(int nvtxs, const int *length, int *size, const int *offset, int *idx)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (ii < nvtxs)
-	{
-		int l = length[ii];
-		int ptr = 0;
+	if(ii >= nvtxs)
+		return ;
+	
+	int l = __ldg(&length[ii]);
+	int ptr = 0;
 
-		if(l == 0)
-		{
-			ptr = atomicAdd(&size[ 0], 1);
-			idx[offset[ 0] + ptr] = ii;
-		}
-		else if(l < 2)
-		{
-			ptr = atomicAdd(&size[ 1], 1);
-			idx[offset[ 1] + ptr] = ii;
-		}
-		else if(l < 4)
-		{
-			ptr = atomicAdd(&size[ 2], 1);
-			idx[offset[ 2] + ptr] = ii;
-		}
-		else if(l < 8)
-		{
-			ptr = atomicAdd(&size[ 3], 1);
-			idx[offset[ 3] + ptr] = ii;
-		}
-		else if(l < 16)
-		{
-			ptr = atomicAdd(&size[ 4], 1);
-			idx[offset[ 4] + ptr] = ii;
-		}
-		else if(l < 32)
-		{
-			ptr = atomicAdd(&size[ 5], 1);
-			idx[offset[ 5] + ptr] = ii;
-		}
-		else if(l < 64)
-		{
-			ptr = atomicAdd(&size[ 6], 1);
-			idx[offset[ 6] + ptr] = ii;
-		}
-		else if(l < 128)
-		{
-			ptr = atomicAdd(&size[ 7], 1);
-			idx[offset[ 7] + ptr] = ii;
-		}
-		else if(l < 256)
-		{
-			ptr = atomicAdd(&size[ 8], 1);
-			idx[offset[ 8] + ptr] = ii;
-		}
-		else if(l < 256)
-		{
-			ptr = atomicAdd(&size[ 9], 1);
-			idx[offset[ 9] + ptr] = ii;
-		}
-		else if(l < 512)
-		{
-			ptr = atomicAdd(&size[10], 1);
-			idx[offset[10] + ptr] = ii;
-		}
-		else if(l < 1024)
-		{
-			ptr = atomicAdd(&size[11], 1);
-			idx[offset[11] + ptr] = ii;
-		}
-		else if(l < 2048)
-		{
-			ptr = atomicAdd(&size[12], 1);
-			idx[offset[12] + ptr] = ii;
-		}
-		else if(l < 4096)
-		{
-			ptr = atomicAdd(&size[13], 1);
-			idx[offset[13] + ptr] = ii;
-		}
+	if(l == 0)
+	{
+		ptr = atomicAdd(&size[ 0], 1);
+		idx[__ldg(&offset[ 0]) + ptr] = ii;
+	}
+	else if(l <= 2)
+	{
+		ptr = atomicAdd(&size[ 1], 1);
+		idx[__ldg(&offset[ 1]) + ptr] = ii;
+	}
+	else if(l <= 4)
+	{
+		ptr = atomicAdd(&size[ 2], 1);
+		idx[__ldg(&offset[ 2]) + ptr] = ii;
+	}
+	else if(l <= 8)
+	{
+		ptr = atomicAdd(&size[ 3], 1);
+		idx[__ldg(&offset[ 3]) + ptr] = ii;
+	}
+	else if(l <= 16)
+	{
+		ptr = atomicAdd(&size[ 4], 1);
+		idx[__ldg(&offset[ 4]) + ptr] = ii;
+	}
+	else if(l <= 32)
+	{
+		ptr = atomicAdd(&size[ 5], 1);
+		idx[__ldg(&offset[ 5]) + ptr] = ii;
+	}
+	else if(l <= 64)
+	{
+		ptr = atomicAdd(&size[ 6], 1);
+		idx[__ldg(&offset[ 6]) + ptr] = ii;
+	}
+	else if(l <= 128)
+	{
+		ptr = atomicAdd(&size[ 7], 1);
+		idx[__ldg(&offset[ 7]) + ptr] = ii;
+	}
+	else if(l <= 256)
+	{
+		ptr = atomicAdd(&size[ 8], 1);
+		idx[__ldg(&offset[ 8]) + ptr] = ii;
+	}
+	else if(l <= 512)
+	{
+		ptr = atomicAdd(&size[ 9], 1);
+		idx[__ldg(&offset[ 9]) + ptr] = ii;
+	}
+	else if(l <= 1024)
+	{
+		ptr = atomicAdd(&size[10], 1);
+		idx[__ldg(&offset[10]) + ptr] = ii;
+	}
+	else if(l <= 2048)
+	{
+		ptr = atomicAdd(&size[11], 1);
+		idx[__ldg(&offset[11]) + ptr] = ii;
+	}
+	else if(l <= 4096)
+	{
+		ptr = atomicAdd(&size[12], 1);
+		idx[__ldg(&offset[12]) + ptr] = ii;
+	}
+	else
+	{
+		ptr = atomicAdd(&size[13], 1);
+		idx[__ldg(&offset[13]) + ptr] = ii;
 	}
 }
 
@@ -718,31 +1262,31 @@ __global__ void check_match(int nvtxs, int *match, int *length, int *bin)
 		{
 			if(l == 0)
 				atomicAdd(&bin[ 0], 1);
-			else if(l < 2)
+			else if(l <= 2)
 				atomicAdd(&bin[ 1], 1);
-			else if(l < 4)
+			else if(l <= 4)
 				atomicAdd(&bin[ 2], 1);
-			else if(l < 8)
+			else if(l <= 8)
 				atomicAdd(&bin[ 3], 1);
-			else if(l < 16)
+			else if(l <= 16)
 				atomicAdd(&bin[ 4], 1);
-			else if(l < 32)
+			else if(l <= 32)
 				atomicAdd(&bin[ 5], 1);
-			else if(l < 64)
+			else if(l <= 64)
 				atomicAdd(&bin[ 6], 1);
-			else if(l < 128)
+			else if(l <= 128)
 				atomicAdd(&bin[ 7], 1);
-			else if(l < 256)
+			else if(l <= 256)
 				atomicAdd(&bin[ 8], 1);
-			else if(l < 256)
+			else if(l <= 512)
 				atomicAdd(&bin[ 9], 1);
-			else if(l < 512)
+			else if(l <= 1024)
 				atomicAdd(&bin[10], 1);
-			else if(l < 1024)
+			else if(l <= 2048)
 				atomicAdd(&bin[11], 1);
-			else if(l < 2048)
+			else if(l <= 4096)
 				atomicAdd(&bin[12], 1);
-			else if(l < 4096)
+			else
 				atomicAdd(&bin[13], 1);
 		}
 	}
@@ -1207,12 +1751,17 @@ __global__ void print_graph(int nvtxs, int nedges, int *vwgt, int *xadj, int *ad
 	{
 		begin = xadj[i];
 		end   = xadj[i + 1];
-		printf("%10d %10d %10d %10d\n", i, vwgt[i], begin, end);
+		// printf("%10d %10d %10d %10d\n", i, vwgt[i], begin, end);
+		// for(j = begin;j < end;j++)
+		// 	printf("%10d ", adjncy[j]);
+		// printf("\n");
+		// for(j = begin;j < end;j++)
+		// 	printf("%10d ", adjwgt[j]);
+		// printf("\n");
+
+		printf("%10d|", i);
 		for(j = begin;j < end;j++)
 			printf("%10d ", adjncy[j]);
-		printf("\n");
-		for(j = begin;j < end;j++)
-			printf("%10d ", adjwgt[j]);
 		printf("\n");
 	}
 }
@@ -1224,6 +1773,18 @@ __global__ void print_match(int nvtxs, int *match)
 	for(i = 0;i < nvtxs;i++)
 		printf("%10d ", match[i]);
 	printf("\n");
+}
+
+__global__ void exam_count(int nvtxs, int *xadj, int *count)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	if(ii >= nvtxs)
+		return;
+	
+	int wait = xadj[ii + 1] - xadj[ii];
+	if(wait != count[ii])
+		printf("vertex=%d length=%d count=%d\n", ii, wait, count[ii]);
 }
 
 /*Get gpu graph matching params by hem*/
@@ -1238,7 +1799,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	double success_rate[5];
 
 	// cudaDeviceSynchronize();
-	// print_graph<<<1, 1>>>(nvtxs, nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+	// print_graph<<<1, 1>>>(32, nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
 	// cudaDeviceSynchronize();
 
 	// cudaDeviceSynchronize();
@@ -1252,100 +1813,104 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	gettimeofday(&end_gpu_match, NULL);
 	init_gpu_match_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
 
-	int *length_vertex, *length_bin, *bin_offset, *bin_size, *bin_idx, *match_bin, *match_num;
-	double sum;
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_malloc,NULL);
-	if(GPU_Memory_Pool)
-	{
-		length_vertex = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: length_vertex");
-		length_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: length_bin");
-		bin_offset = (int *)rmalloc_with_check(sizeof(int) * 15, "hunyuangraph_gpu_match: bin_offset");
-		bin_size   = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: bin_size");
-		bin_idx    = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: bin_idx");
-		match_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: match_bin");
-	}
-	else 
-	{
-		cudaMalloc((void**)&length_vertex, sizeof(int) * nvtxs);
-		cudaMalloc((void**)&length_bin, sizeof(int) * 14);
-		cudaMalloc((void**)&bin_offset, sizeof(int) * 15);
-		cudaMalloc((void**)&bin_size, sizeof(int) * 14);
-		cudaMalloc((void**)&bin_idx, sizeof(int) * nvtxs);
-		cudaMalloc((void**)&match_bin, sizeof(int) * 14);
-	}
-	cudaDeviceSynchronize();
-	gettimeofday(&end_malloc,NULL);
-	coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
-	
-	match_num = (int *)malloc(sizeof(int) * 14);
-
-	cudaDeviceSynchronize();
-	init_bin<<<1, 14>>>(14, length_bin);
-	init_bin<<<1, 14>>>(14, match_bin);
-	init_bin<<<1, 14>>>(15, bin_offset);
-	init_bin<<<1, 14>>>(14, bin_size);
+	// // int *length_vertex, *bin_offset, *bin_idx;
+	// int *length_bin, *bin_size, *match_bin, *match_num;s
+	// double sum;
 	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_malloc,NULL);
+	// if(GPU_Memory_Pool)
+	// {
+	// // 	graph->length_vertex = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: graph->length_vertex");
+	// 	length_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: length_bin");
+	// // 	graph->bin_offset = (int *)rmalloc_with_check(sizeof(int) * 15, "hunyuangraph_gpu_match: graph->bin_offset");
+	// // 	bin_size   = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: bin_size");
+	// // 	graph->bin_idx    = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: graph->bin_idx");
+	// 	match_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: match_bin");
+	// }
+	// else 
+	// {
+	// // 	cudaMalloc((void**)&graph->length_vertex, sizeof(int) * nvtxs);
+	// 	cudaMalloc((void**)&length_bin, sizeof(int) * 14);
+	// // 	cudaMalloc((void**)&graph->bin_offset, sizeof(int) * 15);
+	// // 	cudaMalloc((void**)&bin_size, sizeof(int) * 14);
+	// // 	cudaMalloc((void**)&graph->bin_idx, sizeof(int) * nvtxs);
+	// 	cudaMalloc((void**)&match_bin, sizeof(int) * 14);
+	// }
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_malloc,NULL);
+	// coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
 	
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_gpu_match, NULL);
-	check_length<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, length_vertex, length_bin);
-	cudaDeviceSynchronize();
-	gettimeofday(&end_gpu_match, NULL);
-	check_length_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+	// match_num = (int *)malloc(sizeof(int) * 14);
 
-	cudaDeviceSynchronize();
-	cudaMemcpy(&bin_offset[1], length_bin, sizeof(int) * 14, cudaMemcpyDeviceToDevice);
-	cudaDeviceSynchronize();
-
-	if(GPU_Memory_Pool)
-    {
-        prefixsum(bin_offset, bin_offset, 15, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
-    }
-    else
-    {
-        // thrust::exclusive_scan(thrust::device, bin_offset, bin_offset + 15, bin_offset);
-		thrust::inclusive_scan(thrust::device, bin_offset, bin_offset + 15, bin_offset);
-    }
+	// cudaDeviceSynchronize();
+	// init_bin<<<1, 14>>>(14, length_bin);
+	// init_bin<<<1, 14>>>(14, match_bin);
+	// init_bin<<<1, 14>>>(15, graph->bin_offset);
+	// init_bin<<<1, 14>>>(14, bin_size);
+	// // cudaDeviceSynchronize();
 	
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_gpu_match, NULL);
-	set_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, length_vertex, bin_size, bin_offset, bin_idx);
-	cudaDeviceSynchronize();
-	gettimeofday(&end_gpu_match, NULL);
-	set_bin_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_gpu_match, NULL);
+	// check_length<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->length_vertex, length_bin);
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_gpu_match, NULL);
+	// check_length_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+
+	// cudaDeviceSynchronize();
+	// cudaMemcpy(&graph->bin_offset[1], length_bin, sizeof(int) * 14, cudaMemcpyDeviceToDevice);
+	// cudaDeviceSynchronize();
+
+	// if(GPU_Memory_Pool)
+    // {
+    //     prefixsum(graph->bin_offset, graph->bin_offset, 15, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+    // }
+    // else
+    // {
+    //     // thrust::exclusive_scan(thrust::device, bin_offset, bin_offset + 15, bin_offset);
+	// 	thrust::inclusive_scan(thrust::device,graph-> bin_offset, graph->bin_offset + 15, graph->bin_offset);
+    // }
+	
+	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_gpu_match, NULL);
+	// set_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->length_vertex, bin_size, graph->bin_offset, graph->bin_idx);
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_gpu_match, NULL);
+	// set_bin_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
 
 	// cudaDeviceSynchronize();
 	// print_length<<<1, 1>>>(14, length_bin);
 	// cudaDeviceSynchronize();
 	// printf("\n");
-	// cudaDeviceSynchronize();
-	// print_length<<<1, 1>>>(15, bin_offset);
-	// cudaDeviceSynchronize();
-	// printf("\n");
-	// cudaDeviceSynchronize();
-	// print_length<<<1, 1>>>(14, bin_size);
-	// cudaDeviceSynchronize();
-	// printf("\n");
+	// // cudaDeviceSynchronize();
+	// // print_length<<<1, 1>>>(15, bin_offset);
+	// // cudaDeviceSynchronize();
+	// // printf("\n");
+	// // cudaDeviceSynchronize();
+	// // print_length<<<1, 1>>>(14, bin_size);
+	// // cudaDeviceSynchronize();
+	// // printf("\n");
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_match, NULL);
 
+#ifdef CONTROL_MATCH
+	cuda_hem_test<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
+#else
 	if (level == 0)
 	{
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
 		// SC24_version
-		for (int i = 0; i < 1; i++)
-		{
-			cuda_hem_229_3<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->cuda_xadj, graph->cuda_vwgt, graph->cuda_adjwgt, graph->cuda_adjncy,
-														 hunyuangraph_admin->maxvwgt);
+		// for (int i = 0; i < 1; i++)
+		// {
+		// 	cuda_hem_229_3<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->cuda_xadj, graph->cuda_vwgt, graph->cuda_adjwgt, graph->cuda_adjncy,
+		// 												 hunyuangraph_admin->maxvwgt);
 
-			reset_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
+		// 	reset_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
 
-			cuda_hem<<<1024, 1>>>(nvtxs, graph->cuda_match, graph->cuda_xadj, graph->cuda_vwgt, graph->cuda_adjwgt, graph->cuda_adjncy,
-								  hunyuangraph_admin->maxvwgt);
-		}
+		// 	cuda_hem<<<1024, 1>>>(nvtxs, graph->cuda_match, graph->cuda_xadj, graph->cuda_vwgt, graph->cuda_adjwgt, graph->cuda_adjncy,
+		// 						  hunyuangraph_admin->maxvwgt);
+		// }
 
 		// SC25 random version
 		// random_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
@@ -1354,6 +1919,134 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		// reset_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
 
+		/*int *count;
+		int *path_length, *deeplength;
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_malloc, NULL);
+		if(GPU_Memory_Pool)
+		{
+			count = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: count");
+			// path_length = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: path_length");
+			// deeplength = (int *)rmalloc_with_check(sizeof(int), "hunyuangraph_gpu_match: deeplength");
+		}
+		else 
+		{
+			cudaMalloc((void**)&count, sizeof(int) * nvtxs);
+			// cudaMalloc((void**)&path_length, sizeof(int) * nvtxs);
+			// cudaMalloc((void**)&deeplength, sizeof(int));
+		}
+		cudaDeviceSynchronize();
+		gettimeofday(&end_malloc, NULL);
+		coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+
+		cudaDeviceSynchronize();
+		init_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, count);
+		// init_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, path_length);
+		// init_bin<<<1, 1>>>(1, deeplength);
+		cudaDeviceSynchronize();
+
+		cudaDeviceSynchronize();
+		random_match_freesync<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, count);
+		// random_match_freesync_countpath<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, count, path_length, deeplength);
+		cudaDeviceSynchronize();
+
+		// printf("deep_length=");
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(1, deeplength);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_free,NULL);
+		if(GPU_Memory_Pool)
+		{
+			// rfree_with_check((void *)deeplength, sizeof(int), "hunyuangraph_gpu_match: deeplength");
+			// rfree_with_check((void *)path_length, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: path_length");
+			rfree_with_check((void *)count, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: count");
+		}
+		else
+		{
+			// cudaFree(deeplength);
+			// cudaFree(path_length);
+			cudaFree(count);
+		}
+		cudaDeviceSynchronize();
+		gettimeofday(&end_free,NULL);
+		coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;*/
+
+		// int *unmatched, *unmatched_num;
+		// cudaDeviceSynchronize();
+		// gettimeofday(&begin_malloc, NULL);
+		// if(GPU_Memory_Pool)
+		// {
+		// 	unmatched = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: unmatched");
+		// 	unmatched_num = (int *)rmalloc_with_check(sizeof(int), "hunyuangraph_gpu_match: unmatched_num");
+		// }
+		// else 
+		// {
+		// 	cudaMalloc((void**)&unmatched, sizeof(int) * nvtxs);
+		// 	cudaMalloc((void**)&unmatched_num, sizeof(int));
+		// }
+		// cudaDeviceSynchronize();
+		// gettimeofday(&end_malloc, NULL);
+		// coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+
+		cudaDeviceSynchronize();
+		random_match_conflict<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		// random_match_degree<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		cudaDeviceSynchronize();
+		reset_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
+		// random_match_conflict2<<<(nvtxs + 15) / 16, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		// random_match_conflict2<<<(nvtxs + 15) / 16, 32>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		// random_match_degree<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		cudaDeviceSynchronize();
+
+		// cudaDeviceSynchronize();
+		// init_bin<<<1, 14>>>(14, match_bin);
+		// cudaDeviceSynchronize();
+		// check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(14, match_bin);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+		// cudaDeviceSynchronize();
+		// print_rate<<<1, 1>>>(14, length_bin, match_bin);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+
+		cudaDeviceSynchronize();
+		random_match_conflict_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match);
+		cudaDeviceSynchronize();
+		
+		// cudaDeviceSynchronize();
+		// init_bin<<<1, 14>>>(14, match_bin);
+		// cudaDeviceSynchronize();
+		// check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(14, match_bin);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+		// cudaDeviceSynchronize();
+		// print_rate<<<1, 1>>>(14, length_bin, match_bin);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+
+		// cudaDeviceSynchronize();
+		// gettimeofday(&begin_free,NULL);
+		// if(GPU_Memory_Pool)
+		// {
+		// 	rfree_with_check((void *)unmatched_num, sizeof(int), "hunyuangraph_gpu_match: unmatched_num");
+		// 	rfree_with_check((void *)unmatched, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: unmatched");
+		// }
+		// else
+		// {
+		// 	cudaFree(unmatched_num);
+		// 	cudaFree(unmatched);
+		// }
+		// cudaDeviceSynchronize();
+		// gettimeofday(&end_free,NULL);
+		// coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+
 		// cudaDeviceSynchronize();
 		// exam_match<<<1,1>>>(nvtxs, graph->cuda_match);
 		// cudaDeviceSynchronize();
@@ -1361,52 +2054,137 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		random_match_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+		// printf("random_match_time          %10.3lf\n", random_match_time);
+
+		// exit(0);
 	}
 
 	// SC25 topk version
 	else
 	{
+		// int *length_vertex, *bin_offset, *bin_idx;
+		int *length_bin, *bin_size, *match_bin, *match_num;
+		double sum;
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_malloc,NULL);
+		if(GPU_Memory_Pool)
+		{
+			// graph->length_vertex = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: graph->length_vertex");
+			length_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: length_bin");
+			// graph->bin_offset = (int *)rmalloc_with_check(sizeof(int) * 15, "hunyuangraph_gpu_match: graph->bin_offset");
+			bin_size   = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: bin_size");
+			// graph->bin_idx    = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: graph->bin_idx");
+			match_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: match_bin");
+		}
+		else 
+		{
+			// cudaMalloc((void**)&graph->length_vertex, sizeof(int) * nvtxs);
+			cudaMalloc((void**)&length_bin, sizeof(int) * 14);
+			// cudaMalloc((void**)&graph->bin_offset, sizeof(int) * 15);
+			cudaMalloc((void**)&bin_size, sizeof(int) * 14);
+			// cudaMalloc((void**)&graph->bin_idx, sizeof(int) * nvtxs);
+			cudaMalloc((void**)&match_bin, sizeof(int) * 14);
+		}
+		cudaDeviceSynchronize();
+		gettimeofday(&end_malloc,NULL);
+		coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+		
+		match_num = (int *)malloc(sizeof(int) * 14);
+
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, length_bin);
+		init_bin<<<1, 14>>>(14, match_bin);
+		init_bin<<<1, 14>>>(15, graph->bin_offset);
+		init_bin<<<1, 14>>>(14, bin_size);
+		// cudaDeviceSynchronize();
+	
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_gpu_match, NULL);
+		check_length<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->length_vertex, length_bin);
+		cudaDeviceSynchronize();
+		gettimeofday(&end_gpu_match, NULL);
+		check_length_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+
+		cudaDeviceSynchronize();
+		cudaMemcpy(&graph->bin_offset[1], length_bin, sizeof(int) * 14, cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+
+		if(GPU_Memory_Pool)
+		{
+			prefixsum(graph->bin_offset, graph->bin_offset, 15, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+		}
+		else
+		{
+			// thrust::exclusive_scan(thrust::device, bin_offset, bin_offset + 15, bin_offset);
+			thrust::inclusive_scan(thrust::device,graph-> bin_offset, graph->bin_offset + 15, graph->bin_offset);
+		}
+		
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_gpu_match, NULL);
+		set_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->length_vertex, bin_size, graph->bin_offset, graph->bin_idx);
+		cudaDeviceSynchronize();
+		gettimeofday(&end_gpu_match, NULL);
+		set_bin_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+
+		cudaMemcpy(graph->h_bin_offset, graph->bin_offset, sizeof(int) * 15, cudaMemcpyDeviceToHost);
+
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(14, length_bin);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(15, graph->bin_offset);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+		// cudaDeviceSynchronize();
+		// print_length<<<1, 1>>>(14, bin_size);
+		// cudaDeviceSynchronize();
+		// printf("\n");
+
 		cudaDeviceSynchronize();
 	    gettimeofday(&begin_gpu_topkfour_match,NULL);
 		// printf("topk begin\n");
 
-		int *receive, *send;
-		cudaDeviceSynchronize();
-	    gettimeofday(&begin_malloc,NULL);
-		if(GPU_Memory_Pool)
-		{
-			receive = (int *)rmalloc_with_check(sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: receive");
-			send = (int *)rmalloc_with_check(sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: send");
-		}
-		else
-		{
-			cudaMalloc((void**)&receive, sizeof(int) * nvtxs * 4);
-			cudaMalloc((void**)&send, sizeof(int) * nvtxs * 4);
-		}
-		cudaDeviceSynchronize();
-		gettimeofday(&end_malloc,NULL);
-		match_time = (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
-		coarsen_malloc += match_time;
-		match_malloc_time += match_time;
+		// int *receive, *send;
+		// int *count;
+		// cudaDeviceSynchronize();
+	    // gettimeofday(&begin_malloc,NULL);
+		// if(GPU_Memory_Pool)
+		// {
+		// 	receive = (int *)rmalloc_with_check(sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: receive");
+		// 	send = (int *)rmalloc_with_check(sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: send");
+		// 	count = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_gpu_match: count");
+		// }
+		// else
+		// {
+		// 	cudaMalloc((void**)&receive, sizeof(int) * nvtxs * 4);
+		// 	cudaMalloc((void**)&send, sizeof(int) * nvtxs * 4);
+		// 	cudaMalloc((void**)&count, sizeof(int) * nvtxs);
+		// }
+		// cudaDeviceSynchronize();
+		// gettimeofday(&end_malloc,NULL);
+		// match_time = (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+		// coarsen_malloc += match_time;
+		// match_malloc_time += match_time;
 
-		cudaDeviceSynchronize();
-		gettimeofday(&begin_gpu_match_kernel, NULL);
-		init_gpu_receive_send<<<(nvtxs * 4 + 127) / 128, 128>>>(receive, nvtxs * 4);
-		init_gpu_receive_send<<<(nvtxs * 4 + 127) / 128, 128>>>(send, nvtxs * 4);
-		cudaDeviceSynchronize();
-		gettimeofday(&end_gpu_match_kernel, NULL);
-		init_gpu_receive_send_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+		// cudaDeviceSynchronize();
+		// gettimeofday(&begin_gpu_match_kernel, NULL);
+		// init_gpu_receive_send<<<(nvtxs * 4 + 127) / 128, 128>>>(receive, nvtxs * 4);
+		// init_gpu_receive_send<<<(nvtxs * 4 + 127) / 128, 128>>>(send, nvtxs * 4);
+		// cudaDeviceSynchronize();
+		// gettimeofday(&end_gpu_match_kernel, NULL);
+		// init_gpu_receive_send_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 		// printf("segmengtsort begin\n");
 		// topk sort
 		if(GPU_Memory_Pool)
 		{
 			int *bb_counter, *bb_id;
-			int *bb_keysB_d, *bb_valsB_d;
+			// int *bb_keysB_d, *bb_valsB_d;
 
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_malloc,NULL);
-			bb_keysB_d = (int *)rmalloc_with_check(sizeof(int) * nedges, "bb_keysB_d");
-			bb_valsB_d = (int *)rmalloc_with_check(sizeof(int) * nedges, "bb_valsB_d");
+			// bb_keysB_d = (int *)rmalloc_with_check(sizeof(int) * nedges, "bb_keysB_d");
+			// bb_valsB_d = (int *)rmalloc_with_check(sizeof(int) * nedges, "bb_valsB_d");
 			bb_id = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "bb_id");
 			bb_counter = (int *)rmalloc_with_check(sizeof(int) * 13, "bb_counter");
 			cudaDeviceSynchronize();
@@ -1417,7 +2195,8 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_match_kernel, NULL);
-			hunyuangraph_segmengtsort(graph->cuda_adjwgt, graph->cuda_adjncy, nedges, graph->cuda_xadj, nvtxs, bb_counter, bb_id, bb_keysB_d, bb_valsB_d);
+			// hunyuangraph_segmengtsort(graph->cuda_adjwgt, graph->cuda_adjncy, nedges, graph->cuda_xadj, nvtxs, bb_counter, bb_id, bb_keysB_d, bb_valsB_d);
+			hunyuangraph_segmengtsort(graph->cuda_adjwgt, graph->cuda_adjncy, nedges, graph->cuda_xadj, nvtxs, bb_counter, bb_id, graph->bb_ckeysB_d, graph->bb_cvalsB_d);
 			cudaDeviceSynchronize();
 			gettimeofday(&end_gpu_match_kernel, NULL);
 			wgt_segmentsort_gpu_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -1433,25 +2212,32 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 			coarsen_free += match_time;
 			match_free_time += match_time;
 
-			cudaDeviceSynchronize();
-			gettimeofday(&begin_gpu_match_kernel, NULL);
-			cudaMemcpy(graph->cuda_adjncy, bb_valsB_d, sizeof(int) * nedges, cudaMemcpyDeviceToDevice);
-			cudaMemcpy(graph->cuda_adjwgt, bb_keysB_d, sizeof(int) * nedges, cudaMemcpyDeviceToDevice);
-			cudaDeviceSynchronize();
-			gettimeofday(&end_gpu_match_kernel, NULL);
-			match_time = (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
-			match_memcpy_time += match_time;
-			segmentsort_memcpy_time += match_time;
+			// cudaDeviceSynchronize();
+			// gettimeofday(&begin_gpu_match_kernel, NULL);
+			// cudaMemcpy(graph->cuda_adjncy, bb_valsB_d, sizeof(int) * nedges, cudaMemcpyDeviceToDevice);
+			// cudaMemcpy(graph->cuda_adjwgt, bb_keysB_d, sizeof(int) * nedges, cudaMemcpyDeviceToDevice);
+		
+			//  swap 
+            int *p;
+            p = graph->bb_cvalsB_d, graph->bb_cvalsB_d = graph->cuda_adjncy, graph->cuda_adjncy = p;
+            p = graph->bb_ckeysB_d, graph->bb_ckeysB_d = graph->cuda_adjwgt, graph->cuda_adjwgt = p;
+        
 			
-			cudaDeviceSynchronize();
-	        gettimeofday(&begin_free,NULL);
-			rfree_with_check((void *)bb_valsB_d, sizeof(int) * nedges, "bb_valsB_d");	// bb_valsB_d
-			rfree_with_check((void *)bb_keysB_d, sizeof(int) * nedges, "bb_keysB_d");	// bb_keysB_d
-			cudaDeviceSynchronize();
-			gettimeofday(&end_free,NULL);
-			match_time = (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
-			coarsen_free += match_time;
-			match_free_time += match_time;
+			// cudaDeviceSynchronize();
+			// gettimeofday(&end_gpu_match_kernel, NULL);
+			// match_time = (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+			// match_memcpy_time += match_time;
+			// segmentsort_memcpy_time += match_time;
+			
+			// cudaDeviceSynchronize();
+	        // gettimeofday(&begin_free,NULL);
+			// rfree_with_check((void *)bb_valsB_d, sizeof(int) * nedges, "bb_valsB_d");	// bb_valsB_d
+			// rfree_with_check((void *)bb_keysB_d, sizeof(int) * nedges, "bb_keysB_d");	// bb_keysB_d
+			// cudaDeviceSynchronize();
+			// gettimeofday(&end_free,NULL);
+			// match_time = (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+			// coarsen_free += match_time;
+			// match_free_time += match_time;
 		}
 		else
 		{
@@ -1463,6 +2249,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 			wgt_segmentsort_gpu_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 		}
 
+		// printf("match segmentsort end\n");
 		// cudaDeviceSynchronize();
 		// exam_csr<<<1, 1>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
 		// cudaDeviceSynchronize();
@@ -1475,6 +2262,10 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		gettimeofday(&end_gpu_topkfour_match,NULL);
 		top1_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
 
+		// cudaDeviceSynchronize();
+		// print_graph<<<1, 1>>>(32, nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+		// cudaDeviceSynchronize();
+
 		// 4 iteration
 		for (int iter = 0; iter < 4; iter++)
 		{
@@ -1482,42 +2273,49 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		    gettimeofday(&begin_gpu_topkfour_match,NULL);
 			int offset = iter + 1;
 
+			// init_bin<<<(nvtxs + 127) / 128, 128>>>(nvtxs, count);
+
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_match_kernel, NULL);
+			set_receive_send_topk_one<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, offset);
 			// set_receive_send<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, receive, send, offset);
-			switch (offset)
-			{
-			case 1:
-				// set_receive_send_subwarp<1><<<(nvtxs + 127) / 128, 128, sizeof(int) * 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
-				set_receive_send<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, receive, send, offset);
-				break;
-			case 2:
-				set_receive_send_subwarp<2><<<(nvtxs * 2 + 127) / 128, 128, sizeof(int) * 64>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
-				break;
-			case 3:
-				set_receive_send_subwarp<4><<<(nvtxs * 4 + 127) / 128, 128, sizeof(int) * 32>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
-				break;
-			case 4:
-				set_receive_send_subwarp<4><<<(nvtxs * 4 + 127) / 128, 128, sizeof(int) * 32>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
-				break;
-			default:
-				break;
-			}
+			// switch (offset)
+			// {
+			// case 1:
+			// 	// set_receive_send_subwarp<1><<<(nvtxs + 127) / 128, 128, sizeof(int) * 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
+			// 	set_receive_send<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, receive, send, offset);
+			// 	break;
+			// case 2:
+			// 	set_receive_send_subwarp<2><<<(nvtxs * 2 + 127) / 128, 128, sizeof(int) * 64>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
+			// 	break;
+			// case 3:
+			// 	set_receive_send_subwarp<4><<<(nvtxs * 4 + 127) / 128, 128, sizeof(int) * 32>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
+			// 	break;
+			// case 4:
+			// 	set_receive_send_subwarp<4><<<(nvtxs * 4 + 127) / 128, 128, sizeof(int) * 32>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, receive, send, offset);
+			// 	break;
+			// default:
+			// 	break;
+			// }
 			cudaDeviceSynchronize();
 			gettimeofday(&end_gpu_match_kernel, NULL);
 			set_receive_send_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 			// printf("hunyuangraph_gpu_match set_receiver_send iter=%d end\n",iter);
 
 			// cudaDeviceSynchronize();
+			// exam_count<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, count);
+			// cudaDeviceSynchronize();
+			
+			// cudaDeviceSynchronize();
 			// exam_send_receive<<<1, 1>>>(nvtxs, receive, send, offset);
 			// cudaDeviceSynchronize();
-			cudaDeviceSynchronize();
-			gettimeofday(&begin_gpu_match_kernel, NULL);
-			set_match_topk<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, receive, send, offset);
+			// cudaDeviceSynchronize();
+			// gettimeofday(&begin_gpu_match_kernel, NULL);
+			// set_match_topk<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, receive, send, offset);
 			// set_match_topk_serial<<<1, 1>>>(nvtxs, graph->cuda_match, receive, send, offset);
-			cudaDeviceSynchronize();
-			gettimeofday(&end_gpu_match_kernel, NULL);
-			set_match_topk_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+			// cudaDeviceSynchronize();
+			// gettimeofday(&end_gpu_match_kernel, NULL);
+			// set_match_topk_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 			// printf("hunyuangraph_gpu_match set_match_topk iter=%d end\n",iter);
 
 			// cudaDeviceSynchronize();
@@ -1527,7 +2325,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_match_kernel, NULL);
 			reset_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match);
-			reset_receive_send<<<(nvtxs * offset + 127) / 128, 128>>>(nvtxs * offset, receive, send);
+			// reset_receive_send<<<(nvtxs * offset + 127) / 128, 128>>>(nvtxs * offset, receive, send);
 			cudaDeviceSynchronize();
 			gettimeofday(&end_gpu_match_kernel, NULL);
 			reset_match_array_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -1564,6 +2362,8 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 			// print_match<<<1, 1>>>(10, graph->cuda_match);
 			// cudaDeviceSynchronize();
 
+			// printf("offset=%d\n", offset);
+
 			switch (offset)
 			{
 			case 1:
@@ -1594,38 +2394,45 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		cudaDeviceSynchronize();
 	    gettimeofday(&begin_gpu_topkfour_match,NULL);
 
-		cudaDeviceSynchronize();
-	    gettimeofday(&begin_free,NULL);
-		if(GPU_Memory_Pool)
-		{
-			rfree_with_check((void *)send, sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: send");		// send
-			rfree_with_check((void *)receive, sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: receive");	// receive
-		}
-		else
-		{
-			cudaFree(send);
-			cudaFree(receive);
-		}
-		cudaDeviceSynchronize();
-		gettimeofday(&end_free,NULL);
-		match_time = (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
-		coarsen_free += match_time;
-		match_free_time += match_time;
+		// cudaDeviceSynchronize();
+	    // gettimeofday(&begin_free,NULL);
+		// if(GPU_Memory_Pool)
+		// {
+		// 	rfree_with_check((void *)count, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: count");			// count
+		// 	rfree_with_check((void *)send, sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: send");		// send
+		// 	rfree_with_check((void *)receive, sizeof(int) * nvtxs * 4, "hunyuangraph_gpu_match: receive");	// receive
+		// }
+		// else
+		// {
+		// 	cudaFree(count);
+		// 	cudaFree(send);
+		// 	cudaFree(receive);
+		// }
+		// cudaDeviceSynchronize();
+		// gettimeofday(&end_free,NULL);
+		// match_time = (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+		// coarsen_free += match_time;
+		// match_free_time += match_time;
 
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_topkfour_match,NULL);
 		top1_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
+
+	int is_need_count_match_num = 1;
+	if(is_need_count_match_num)
+	{
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, match_bin);
+		cudaDeviceSynchronize();
+		check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		cudaDeviceSynchronize();
+		cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+		sum = 0;
+		for(int i = 0;i < 14;i++)
+			sum += match_num[i];
+		is_need_count_match_num = 0;
 	}
 
-	cudaDeviceSynchronize();
-	init_bin<<<1, 14>>>(14, match_bin);
-	cudaDeviceSynchronize();
-	check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, length_vertex, match_bin);
-	cudaDeviceSynchronize();
-	cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
-	sum = 0;
-	for(int i = 0;i < 14;i++)
-		sum += match_num[i];
 	// print_length<<<1, 1>>>(14, match_bin);
 	// cudaDeviceSynchronize();
 	// printf("\n");
@@ -1647,7 +2454,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	//	leaf matches
 	cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_topkfour_match,NULL);
-	if(sum / (double)nvtxs < 0.5)
+	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf leaf matches begin\n", sum);
 		int *tmp_match;
@@ -1671,14 +2478,14 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		leaf_matches_step1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, length_vertex, tmp_match);
+		leaf_matches_step1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		leaf_matches_step1_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		leaf_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, length_vertex, tmp_match);
+		leaf_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		leaf_matches_step2_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -1690,6 +2497,8 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		reset_match_array_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
 		
+		is_need_count_match_num = 1;
+
 		cudaDeviceSynchronize();
 	    gettimeofday(&begin_free,NULL);
 		if(GPU_Memory_Pool)
@@ -1719,33 +2528,39 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	gettimeofday(&end_gpu_topkfour_match,NULL);
 	leaf_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
 
-	cudaDeviceSynchronize();
-	init_bin<<<1, 14>>>(14, match_bin);
-	cudaDeviceSynchronize();
-	check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, length_vertex, match_bin);
-	cudaDeviceSynchronize();
-	cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
-	sum = 0;
-	for(int i = 0;i < 14;i++)
-		sum += match_num[i];
+	if(is_need_count_match_num)
+	{
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, match_bin);
+		cudaDeviceSynchronize();
+		check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		cudaDeviceSynchronize();
+		cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+		sum = 0;
+		for(int i = 0;i < 14;i++)
+			sum += match_num[i];
+		is_need_count_match_num = 0;
+	}
 	
 	// printf("sum=%10.0lf\n", sum);
 	//	isolate matches
+	int tmp_num;
+	cudaMemcpy(&tmp_num, &graph->bin_offset[1], sizeof(int), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_topkfour_match,NULL);
-	if(sum / (double)nvtxs < 0.5)
+	if(sum / (double)nvtxs < 0.75 && tmp_num != 0)
 	{
 		// printf("sum=%10.0lf isolate matches begin\n", sum);
-		int tmp_num;
-		cudaMemcpy(&tmp_num, &bin_offset[1], sizeof(int), cudaMemcpyDeviceToHost);
 		// printf("sum=%10.0lf isolate matches begin: have %10d isolate vertices\n", sum, tmp_num);
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		isolate_matches_step1<<<(tmp_num + 127) / 128, 128>>>(tmp_num, bin_offset, bin_idx, graph->cuda_match);
+		isolate_matches_step1<<<(tmp_num + 127) / 128, 128>>>(tmp_num, graph->bin_offset, graph->bin_idx, graph->cuda_match);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		isolate_matches_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+
+		is_need_count_match_num = 1;
 
 		// cudaDeviceSynchronize();
 		// init_bin<<<1, 14>>>(14, match_bin);
@@ -1764,21 +2579,25 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	gettimeofday(&end_gpu_topkfour_match,NULL);
 	isolate_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
 
-	cudaDeviceSynchronize();
-	init_bin<<<1, 14>>>(14, match_bin);
-	cudaDeviceSynchronize();
-	check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, length_vertex, match_bin);
-	cudaDeviceSynchronize();
-	cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
-	sum = 0;
-	for(int i = 0;i < 14;i++)
-		sum += match_num[i];
+	if(is_need_count_match_num)
+	{
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, match_bin);
+		cudaDeviceSynchronize();
+		check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		cudaDeviceSynchronize();
+		cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+		sum = 0;
+		for(int i = 0;i < 14;i++)
+			sum += match_num[i];
+		is_need_count_match_num = 0;
+	}
 
 	// printf("sum=%10.0lf\n", sum);
 	//	twin matches
 	cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_topkfour_match,NULL);
-	if(sum / (double)nvtxs < 0.5)
+	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf twin matches begin\n", sum);
 		int *tmp_match;
@@ -1802,10 +2621,12 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		twin_matches_step1<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, length_vertex, tmp_match);
+		twin_matches_step1<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		twin_matches_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+
+		is_need_count_match_num = 1;
 
 		cudaDeviceSynchronize();
 	    gettimeofday(&begin_free,NULL);
@@ -1836,16 +2657,25 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	gettimeofday(&end_gpu_topkfour_match,NULL);
 	twin_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
 
-	cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
-	sum = 0;
-	for(int i = 0;i < 14;i++)
-		sum += match_num[i];
+	if(is_need_count_match_num)
+	{
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, match_bin);
+		cudaDeviceSynchronize();
+		check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		cudaDeviceSynchronize();
+		cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+		sum = 0;
+		for(int i = 0;i < 14;i++)
+			sum += match_num[i];
+		is_need_count_match_num = 0;
+	}
 	
 	// printf("sum=%10.0lf\n", sum);
 	//	relative matches
 	cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_topkfour_match,NULL);
-	if(sum / (double)nvtxs < 0.5)
+	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf relative matches begin\n", sum);
 		int *tmp_match, *tmp_mark;
@@ -1875,7 +2705,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		relative_matches_step1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, length_vertex, tmp_match, tmp_mark);
+		relative_matches_step1<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, graph->length_vertex, tmp_match, tmp_mark);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		relative_matches_step1_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -1893,6 +2723,8 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		reset_match_array_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
+
+		is_need_count_match_num = 1;
 
 		cudaDeviceSynchronize();
 	    gettimeofday(&begin_free,NULL);
@@ -1929,15 +2761,15 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	gettimeofday(&end_gpu_topkfour_match,NULL);
 	relative_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
 
-	cudaDeviceSynchronize();
-	init_bin<<<1, 14>>>(14, match_bin);
-	cudaDeviceSynchronize();
-	check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, length_vertex, match_bin);
-	cudaDeviceSynchronize();
-	cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
-	sum = 0;
-	for(int i = 0;i < 14;i++)
-		sum += match_num[i];
+	// cudaDeviceSynchronize();
+	// init_bin<<<1, 14>>>(14, match_bin);
+	// cudaDeviceSynchronize();
+	// check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+	// cudaDeviceSynchronize();
+	// cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+	// sum = 0;
+	// for(int i = 0;i < 14;i++)
+	// 	sum += match_num[i];
 	
 	// printf("sum=%10.0lf\n", sum);
 
@@ -1959,37 +2791,44 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	if(GPU_Memory_Pool)
 	{
 		rfree_with_check((void *)match_bin, sizeof(int) * 14, "hunyuangraph_gpu_match: match_bin");				//	match_bin
-		rfree_with_check((void *)bin_idx, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: bin_idx");				//	bin_idx
+		// rfree_with_check((void *)graph->bin_idx, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: bin_idx");				//	bin_idx
 		rfree_with_check((void *)bin_size, sizeof(int) * 14, "hunyuangraph_gpu_match: bin_size");				//	bin_size
-		rfree_with_check((void *)bin_offset, sizeof(int) * 15, "hunyuangraph_gpu_match: bin_offset");			//	bin_offset
+		// rfree_with_check((void *)graph->bin_offset, sizeof(int) * 15, "hunyuangraph_gpu_match: bin_offset");			//	bin_offset
 		rfree_with_check((void *)length_bin, sizeof(int) * 14, "hunyuangraph_gpu_match: length_bin");			//	length_bin
-		rfree_with_check((void *)length_vertex, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: length_vertex");	//	length_vertex
+		// rfree_with_check((void *)graph->length_vertex, sizeof(int) * nvtxs, "hunyuangraph_gpu_match: length_vertex");	//	length_vertex
 	}
 	else
 	{
 		cudaFree(match_bin);
-		cudaFree(bin_idx);
+		// cudaFree(graph->bin_idx);
 		cudaFree(bin_size);
-		cudaFree(bin_offset);
+		// cudaFree(graph->bin_offset);
 		cudaFree(length_bin);
-		cudaFree(length_vertex);
+		// cudaFree(graph->length_vertex);
 	}
 	cudaDeviceSynchronize();
 	gettimeofday(&end_free,NULL);
 	match_time = (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
 	coarsen_free += match_time;
 	match_free_time += match_time;
+	}
+#endif
 
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_match, NULL);
 	hem_gpu_match_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
-	
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_gpu_match, NULL);
-	resolve_conflict_1<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, nvtxs);
-	cudaDeviceSynchronize();
-	gettimeofday(&end_gpu_match, NULL);
-	resolve_conflict_1_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+
+	// cudaDeviceSynchronize();
+	// print_length<<<1, 1>>>(15, graph->bin_offset);
+	// cudaDeviceSynchronize();
+	// printf("\n");
+
+	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_gpu_match, NULL);
+	// resolve_conflict_1<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, nvtxs);
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_gpu_match, NULL);
+	// resolve_conflict_1_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
 
 	// cudaDeviceSynchronize();
 	// print_match<<<1, 1>>>(10, graph->cuda_match);
@@ -1997,7 +2836,8 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_match, NULL);
-	resolve_conflict_2<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, graph->cuda_cmap, nvtxs);
+	// resolve_conflict_2<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, graph->cuda_cmap, nvtxs);
+	resolve_conflict_12<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, graph->cuda_cmap, nvtxs);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_match, NULL);
 	resolve_conflict_2_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
@@ -2027,29 +2867,47 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	cudaMemcpy(&cnvtxs, &graph->cuda_cmap[nvtxs - 1], sizeof(int), cudaMemcpyDeviceToHost);
 	cnvtxs++;
 
+	// printf("cnvtxs=%d\n", cnvtxs);
+	// exit(0);
+
 	hunyuangraph_graph_t *cgraph = hunyuangraph_set_gpu_cgraph(graph, cnvtxs);
 	cgraph->nvtxs = cnvtxs;
 
+	int *tlength_bin, *tbin_size;
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_malloc, NULL);
 	if(GPU_Memory_Pool)
 	{
-		graph->txadj = (int *)rmalloc_with_check(sizeof(int) * (cnvtxs + 1), "txadj");
-		cgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * cnvtxs, "vwgt");
+		graph->txadj = (int *)rmalloc_with_check(sizeof(int) * (cnvtxs + 1), "hunyuangraph_gpu_match: graph->txadj");
+		graph->tbin_offset = (int *)rmalloc_with_check(sizeof(int) * 15, "hunyuangraph_gpu_match: graph->tbin_offset");
+		graph->tbin_idx = (int *)rmalloc_with_check(sizeof(int) * cnvtxs, "hunyuangraph_gpu_match: graph->tbin_idx");
+		graph->tlength_vertex = (int *)rmalloc_with_check(sizeof(int) * cnvtxs, "hunyuangraph_gpu_match: graph->tlength_vertex");
+		tlength_bin = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: tlength_bin");
+		tbin_size   = (int *)rmalloc_with_check(sizeof(int) * 14, "hunyuangraph_gpu_match: tbin_size");
+		cgraph->cuda_vwgt = (int *)lmalloc_with_check(sizeof(int) * cnvtxs, "hunyuangraph_gpu_match: vwgt");
 	}
 	else 
 	{
 		cudaMalloc((void**)&graph->txadj, sizeof(int) * (cnvtxs + 1));
+		cudaMalloc((void**)&graph->tbin_offset, sizeof(int) * 15);
+		cudaMalloc((void**)&graph->tbin_idx, sizeof(int) * cnvtxs);
+		cudaMalloc((void**)&graph->tlength_vertex, sizeof(int) * cnvtxs);
+		cudaMalloc((void**)&tlength_bin, sizeof(int) * 14);
+		cudaMalloc((void**)&tbin_size, sizeof(int) * 14);
 		cudaMalloc((void**)&cgraph->cuda_vwgt, sizeof(int) * cnvtxs);
 	}
 	cudaDeviceSynchronize();
 	gettimeofday(&end_malloc, NULL);
 	coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
 
+	init_bin<<<1, 14>>>(14, tlength_bin);
+	init_bin<<<1, 14>>>(15, graph->tbin_offset);
+	init_bin<<<1, 14>>>(14, tbin_size);
+
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_match, NULL);
 	resolve_conflict_4<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_match, graph->cuda_cmap, graph->txadj, graph->cuda_xadj,
-													 cgraph->cuda_vwgt, graph->cuda_vwgt, nvtxs);
+													 cgraph->cuda_vwgt, graph->cuda_vwgt, nvtxs, graph->tlength_vertex, tlength_bin);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_match, NULL);
 	resolve_conflict_4_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
@@ -2057,6 +2915,48 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	// cudaDeviceSynchronize();
 	// print_match<<<1, 1>>>(10, graph->cuda_cmap);
 	// cudaDeviceSynchronize();
+
+	cudaDeviceSynchronize();
+	cudaMemcpy(&graph->tbin_offset[1], tlength_bin, sizeof(int) * 14, cudaMemcpyDeviceToDevice);
+	cudaDeviceSynchronize();
+
+	if(GPU_Memory_Pool)
+	{
+		prefixsum(graph->tbin_offset, graph->tbin_offset, 15, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
+	}
+	else
+	{
+		// thrust::exclusive_scan(thrust::device, tbin_offset, tbin_offset + 15, tbin_offset);
+		thrust::inclusive_scan(thrust::device,graph-> tbin_offset, graph->tbin_offset + 15, graph->tbin_offset);
+	}
+		
+	cudaDeviceSynchronize();
+	gettimeofday(&begin_gpu_match, NULL);
+	set_bin<<<(cnvtxs + 127) / 128, 128>>>(cnvtxs, graph->tlength_vertex, tbin_size, graph->tbin_offset, graph->tbin_idx);
+	cudaDeviceSynchronize();
+	gettimeofday(&end_gpu_match, NULL);
+	set_bin_time += (end_gpu_match.tv_sec - begin_gpu_match.tv_sec) * 1000 + (end_gpu_match.tv_usec - begin_gpu_match.tv_usec) / 1000.0;
+
+	graph->h_tbin_offset = (int *)malloc(sizeof(int) * 15);
+	cudaMemcpy(graph->h_tbin_offset, graph->tbin_offset, sizeof(int) * 15, cudaMemcpyDeviceToHost);
+
+	cudaDeviceSynchronize();
+    gettimeofday(&begin_free,NULL);
+    if(GPU_Memory_Pool)
+    {
+		rfree_with_check((void *)tbin_size, sizeof(int) * 14, "hunyuangraph_gpu_match: tbin_size");
+		rfree_with_check((void *)tlength_bin, sizeof(int) * 14, "hunyuangraph_gpu_match: tlength_bin");
+		rfree_with_check((void *)graph->tlength_vertex, sizeof(int) * cnvtxs, "hunyuangraph_gpu_match: graph->tlength_vertex");
+    }
+    else
+    {
+		cudaFree(tbin_size);
+		cudaFree(tlength_bin);
+		cudaFree(graph->tlength_vertex);
+    }
+    cudaDeviceSynchronize();
+    gettimeofday(&end_free,NULL);
+    coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
 
 	return cgraph;
 }

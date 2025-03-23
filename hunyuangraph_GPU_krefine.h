@@ -326,6 +326,27 @@ __global__ void init_connection(int nedges, int *connection, int *connection_to)
 	}
 }
 
+__global__ void init_select(int nvtxs, char *select)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		select[ii] = 0;
+	}
+}
+
+__global__ void init_ed_id(int nvtxs, int *ed, int *id)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs)
+	{
+		ed[ii] = 0;
+		id[ii] = 0;
+	}
+}
+
 __global__ void select_bnd_vertices_old(int nvtxs, int *xadj, int *adjncy, int *adjwgt, int *where, \
 	char *select, int *connection, int *connection_to, int *gain, int *to)
 {
@@ -373,57 +394,6 @@ __global__ void select_bnd_vertices_old(int nvtxs, int *xadj, int *adjncy, int *
 		}
 
 	}
-}
-
-// 在warp内计算最大值，返回lane 0线程的值
-__device__ int warpReduceMax(int val, int to, int lane_id, int ii) 
-{
-    int tmp_val;
-
-	if(ii == 49913 && lane_id < 32)
-		printf("32 ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-	tmp_val = __shfl_down_sync(0xffffffff, val, 16);
-	if(tmp_val > val)
-	{
-		val = tmp_val;
-		to = __shfl_down_sync(0xffffffff, to, 16);
-	}
-	if(ii == 49913 && lane_id < 16)
-		printf("16 ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-	tmp_val = __shfl_down_sync(0xffffffff, val, 8);
-	if(tmp_val > val)
-	{
-		val = tmp_val;
-		to = __shfl_down_sync(0xffffffff, to, 8);
-	}
-	if(ii == 49913 && lane_id < 8)
-		printf("8  ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-	tmp_val = __shfl_down_sync(0xffffffff, val, 4);
-	if(tmp_val > val)
-	{
-		val = tmp_val;
-		to = __shfl_down_sync(0xffffffff, to, 4);
-	}
-	if(ii == 49913 && lane_id < 4)
-		printf("4  ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-	tmp_val = __shfl_down_sync(0xffffffff, val, 2);
-	if(tmp_val > val)
-	{
-		val = tmp_val;
-		to = __shfl_down_sync(0xffffffff, to, 2);
-	}
-	if(ii == 49913 && lane_id < 2)
-		printf("2  ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-	tmp_val = __shfl_down_sync(0xffffffff, val, 1);
-	if(tmp_val > val)
-	{
-		val = tmp_val;
-		to = __shfl_down_sync(0xffffffff, to, 1);
-	}
-	if(ii == 49913 && lane_id < 1)
-		printf("1  ii:%d lane_id:%d %d %d\n",ii, lane_id, val, to);
-
-    return to;
 }
 
 __global__ void select_bnd_vertices_warp(int nvtxs, int nparts, int *xadj, int *adjncy, int *adjwgt, int *where, \
@@ -540,8 +510,6 @@ __global__ void select_bnd_vertices_warp(int nvtxs, int nparts, int *xadj, int *
 			// 	printf("ii: %d, where_i:%d  %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", ii, where_i, ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
 			// 	ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
 			// }
-			// __syncwarp();
-			// j = warpReduceMax(k, j, lane_id, ii);
 
 			if(lane_id == 0)
 			{
@@ -559,24 +527,350 @@ __global__ void select_bnd_vertices_warp(int nvtxs, int nparts, int *xadj, int *
 				// 	printf("ii: %d, where_i:%d j:%d to:%d k: %d id: %d %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", ii, where_i, j, to_shared[j], k, id[warp_id], ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
 				// 		ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
 				// if(k >= -0.50 * id[warp_id] / sqrtf(begin - end))
-				if(k >= -0.15 * id[warp_id])
+				if(j != where_i && k >= -0.15 * id[warp_id])
 				{
 					to[ii] = j;
 					gain[ii] = k;
 					select[ii] = 1;
 					// printf("ii: %d\n", ii);
 				}
-				else 
-					select[ii] = 0;
 				// if(j == where_i)
 				// 	printf("ii: %d, where_i: %d to_i: %d select: %d\n", ii, where_i, j, (int)select[ii]);
 			}
 		}
-		else 
+	}
+}
+
+__global__ void select_bnd_vertices_warp_bin(int num, int nparts, int bin, int *bin_offset, int *bin_idx, int *xadj, int *adjncy, int *adjwgt, int *where, \
+	char *select, int *gain, int *to)
+{
+	int blockwarp_id = threadIdx.x >> 5;
+	int lane_id = threadIdx.x & 31;
+	int subwarp_id = blockIdx.x * 4 + blockwarp_id;
+
+	extern __shared__ int connection_shared[];
+	int *ptr_shared = connection_shared + blockwarp_id * nparts;
+	int *to_shared = ptr_shared + 4 * nparts;
+	int *id = connection_shared + 8 * nparts;
+	int *flag_bnd = id + 4;
+
+	// if(ii == 5920 && lane_id == 0)
+	// {
+	// 	// printf("ii:%d lane_id:%d\n", ii, lane_id);
+	// 	printf("ii:%d lane_id:%d id: %p, flag_bnd: %p, ptr_shared: %p, to_shared: %p\n", ii, lane_id, id, flag_bnd, ptr_shared, to_shared);
+	// }
+
+	for(int i = lane_id;i < nparts;i += 32)
+	{
+		ptr_shared[i] = 0;
+		to_shared[i] = i;
+		id[blockwarp_id] = 0;
+		flag_bnd[blockwarp_id] = 0;
+	}
+	__syncwarp();
+	// __syncthreads();
+
+	if(subwarp_id < num)
+	{
+		int bin_row_offset, vertex, begin, end, where_v, where_k, j, k;
+		bin_row_offset = bin_offset[bin] + subwarp_id;
+		vertex = bin_idx[bin_row_offset];
+		begin  = xadj[vertex];
+		end    = xadj[vertex + 1];
+		where_v = where[vertex];
+		ptr_shared[where_v] = -1;
+
+		for(j = begin + lane_id;j < end;j += 32)
 		{
-			if(lane_id == 0)
-				select[ii] = 0;
+			k = adjncy[j];
+			where_k = where[k];
+
+			if(where_v != where_k)
+			{
+				// printf("flag_bnd\n");
+				flag_bnd[blockwarp_id] = 1;
+				atomicAdd(&ptr_shared[where_k], adjwgt[j]);
+			}
+			else	
+				atomicAdd(&id[blockwarp_id], adjwgt[j]);
 		}
+		__syncwarp();
+		
+		// __syncthreads();
+		// if(blockIdx.x < 1)
+		// {
+		// 	for(int p = lane_id;p < nparts;p += 32)
+		// 		printf("blockIdx.x=%d threadIdx.x=%d lane_id=%d ptr_shared=%d to_shared=%d id=%d length=%d\n", blockIdx.x, threadIdx.x, lane_id, ptr_shared[p], to_shared[p], id[blockwarp_id], xadj[vertex + 1] - xadj[vertex]);
+		// }
+
+		//	bnd vertex
+		if(flag_bnd[blockwarp_id] == 1)
+		{
+			end = nparts / 2;
+			while(end > 32)
+			{
+				for(j = lane_id;j < end;j += 32)
+				{
+					if(ptr_shared[j + end] > ptr_shared[j])
+					{
+						ptr_shared[j] = ptr_shared[j + end];
+						to_shared[j] = to_shared[j + end];
+					}
+				}
+				end >>= 1;
+				__syncwarp();
+				// __syncthreads();
+			}
+			// if(lane_id >= end)
+			// {
+			// 	ptr_shared[lane_id] = -1;
+			// 	to_shared[lane_id] = -1;
+			// }
+			// // __syncwarp();
+			// __syncthreads();
+			// else
+			// {
+			// 	k = ptr_shared[lane_id];
+			// 	// j = to_shared[lane_id];
+			// 	j = lane_id;
+			// }
+			// if(ii == 5920 && lane_id == 0)
+			// 	printf("i:8 ii: %d, where_i:%d id: %d %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", ii, where_i, id[warp_id], ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
+			// 		ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
+			
+			// __syncwarp();
+			// __syncthreads();
+			for(int i = end; i > 0; i >>= 1)
+			{
+				// if(lane_id == 0)
+				// 	printf("ii: %d i: %d\n", ii, i);
+				if(lane_id < i && ptr_shared[lane_id + i] > ptr_shared[lane_id])
+				{
+					ptr_shared[lane_id] = ptr_shared[lane_id + i];
+					to_shared[lane_id] = to_shared[lane_id + i];
+				}
+				__syncwarp();
+				// __syncthreads();
+				// if(ii == 5920 && lane_id == 0)
+				// 	printf("i:%d ii: %d, where_i:%d id: %d %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", i, ii, where_i, id[warp_id], ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
+				// 		ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
+				// __syncwarp();
+				// __syncthreads();
+			}
+			
+			// if(lane_id == 0)
+			// {
+			// 	printf("vertex: %d, where_i:%d  %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", vertex, where_i, ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
+			// 	ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
+			// }
+
+			// __syncthreads();
+			// if(blockIdx.x < 1 && lane_id == 0)
+			// {
+			// 	printf("blockIdx.x=%d threadIdx.x=%d lane_id=%d ptr_shared=%d to_shared=%d length=%d\n", blockIdx.x, threadIdx.x, lane_id, ptr_shared[lane_id], to_shared[lane_id], xadj[vertex + 1] - xadj[vertex]);
+			// }
+
+			if(lane_id == 0)
+			{
+				j = to_shared[0];
+				// if(j == -1)
+				// {
+				// 	printf("ii:%d warp_id:%d lane_id:%d id: %p, flag_bnd: %p, ptr_shared: %p, to_shared: %p\n", ii, warp_id, lane_id, id, flag_bnd, ptr_shared, to_shared);
+	
+				// 	printf("vertex: %d, where_i:%d j:%d to:%d k: %d id: %d %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", vertex, where_i, j, to_shared[j], k, id[warp_id], ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
+				// 		ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
+				// }
+				k = ptr_shared[j] - id[blockwarp_id];
+				// printf("vertex: %d, where_i:%d k: %d id: %d\n", vertex, where_i, k, id[warp_id]);
+				// if(ii == 473678)
+				// 	printf("ii: %d, where_i:%d j:%d to:%d k: %d id: %d %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d, %d %d\n", ii, where_i, j, to_shared[j], k, id[warp_id], ptr_shared[0], to_shared[0], ptr_shared[1], to_shared[1], ptr_shared[2], to_shared[2], \
+				// 		ptr_shared[3], to_shared[3], ptr_shared[4], to_shared[4], ptr_shared[5], to_shared[5], ptr_shared[6], to_shared[6], ptr_shared[7], to_shared[7]);
+				// if(k >= -0.50 * id[warp_id] / sqrtf(begin - end))
+				if(j != where_v && k >= -0.15 * id[blockwarp_id])
+				{
+					to[vertex] = j;
+					gain[vertex] = k;
+					select[vertex] = 1;
+					// printf("vertex: %d\n", vertex);
+				}
+				// if(j == where_i)
+				// 	printf("ii: %d, where_i: %d to_i: %d select: %d\n", ii, where_i, j, (int)select[ii]);
+			}
+		}
+
+		// __syncthreads();
+		// if(blockIdx.x < 1 && lane_id == 0)
+		// 	printf("blockIdx.x=%d threadIdx.x=%d vertex=%d flag_bnd=%d select=%d to=%d from=%d length=%d\n", blockIdx.x, threadIdx.x, vertex, flag_bnd[blockwarp_id], select[vertex], to[vertex], where_v,  xadj[vertex + 1] -  xadj[vertex]);
+
+	}
+}
+
+__device__ int scan_max_ed_subwarp(int where_v, int id, int p_idx, int c_dgreen, int mask, int lane_id, int subwarp_size)
+{
+	int range = subwarp_size >> 1;
+
+	#pragma unroll
+	while(range > 0)
+	{
+		int tmp_id = __shfl_down_sync(mask, id, range, subwarp_size);
+		int tmp_p_idx = __shfl_down_sync(mask, p_idx, range, subwarp_size);
+		int tmp_c_dgreen = __shfl_down_sync(mask, c_dgreen, range, subwarp_size);
+		if(lane_id < range)
+		{
+			bool valid = (tmp_p_idx != -1) & (tmp_p_idx != where_v); // 位运算替代逻辑判断
+			
+			if(valid)
+			{
+				bool current_invalid = (p_idx == -1) | (p_idx == where_v);
+                bool new_value_better = tmp_c_dgreen > c_dgreen;
+
+				if(current_invalid | new_value_better)
+				{
+					id = tmp_id;
+					p_idx = tmp_p_idx;
+					c_dgreen = tmp_c_dgreen;
+				}
+			}
+		}
+		
+		range >>= 1;
+	}
+
+	return id;
+}
+
+template <int SUBWARP_SIZE>
+__global__ void select_bnd_vertices_subwarp(int num, int nparts, int bin, int *bin_offset, int *bin_idx, int *xadj, int *adjncy, int *adjwgt, int *where, \
+	char *select, int *gain, int *to)
+{
+	int lane_id = threadIdx.x & (SUBWARP_SIZE - 1);
+	int blockwarp_id = threadIdx.x / SUBWARP_SIZE;
+	int subwarp_num = blockDim.x / SUBWARP_SIZE;
+	int subwarp_id = blockIdx.x * subwarp_num + blockwarp_id;
+
+	extern __shared__ int connection_shared[];
+	int *part_idx = connection_shared + blockwarp_id * SUBWARP_SIZE;
+	int *part_dgreen = part_idx + blockDim.x;
+	int *id = connection_shared + blockDim.x * 2 + blockwarp_id;
+
+	part_idx[lane_id] = -1;
+	part_dgreen[lane_id] = 0;
+	if(lane_id == 0)
+		id[0] = 0;
+	__syncthreads();
+	// if(blockIdx.x < 1)
+	// 	printf("blockIdx.x=%d threadIdx.x=%d part_id=%p part_dgreen=%p id=%p\n", blockIdx.x, threadIdx.x, part_idx, part_dgreen, id);
+
+	if(subwarp_id < num)
+	{
+		int vertex, begin, end, register_to;
+		int bin_row_offset = bin_offset[bin] + subwarp_id;
+		vertex = bin_idx[bin_row_offset];
+		begin  = xadj[vertex];
+		end    = xadj[vertex + 1];
+
+		int j, k, where_k, where_v, wgt_k;
+		j = begin + lane_id;
+		where_v = where[vertex];
+		// if(j >= end)
+		// 	return ;
+		
+		if(j < end)
+		{
+			k = adjncy[j];
+			where_k = where[k];
+			wgt_k   = adjwgt[j];
+
+			// __syncthreads();
+			// if(SUBWARP_SIZE == 2)
+			// 	printf("blockIdx.x=%d threadIdx.x=%d k=%d where_k=%d wgt_k=%d length=%d\n", blockIdx.x, threadIdx.x, k, where_k, wgt_k, end - begin);
+
+			//	hash table 
+			int key = where_k;
+			int hashadr = key & (SUBWARP_SIZE - 1);
+			int tmp_l = 0;
+			while(1)
+			{
+				int keyexist = part_idx[hashadr];
+				if(keyexist == key)
+				{
+					atomicAdd(&part_dgreen[hashadr], wgt_k);
+					break;
+				}
+				else if(keyexist == -1)
+				{
+					if(atomicCAS(&part_idx[hashadr], -1, key) == -1)
+					{
+						atomicAdd(&part_dgreen[hashadr], wgt_k);
+						tmp_l++;
+						break;
+					}
+				}
+				else
+				{
+					hashadr = (hashadr + 1) & (SUBWARP_SIZE - 1);
+				}
+
+				// if(blockIdx.x < 1)
+				// 	printf("blockIdx.x=%d threadIdx.x=%d hashadr=%d part_idx[hashadr]=%d\n", blockIdx.x, threadIdx.x, hashadr, part_idx[hashadr]);
+
+			}
+		}
+		__syncwarp();
+		// __syncthreads();
+		// if(blockIdx.x < 1)
+		// // if(SUBWARP_SIZE == 2)
+		// 	printf("blockIdx.x=%d threadIdx.x=%d part_idx=%d part_dgreen=%d length=%d\n", blockIdx.x, threadIdx.x, part_idx[lane_id], part_dgreen[lane_id], end - begin);
+
+		unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
+		
+		//	id
+		// id[0] = (part_idx[lane_id] == where_v) ? part_dgreen[lane_id] : 0;
+		if(part_idx[lane_id] == where_v)
+		{
+			id[0] = part_dgreen[lane_id];
+		}
+		__syncwarp();
+
+		// __syncthreads();
+		// if(blockIdx.x < 1)
+		// // if(SUBWARP_SIZE == 2)
+		// 	printf("blockIdx.x=%d threadIdx.x=%d id=%d from=%d length=%d\n", blockIdx.x, threadIdx.x, id[0], where_v, end - begin);
+
+		//	max ed
+		int p_idx = part_idx[lane_id];
+		int c_dgreen = part_dgreen[lane_id];
+		int ptr = scan_max_ed_subwarp(where_v, lane_id, p_idx, c_dgreen, mask, lane_id, SUBWARP_SIZE);
+		// __syncthreads();
+		// if(blockIdx.x < 1)
+		// 	printf("blockIdx.x=%d threadIdx.x=%d ptr=%d from=%d length=%d\n", blockIdx.x, threadIdx.x, ptr, where_v, end - begin);
+		if(lane_id == 0)
+		{
+			register_to = part_idx[ptr];
+
+			// __shfl_sync(mask, register_to, 0, SUBWARP_SIZE);
+			
+			if(register_to != -1 && register_to != where_v)
+			{
+				// to[vertex] = register_to;
+				// if(register_to != where_v)
+				// {
+					k = part_dgreen[ptr] - id[0];
+					if(k >= -0.15 * id[0])
+					{
+						select[vertex] = 1;
+						to[vertex] = register_to;
+						gain[vertex] = k;
+					}
+				// }
+			}
+		}
+
+		// __syncthreads();
+		// if(blockIdx.x < 1 && lane_id == 0)
+		// if(SUBWARP_SIZE == 2 && lane_id == 0)
+		// 	printf("blockIdx.x=%d threadIdx.x=%d ptr=%d select=%d gain=%d to=%d from=%d length=%d\n", blockIdx.x, threadIdx.x, ptr, select[vertex], part_dgreen[ptr] - id[0], register_to, where_v, end - begin);
+		
 	}
 }
 
@@ -727,7 +1021,18 @@ __global__ void is_balance(int nvtxs, int nparts, int *pwgts, int *maxwgt, int *
 	}
 }
 
-void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
+__global__ void print_select(int nvtxs, char *select, int *to, int *gain, int *xadj)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(ii < nvtxs && select[ii] == 1)
+	{
+		printf("ii=%10d to=%10d gain=%10d length=%10d\n", ii, to[ii], gain[ii], xadj[ii + 1] - xadj[ii]);
+	}
+}
+
+
+void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *level)
 {
 	// printf("hunyuangraph_k_refinement_SC25 begin\n");
 	int nparts = hunyuangraph_admin->nparts;
@@ -755,11 +1060,82 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		cudaMemcpy(balance, graph->cuda_balance, sizeof(int), cudaMemcpyDeviceToHost);
 		// printf("balance=%d\n", balance[0]);
 
+		cudaDeviceSynchronize();
+		init_select<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_select);
+		cudaDeviceSynchronize();
+
 		//	bnd and gain >= -0.15 * id
 		gettimeofday(&begin_general, NULL);
 		cudaDeviceSynchronize();
-		select_bnd_vertices_warp<<<(nvtxs + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(nvtxs, nparts, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, \
-			graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+		for(int i = 1;i < 14;i++)
+		{
+			int num = graph->h_bin_offset[i + 1] - graph->h_bin_offset[i];
+			// printf("select_bnd_vertices_subwarp %d begin num=%d %d\n", i, num, (int)pow(2, i));
+			// cudaDeviceSynchronize();
+			if(num != 0)
+			switch(i)
+			{
+			case 1:
+				select_bnd_vertices_subwarp<2><<<(num + 63) / 64, 128, sizeof(int) * (256 + 64)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 2:
+				select_bnd_vertices_subwarp<4><<<(num + 31) / 32, 128, sizeof(int) * (256 + 32)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 3:
+				select_bnd_vertices_subwarp<8><<<(num + 15) / 16, 128, sizeof(int) * (256 + 16)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 4:
+				select_bnd_vertices_subwarp<16><<<(num + 7) / 8, 128, sizeof(int) * (256 + 8)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 5:
+				select_bnd_vertices_subwarp<32><<<(num + 3) / 4, 128, sizeof(int) * (256 + 4)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 6:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 7:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 8:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 9:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 10:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 11:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 12:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			case 13:
+				select_bnd_vertices_warp_bin<<<(num + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(num, nparts, i, graph->bin_offset, graph->bin_idx, graph->cuda_xadj, graph->cuda_adjncy, \
+					graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+				break;
+			default:
+                break;
+			}
+			// cudaDeviceSynchronize();
+			// printf("select_bnd_vertices_subwarp %d end\n", i);
+		}
+
+		// select_bnd_vertices_warp<<<(nvtxs + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(nvtxs, nparts, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, \
+		// 	graph->cuda_select, graph->cuda_gain, graph->cuda_to);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_general, NULL);
 		uncoarsen_select_bnd_vertices_warp += (end_general.tv_sec - begin_general.tv_sec) * 1000.0 + (end_general.tv_usec - begin_general.tv_usec) / 1000.0;
@@ -771,7 +1147,28 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		// cudaDeviceSynchronize();
 		// int select_sum = compute_graph_select_gpu(graph);
 		// cudaDeviceSynchronize();
-		// printf("second_select=%10d\n", select_sum);
+		// printf("subwarp second_select=%10d\n", select_sum);
+
+		// cudaDeviceSynchronize();
+		// print_select<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_select, graph->cuda_to, graph->cuda_gain, graph->cuda_xadj);
+		// cudaDeviceSynchronize();
+
+		// warp
+		// cudaDeviceSynchronize();
+		// init_select<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_select);
+		// cudaDeviceSynchronize();
+
+		// select_bnd_vertices_warp<<<(nvtxs + 3) / 4 , 128, (8 * nparts + 8) * sizeof(int)>>>(nvtxs, nparts, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, \
+		// 	graph->cuda_select, graph->cuda_gain, graph->cuda_to);
+		
+		// cudaDeviceSynchronize();
+		// select_sum = compute_graph_select_gpu(graph);
+		// cudaDeviceSynchronize();
+		// printf("warp second_select=%10d\n", select_sum);
+
+		// cudaDeviceSynchronize();
+		// print_select<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_select, graph->cuda_to, graph->cuda_gain, graph->cuda_xadj);
+		// cudaDeviceSynchronize();
 
 		//	update select
 		cudaDeviceSynchronize();
@@ -786,7 +1183,7 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		// printf("second_select=%10d\n", select_sum);
 
 		execute_move<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_vwgt, graph->cuda_where, graph->cuda_pwgts, graph->cuda_select, graph->cuda_to);
-		// execute_move<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_vwgt, graph->cuda_where, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_select, graph->cuda_to);
+		// execute_move_balance<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_vwgt, graph->cuda_where, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_select, graph->cuda_to);
 
 		// cudaDeviceSynchronize();
 		// exam_where<<<1, 1>>>(nvtxs, graph->cuda_where);

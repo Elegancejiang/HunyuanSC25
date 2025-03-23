@@ -24,6 +24,7 @@
 #include "hunyuangraph_graph.h"
 #include "hunyuangraph_admin.h"
 #include "hunyuangraph_common.h"
+#include "hunyuangraph_GPU_common.h"
 #include "hunyuangraph_partitiongraph.h"
 #include "hunyuangraph_GPU_coarsen.h"
 #include "hunyuangraph_GPU_match.h"

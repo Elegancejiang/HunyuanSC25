@@ -1,0 +1,714 @@
+graph:/media/jiangdie/新加卷/graph_10w/wb-edu.graph 9845725 92472210 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x77ddaa000000
+back_pointer=   0x77de9c5e0000
+begin partition
+nedges / nvtxs:       9.39
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+    395321    3638577    1583542    1773358    1344412     726441     251057      78517      31065      14521       5479       2353       1002         80 
+random_match_time               6.497
+cnvtxs=7363770
+graph:/media/jiangdie/新加卷/graph_10w/uk-2002.graph 18520486 523574516 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x709046000000
+back_pointer=   0x7091385e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjwgt, now uesd memory 2242462208B
+graph:/media/jiangdie/新加卷/graph_10w/arabic-2005.graph 22744080 1107806146 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7c2a3c000000
+back_pointer=   0x7c2b2e5e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjncy, now uesd memory 181952768B
+graph:/media/jiangdie/新加卷/graph_10w/dblp-2010.graph 326186 1615400 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7e8dcc000000
+back_pointer=   0x7e8ebe5e0000
+begin partition
+nedges / nvtxs:       4.95
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+     25539     122321      77971      55692      28132      11819       3930        735         47          0          0          0          0          0 
+random_match_time               0.193
+cnvtxs=203793
+graph:/media/jiangdie/新加卷/graph_10w/amazon-2008.graph 735323 7046944 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7d2db0000000
+back_pointer=   0x7d2ea25e0000
+begin partition
+nedges / nvtxs:       9.58
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0     130184      70846      88190     366250      71396       7674        680         91          9          2          1          0          0 
+random_match_time               0.370
+cnvtxs=418650
+graph:/media/jiangdie/新加卷/graph_10w/soc-Pokec.graph 1632803 44603928 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7ad76e000000
+back_pointer=   0x7ad8605e0000
+begin partition
+nedges / nvtxs:      27.32
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0     277452     161010     209929     254650     286199     256620     144674      37797       4024        416         23          3          6 
+random_match_time               2.733
+cnvtxs=1029631
+graph:/media/jiangdie/新加卷/graph_10w/citationCiteseer.graph 268495 2313294 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7737d6000000
+back_pointer=   0x7738c85e0000
+begin partition
+nedges / nvtxs:       8.62
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0      72397      53430      64175      48648      20751       6577       1871        514        108         21          3          0          0 
+random_match_time               0.177
+cnvtxs=171523
+graph:/media/jiangdie/新加卷/graph_10w/com-LiveJournal.graph 3997962 69362378 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7f122a000000
+back_pointer=   0x7f131c5e0000
+begin partition
+nedges / nvtxs:      17.35
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0    1215438     526826     587463     596190     521712     342042     148072      44892      12038       2830        352         89         18 
+random_match_time               5.265
+cnvtxs=2686270
+graph:/media/jiangdie/新加卷/graph_10w/soc-LiveJournal1.graph 4847571 85702474 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7705e0000000
+back_pointer=   0x7706d25e0000
+begin partition
+nedges / nvtxs:      17.68
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+       962    1608510     645278     689200     670691     579768     387279     179496      61400      19240       4842        703        161         41 
+random_match_time               6.535
+cnvtxs=3323790
+graph:/media/jiangdie/新加卷/graph_10w/com-Orkut.graph 3072441 234370166 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x70c022000000
+back_pointer=   0x70c1145e0000
+begin partition
+nedges / nvtxs:      76.28
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0     111021      75833     148082     300291     549063     758744     672623     327778      95324      29589       2983        733        377 
+random_match_time              15.602
+cnvtxs=1688039
+graph:/media/jiangdie/新加卷/graph_10w/hollywood-2009.graph 1139905 112751422 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x73c166000000
+back_pointer=   0x73c2585e0000
+begin partition
+nedges / nvtxs:      98.91
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+     32662      49449      52049      96669     168567     223619     212941     136786      77984      44161      25847      13706       5231        234 
+random_match_time               2.987
+cnvtxs=603394
+graph:/media/jiangdie/新加卷/graph_10w/circuit5M.graph 5558326 53967852 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x750548000000
+back_pointer=   0x75063a5e0000
+begin partition
+nedges / nvtxs:       9.71
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+        15       9196    5190471       5408       2786       1855     320688        616      12413       7278        456       7111          2         31 
+random_match_time              12.774
+cnvtxs=5221160
+graph:/media/jiangdie/新加卷/graph_10w/vas_stokes_2M.graph 2146677 96703558 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7ab076000000
+back_pointer=   0x7ab1685e0000
+begin partition
+nedges / nvtxs:      45.05
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0        196        452      20616    1305984     631270      79140      61266      44867       2846         40          0          0 
+random_match_time               4.584
+cnvtxs=1149352
+graph:/media/jiangdie/新加卷/graph_10w/vas_stokes_4M.graph 4382246 195417042 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7d52e0000000
+back_pointer=   0x7d53d25e0000
+begin partition
+nedges / nvtxs:      44.59
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+     37340      27487       7789        152      32113    2580266    1314059     160506     123026      94381       5104         23          0          0 
+random_match_time               9.233
+cnvtxs=2374654
+graph:/media/jiangdie/新加卷/graph_10w/stokes.graph 11449533 515962626 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x763e9e000000
+back_pointer=   0x763f905e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjwgt, now uesd memory 2155446912B
+graph:/media/jiangdie/新加卷/graph_10w/road_usa.graph 23947347 57708624 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x70b010000000
+back_pointer=   0x70b1025e0000
+begin partition
+nedges / nvtxs:       2.41
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0   12010128   11906104      31113          2          0          0          0          0          0          0          0          0          0 
+random_match_time               6.114
+cnvtxs=14275974
+graph:/media/jiangdie/新加卷/graph_10w/europe_osm.graph 50912018 108109320 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x792dd2000000
+back_pointer=   0x792ec45e0000
+begin partition
+nedges / nvtxs:       2.12
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0   43589296    7300290      22405         27          0          0          0          0          0          0          0          0          0 
+random_match_time              10.754
+cnvtxs=40993642
+graph:/media/jiangdie/新加卷/graph_10w/nlpkkt120.graph 3542400 93303392 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7cb870000000
+back_pointer=   0x7cb9625e0000
+begin partition
+nedges / nvtxs:      26.34
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0         24       2840      84960    3454576          0          0          0          0          0          0          0          0 
+random_match_time               0.998
+cnvtxs=1814744
+graph:/media/jiangdie/新加卷/graph_10w/nlpkkt160.graph 8345600 221172512 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7d3a18000000
+back_pointer=   0x7d3b0a5e0000
+begin partition
+nedges / nvtxs:      26.50
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0         24       3800     151680    8190096          0          0          0          0          0          0          0          0 
+random_match_time               2.054
+cnvtxs=4249753
+graph:/media/jiangdie/新加卷/graph_10w/nlpkkt200.graph 16240000 431985632 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x72682a000000
+back_pointer=   0x72691c5e0000
+begin partition
+nedges / nvtxs:      26.60
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0         24       4760     237600   15997616          0          0          0          0          0          0          0          0 
+random_match_time               5.780
+cnvtxs=8240177
+graph:/media/jiangdie/新加卷/graph_10w/af_shell1.graph 504855 17084020 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7e9eaa000000
+back_pointer=   0x7e9f9c5e0000
+begin partition
+nedges / nvtxs:      33.84
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0      10400     494455          0          0          0          0          0          0          0 
+random_match_time               0.483
+cnvtxs=263966
+graph:/media/jiangdie/新加卷/graph_10w/Hook_1498.graph 1498023 59419422 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x741406000000
+back_pointer=   0x7414f85e0000
+begin partition
+nedges / nvtxs:      39.67
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0         84     578133     897027      22779          0          0          0          0          0          0 
+random_match_time               1.843
+cnvtxs=778627
+graph:/media/jiangdie/新加卷/graph_10w/Geo_1438.graph 1437960 61718730 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x73fc48000000
+back_pointer=   0x73fd3a5e0000
+begin partition
+nedges / nvtxs:      42.92
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          3      97890    1340067          0          0          0          0          0          0          0 
+random_match_time               1.253
+cnvtxs=727699
+graph:/media/jiangdie/新加卷/graph_10w/Serena.graph 1391349 63140352 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7a843e000000
+back_pointer=   0x7a85305e0000
+begin partition
+nedges / nvtxs:      45.38
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          6     122973    1226946      41286        138          0          0          0          0          0 
+random_match_time               2.085
+cnvtxs=702934
+graph:/media/jiangdie/新加卷/graph_10w/audikw_1.graph 943695 76708152 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x74a5c2000000
+back_pointer=   0x74a6b45e0000
+begin partition
+nedges / nvtxs:      81.28
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0       3939     296823     543858      97647       1428          0          0          0          0 
+random_match_time               2.917
+cnvtxs=476423
+graph:/media/jiangdie/新加卷/graph_10w/channel-500x100x100-b050.graph 4802000 85362744 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x76e134000000
+back_pointer=   0x76e2265e0000
+begin partition
+nedges / nvtxs:      17.78
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          8     212424    4589568          0          0          0          0          0          0          0          0 
+random_match_time               1.396
+cnvtxs=2707559
+graph:/media/jiangdie/新加卷/graph_10w/Long_Coup_dt0.graph 1470152 85618840 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x79d4c2000000
+back_pointer=   0x79d5b45e0000
+begin partition
+nedges / nvtxs:      58.24
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0        948    1330076     138312        740         60         16          0          0          0 
+random_match_time               2.610
+cnvtxs=742542
+graph:/media/jiangdie/新加卷/graph_10w/dielFilterV3clx.graph 420408 32465800 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7553d4000000
+back_pointer=   0x7554c65e0000
+begin partition
+nedges / nvtxs:      77.22
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0         18          0      14670     123882     233136      48690         12          0          0          0          0 
+random_match_time               0.995
+cnvtxs=212648
+graph:/media/jiangdie/新加卷/graph_10w/dielFilterV3real.graph 1102824 88203196 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7bdfb6000000
+back_pointer=   0x7be0a85e0000
+begin partition
+nedges / nvtxs:      79.98
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0         18          0      23859     276639     659238     143061          9          0          0          0          0 
+random_match_time               3.423
+cnvtxs=558058
+graph:/media/jiangdie/新加卷/graph_10w/ML_Geer.graph 1504002 109375970 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7e5576000000
+back_pointer=   0x7e56685e0000
+begin partition
+nedges / nvtxs:      72.72
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0          8      15984    1488010          0          0          0          0          0          0 
+random_match_time               1.310
+cnvtxs=765831
+graph:/media/jiangdie/新加卷/graph_10w/Flan_1565.graph 1564794 115841250 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7e9796000000
+back_pointer=   0x7e98885e0000
+begin partition
+nedges / nvtxs:      74.03
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0         24     338442    1226328          0          0          0          0          0          0 
+random_match_time               1.840
+cnvtxs=788125
+graph:/media/jiangdie/新加卷/graph_10w/Bump_2911.graph 2911419 124818480 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x77e62e000000
+back_pointer=   0x77e7205e0000
+begin partition
+nedges / nvtxs:      42.87
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+     58989          0          0          0          9      74988    2777313         87         33          0          0          0          0          0 
+random_match_time               2.677
+cnvtxs=1496893
+graph:/media/jiangdie/新加卷/graph_10w/Cube_Coup_dt0.graph 2164760 125041384 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7f0ac8000000
+back_pointer=   0x7f0bba5e0000
+begin partition
+nedges / nvtxs:      57.76
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0       3296    2143160      18304          0          0          0          0          0          0 
+random_match_time               3.070
+cnvtxs=1092033
+graph:/media/jiangdie/新加卷/graph_10w/Cube_Coup_dt6.graph 2164760 125041384 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x79132a000000
+back_pointer=   0x79141c5e0000
+begin partition
+nedges / nvtxs:      57.76
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0       3296    2143160      18304          0          0          0          0          0          0 
+random_match_time               3.046
+cnvtxs=1092634
+graph:/media/jiangdie/新加卷/graph_10w/HV15R.graph 2017169 324715138 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x76680e000000
+back_pointer=   0x7669005e0000
+begin partition
+nedges / nvtxs:     160.98
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0        137         10       8832       1677        307      12686     373602    1576237      43681          0          0          0          0 
+random_match_time               4.599
+cnvtxs=1020599
+graph:/media/jiangdie/新加卷/graph_10w/Queen_4147.graph 4147110 325352174 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7b11f2000000
+back_pointer=   0x7b12e45e0000
+begin partition
+nedges / nvtxs:      78.45
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0         24     234786    3912300          0          0          0          0          0          0 
+random_match_time               6.286
+cnvtxs=2088976
+graph:/media/jiangdie/新加卷/graph_10w/cage15.graph 5154859 94044692 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x770938000000
+back_pointer=   0x770a2a5e0000
+begin partition
+nedges / nvtxs:      18.24
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0        128       8912     116916    1978586    2982976      67341          0          0          0          0          0          0          0 
+random_match_time               2.634
+cnvtxs=2613189
+graph:/media/jiangdie/新加卷/graph_10w/kmer_A2a.graph 170728175 360585172 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x75150c000000
+back_pointer=   0x7515fe5e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjwgt, now uesd memory 2808166272B
+graph:/media/jiangdie/新加卷/graph_10w/kmer_P1a.graph 139353211 297829984 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7646b0000000
+back_pointer=   0x7647a25e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: graph->bin_idx, now uesd memory 4054878592B
+graph:/media/jiangdie/新加卷/graph_10w/kmer_U1a.graph 67716231 138778562 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7a7670000000
+back_pointer=   0x7a77625e0000
+begin partition
+nedges / nvtxs:       2.05
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0   65060511    2454864     192036       8560        259          1          0          0          0          0          0          0          0 
+random_match_time              20.230
+cnvtxs=38680717
+graph:/media/jiangdie/新加卷/graph_10w/kmer_V1r.graph 214005017 465410904 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x73c72c000000
+back_pointer=   0x73c81e5e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjwgt, now uesd memory 3573683840B
+graph:/media/jiangdie/新加卷/graph_10w/kmer_V2a.graph 55042369 117217600 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7347d4000000
+back_pointer=   0x7348c65e0000
+begin partition
+nedges / nvtxs:       2.13
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0   50857857    3556647     528247      89427      10106         85          0          0          0          0          0          0          0 
+random_match_time              16.839
+cnvtxs=31481963
+graph:/media/jiangdie/新加卷/graph_10w/delaunay_n23.graph 8388608 50331568 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x707906000000
+back_pointer=   0x7079f85e0000
+begin partition
+nedges / nvtxs:       6.00
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0     991584    7070472     326498         54          0          0          0          0          0          0          0          0 
+random_match_time               2.708
+cnvtxs=4602387
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 18318143 54940162 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x76d7f2000000
+back_pointer=   0x76d8e45e0000
+begin partition
+nedges / nvtxs:       3.00
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0      14267   18303876          0          0          0          0          0          0          0          0          0          0          0 
+random_match_time               4.314
+cnvtxs=9209476
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00010.graph 19458087 58359528 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x787970000000
+back_pointer=   0x787a625e0000
+begin partition
+nedges / nvtxs:       3.00
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0      14733   19443354          0          0          0          0          0          0          0          0          0          0          0 
+random_match_time               9.222
+cnvtxs=10157403
+graph:/media/jiangdie/新加卷/graph_10w/hugebubbles-00020.graph 21198119 63580358 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7be45c000000
+back_pointer=   0x7be54e5e0000
+begin partition
+nedges / nvtxs:       3.00
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0      13999   21184120          0          0          0          0          0          0          0          0          0          0          0 
+random_match_time              10.133
+cnvtxs=11143754
+graph:/media/jiangdie/新加卷/graph_10w/rgg_n_2_22_s0.graph 4194304 60718396 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x72284a000000
+back_pointer=   0x72293c5e0000
+begin partition
+nedges / nvtxs:      14.48
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         3        316       5375     201607    2782843    1204078         82          0          0          0          0          0          0          0 
+random_match_time               1.463
+cnvtxs=2208909
+graph:/media/jiangdie/新加卷/graph_10w/delaunay_n24.graph 16777216 100663202 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x74d380000000
+back_pointer=   0x74d4725e0000
+begin partition
+nedges / nvtxs:       6.00
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0    1983269   14140712     653160         75          0          0          0          0          0          0          0          0 
+random_match_time               6.486
+cnvtxs=9200594
+graph:/media/jiangdie/新加卷/graph_10w/rgg_n_2_23_s0.graph 8388608 127002786 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x740b96000000
+back_pointer=   0x740c885e0000
+begin partition
+nedges / nvtxs:      15.14
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         1        363       6649     286659    5162889    2931581        466          0          0          0          0          0          0          0 
+random_match_time               3.202
+cnvtxs=4387223
+graph:/media/jiangdie/新加卷/graph_10w/rgg_n_2_24_s0.graph 16777216 265114400 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x756efe000000
+back_pointer=   0x756ff05e0000
+begin partition
+nedges / nvtxs:      15.80
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         1        362       7919     407612    9405077    6954381       1864          0          0          0          0          0          0          0 
+random_match_time               6.101
+cnvtxs=8733457
+graph:/media/jiangdie/新加卷/graph_10w/kron_g500-logn20.graph 1048576 89238804 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7d0328000000
+back_pointer=   0x7d041a5e0000
+begin partition
+nedges / nvtxs:      85.10
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+    253335     188145      94896      88678     126332      42014     117078      32417      45221      38760          0      15504       4845       1351 
+random_match_time               1.864
+cnvtxs=831502
+graph:/media/jiangdie/新加卷/graph_10w/kron_g500-logn21.graph 2097152 182081864 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7dec4e000000
+back_pointer=   0x7ded405e0000
+begin partition
+nedges / nvtxs:      86.82
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+    553065     382111     172638     221098     131800     232606     113601      91793     116257         33      54254      20275         74       7547 
+random_match_time               4.596
+cnvtxs=1689489
+graph:/media/jiangdie/新加卷/graph_10w/mycielskian18.graph 196607 300933832 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7bdc9a000000
+back_pointer=   0x7bdd8c5e0000
+begin partition
+nedges / nvtxs:    1530.64
+         0|         1|         2|         3|         4|         5|         6|         7|         8|         9|        10|        11|        12|        13    
+        =0|       <=2|       <=4|       <=8|      <=16|      <=32|      <=64|     <=128|     <=256|     <=512|    <=1024|    <=2048|    <=4096|     >4096    
+         0          0          0          0          0        278       2586      10461      24618      38616      43544      36647      23345      16512 
+random_match_time              24.147
+cnvtxs=140892
+graph:/media/jiangdie/新加卷/graph_10w/mycielskian19.graph 393215 903194710 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   6226378752B 6080448KB 5937MB 5GB
+Usable GPU Memory before execution: 6099369984B 5956416KB 5816MB 5GB
+Malloc GPU Memory:                  4066246656B 3970944KB 3877MB 3GB
+front_pointer=  0x7e200e000000
+back_pointer=   0x7e21005e0000
+error ------------ don't have enough GPU memory hunyuangraph_malloc_original_coarseninfo: adjwgt, now uesd memory 3615924608B

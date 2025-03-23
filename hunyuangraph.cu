@@ -49,6 +49,9 @@ int main(int argc, char **argv)
 		float imbalance = hunyuangraph_compute_imbalance_cpu(graph, part, nparts);
 
 		print_time_all(graph, part, edgecut, imbalance);
+		print_time_coarsen();
+		print_time_init();
+		print_time_uncoarsen();
 		print_time_topkfour_match();
 
 		if (edgecut < best_edgecut)
