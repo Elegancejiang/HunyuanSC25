@@ -8,7 +8,7 @@ git status
 # 添加所有文件到暂存区
 git add .
 # 描述更改内容
-git commit -m "25.04.03 Uncoarsening right | Coarsening forced matches"
+git commit -m "25.04.03 Uncoarsening compute_edgecut_gpu | timer"
 # 移除旧的远程仓库
 # git remote remove origin
 # git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git

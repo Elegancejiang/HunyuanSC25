@@ -3391,12 +3391,11 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 	int nvtxs = graph->nvtxs;
 	int best_cut, *best_where;
 	float h_best_imb, *d_best_imb;
-	cudaDeviceSynchronize();
-	compute_edgecut_gpu(graph->nvtxs, &best_cut, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
-	cudaDeviceSynchronize();
 
-	printf("level=%10d nvtxs=%10d nedges=%10d\n", level[0], nvtxs, graph->nedges);
-	printf("real edgecut=%10d\n", best_cut);
+	best_cut = graph->mincut;
+
+	// printf("level=%10d nvtxs=%10d nedges=%10d\n", level[0], nvtxs, graph->nedges);
+	// printf("real edgecut=%10d\n", best_cut);
 
 	graph->mincut = best_cut;
 
@@ -3507,9 +3506,15 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 		//	  balance -> LP
 		if(balance == 1)
 		{
-			printf("jetlp ");
+			// printf("jetlp ");
 			// printf("jetlp begin\n");
+			cudaDeviceSynchronize();
+			gettimeofday(&begin_gpu_kway, NULL);
 			h_num_pos = jetlp(hunyuangraph_admin, graph, level[0]);
+			cudaDeviceSynchronize();
+			gettimeofday(&end_gpu_kway, NULL);
+			uncoarsen_lp += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+
 			// printf("jetlp end h_num_pos=%10d\n", h_num_pos);
 			balance_counter = 0;
 			lab_counter = 0;
@@ -3522,18 +3527,35 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 			// h_num_pos = jetrw(hunyuangraph_admin, graph);
 			if(balance_counter < 2)
 			{
-				printf("jetrw ");
+				// printf("jetrw ");
+				cudaDeviceSynchronize();
+				gettimeofday(&begin_gpu_kway, NULL);
 				h_num_pos = jetrw(hunyuangraph_admin, graph);
+				cudaDeviceSynchronize();
+				gettimeofday(&end_gpu_kway, NULL);
+				uncoarsen_rw += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+
             } else 
 			{
-				printf("jetrs ");
+				// printf("jetrs ");
+				cudaDeviceSynchronize();
+				gettimeofday(&begin_gpu_kway, NULL);
 				h_num_pos = jetrs(hunyuangraph_admin, graph);
+				cudaDeviceSynchronize();
+				gettimeofday(&end_gpu_kway, NULL);
+				uncoarsen_rs += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+
             }
             balance_counter++;
 		}
 
-		printf("perform_moves h_num_pos=%10d ", h_num_pos);
+		// printf("perform_moves h_num_pos=%10d ", h_num_pos);
+		cudaDeviceSynchronize();
+		gettimeofday(&begin_gpu_kway, NULL);
 		perform_moves(hunyuangraph_admin, graph, h_num_pos);
+		cudaDeviceSynchronize();
+		gettimeofday(&end_gpu_kway, NULL);
+		uncoarsen_pm += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
 
 		 //copy current partition and relevant data to output partition if following conditions pass
         /*if(best_state.total_imb > imb_max && curr_state.total_imb < best_state.total_imb){
@@ -3579,12 +3601,12 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 			cudaMemcpy(best_where, graph->cuda_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);
 		}
 
-		printf("count=%10d, h_curr_imb=%10f, h_best_imb=%10f, best_cut=%10d curr_cut=%10d \n", count, h_curr_imb, h_best_imb, best_cut, graph->mincut);
+		// printf("count=%10d, h_curr_imb=%10f, h_best_imb=%10f, best_cut=%10d curr_cut=%10d \n", count, h_curr_imb, h_best_imb, best_cut, graph->mincut);
 	}
 
 	graph->mincut = best_cut;
 	cudaMemcpy(graph->cuda_where, best_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);
-	printf("level=%10d best_cut=%10d\n", level[0], best_cut);
+	// printf("level=%10d best_cut=%10d\n", level[0], best_cut);
 
 	if(GPU_Memory_Pool)
 	{

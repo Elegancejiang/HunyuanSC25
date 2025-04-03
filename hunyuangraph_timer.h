@@ -5,6 +5,8 @@
 #include "hunyuangraph_common.h"
 #include "hunyuangraph_graph.h"
 
+#include <cuda_runtime.h>
+
 /*Time function params*/
 // all time
 double part_all = 0;
@@ -191,6 +193,10 @@ double uncoarsen_gpu_malloc = 0;
 double uncoarsen_gpu_free = 0;
 struct timeval begin_gpu_kway;
 struct timeval end_gpu_kway;
+double uncoarsen_lp = 0;
+double uncoarsen_rw = 0;
+double uncoarsen_rs = 0;
+double uncoarsen_pm = 0;
 
 double set_cpu_graph = 0;
 struct timeval begin_set_cpu_graph;
@@ -278,24 +284,18 @@ void init_timer()
     part_match = 0;
     part_contruction = 0;
 
-    // match
+    //  coarsen
     init_gpu_match_time = 0;
+    check_length_time = 0;
+    set_bin_time = 0;
     hem_gpu_match_time = 0;
     resolve_conflict_1_time = 0;
     resolve_conflict_2_time = 0;
     inclusive_scan_time1 = 0;
     resolve_conflict_4_time = 0;
-
-    //match kernel
-    random_match_time = 0;
-    init_gpu_receive_send_time = 0;
-    wgt_segmentsort_gpu_time = 0;
-    segmentsort_memcpy_time = 0;
-    set_receive_send_time = 0;
-    set_match_topk_time = 0;
-    reset_match_array_time = 0;
-
-    // contract
+    match_malloc_time = 0;
+    match_memcpy_time = 0;
+    match_free_time = 0;
     exclusive_scan_time = 0;
     set_tadjncy_tadjwgt_time = 0;
     ncy_segmentsort_gpu_time = 0;
@@ -304,6 +304,48 @@ void init_timer()
     set_cxadj_time = 0;
     init_cadjwgt_time = 0;
     set_cadjncy_cadjwgt_time = 0;
+    coarsen_malloc = 0;
+    coarsen_memcpy = 0;
+    coarsen_free = 0;
+
+    // topk
+    top1_time = 0;
+    top2_time = 0;
+    top3_time = 0;
+    top4_time = 0;
+    leaf_time = 0;
+    isolate_time = 0;
+    twin_time = 0;
+    relative_time = 0;
+
+    //  init
+    set_initgraph_time = 0;
+    initcurand_gpu_time = 0;
+    bisection_gpu_time = 0;
+    splitgraph_gpu_time = 0;
+    select_where_gpu_time = 0;
+    update_where_gpu_time = 0;
+    update_answer_gpu_time = 0;
+    update_tpwgts_time = 0;
+
+    // uncoarsen
+    uncoarsen_initpwgts = 0;
+    uncoarsen_calculateSum = 0;
+    uncoarsen_Sum_maxmin_pwgts = 0;
+    uncoarsen_select_init_select = 0;
+    uncoarsen_moving_interaction = 0;
+    uncoarsen_update_select = 0;
+    uncoarsen_execute_move = 0;
+    uncoarsen_select_bnd_vertices_warp = 0;
+    uncoarsen_projectback = 0;
+    uncoarsen_gpu_malloc = 0;
+    uncoarsen_gpu_free = 0;
+    uncoarsen_compute_edgecut = 0;
+
+    uncoarsen_lp = 0;
+    uncoarsen_rw = 0;
+    uncoarsen_rs = 0;
+    uncoarsen_pm = 0;
 }
 
 void print_time_all(hunyuangraph_graph_t *graph, int *part, int edgecut, float imbalance)
@@ -416,26 +458,30 @@ void print_time_init()
 void print_time_uncoarsen()
 {
     printf("\n");
-    double Uncoarsen_else = part_uncoarsen - (uncoarsen_initpwgts + uncoarsen_calculateSum + uncoarsen_Sum_maxmin_pwgts + uncoarsen_select_init_select + \
-                                              uncoarsen_moving_interaction + uncoarsen_update_select + uncoarsen_execute_move + uncoarsen_select_bnd_vertices_warp + 
+    double Uncoarsen_else = part_uncoarsen - (uncoarsen_lp + uncoarsen_rw + uncoarsen_rs + uncoarsen_pm + \
                                               uncoarsen_projectback + uncoarsen_gpu_malloc + uncoarsen_gpu_free + uncoarsen_compute_edgecut);
 
     printf("---------------------------------------------------------\n");
     printf("Uncoarsen_time=            %10.3lf ms\n", part_uncoarsen);
-    printf("Uncoarsen initpwgts            %10.3lf %7.3lf%\n", uncoarsen_initpwgts, uncoarsen_initpwgts / part_uncoarsen * 100);
-    printf("Uncoarsen calculateSum         %10.3lf %7.3lf%\n", uncoarsen_calculateSum, uncoarsen_calculateSum / part_uncoarsen * 100);
-    printf("Uncoarsen Sum_maxmin_pwgts     %10.3lf %7.3lf%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
-    printf("Uncoarsen select_init          %10.3lf %7.3lf%\n", uncoarsen_select_init_select, uncoarsen_select_init_select / part_uncoarsen * 100);
-    printf("Uncoarsen select_bnd           %10.3lf %7.3lf%\n", uncoarsen_select_bnd_vertices_warp, uncoarsen_select_bnd_vertices_warp / part_uncoarsen * 100);
-    printf("Uncoarsen moving_interaction   %10.3lf %7.3lf%\n", uncoarsen_moving_interaction, uncoarsen_moving_interaction / part_uncoarsen * 100);
-    printf("Uncoarsen update_select        %10.3lf %7.3lf%\n", uncoarsen_update_select, uncoarsen_update_select / part_uncoarsen * 100);
-    printf("Uncoarsen execute_move         %10.3lf %7.3lf%\n", uncoarsen_execute_move, uncoarsen_execute_move / part_uncoarsen * 100);
+    printf("Uncoarsen lp                   %10.3lf %7.3lf%\n", uncoarsen_lp, uncoarsen_lp / part_uncoarsen * 100);
+    printf("Uncoarsen rw                   %10.3lf %7.3lf%\n", uncoarsen_rw, uncoarsen_rw / part_uncoarsen * 100);
+    printf("Uncoarsen rs                   %10.3lf %7.3lf%\n", uncoarsen_rs, uncoarsen_rs / part_uncoarsen * 100);
+    printf("Uncoarsen pm                   %10.3lf %7.3lf%\n", uncoarsen_pm, uncoarsen_pm / part_uncoarsen * 100);
     printf("Uncoarsen projectback          %10.3lf %7.3lf%\n", uncoarsen_projectback, uncoarsen_projectback / part_uncoarsen * 100);
     printf("Uncoarsen malloc               %10.3lf %7.3lf%\n", uncoarsen_gpu_malloc, uncoarsen_gpu_malloc / part_uncoarsen * 100);
     printf("Uncoarsen free                 %10.3lf %7.3lf%\n", uncoarsen_gpu_free, uncoarsen_gpu_free / part_uncoarsen * 100);
     printf("Uncoarsen compute_edgecut      %10.3lf %7.3lf%\n", uncoarsen_compute_edgecut, uncoarsen_compute_edgecut / part_uncoarsen * 100);
     printf("Uncoarsen else                 %10.3lf %7.3lf%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
     printf("---------------------------------------------------------\n");
+
+    // printf("Uncoarsen initpwgts            %10.3lf %7.3lf%\n", uncoarsen_initpwgts, uncoarsen_initpwgts / part_uncoarsen * 100);
+    // printf("Uncoarsen calculateSum         %10.3lf %7.3lf%\n", uncoarsen_calculateSum, uncoarsen_calculateSum / part_uncoarsen * 100);
+    // printf("Uncoarsen Sum_maxmin_pwgts     %10.3lf %7.3lf%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
+    // printf("Uncoarsen select_init          %10.3lf %7.3lf%\n", uncoarsen_select_init_select, uncoarsen_select_init_select / part_uncoarsen * 100);
+    // printf("Uncoarsen select_bnd           %10.3lf %7.3lf%\n", uncoarsen_select_bnd_vertices_warp, uncoarsen_select_bnd_vertices_warp / part_uncoarsen * 100);
+    // printf("Uncoarsen moving_interaction   %10.3lf %7.3lf%\n", uncoarsen_moving_interaction, uncoarsen_moving_interaction / part_uncoarsen * 100);
+    // printf("Uncoarsen update_select        %10.3lf %7.3lf%\n", uncoarsen_update_select, uncoarsen_update_select / part_uncoarsen * 100);
+    // printf("Uncoarsen execute_move         %10.3lf %7.3lf%\n", uncoarsen_execute_move, uncoarsen_execute_move / part_uncoarsen * 100);
 }
 
 #endif

@@ -524,6 +524,11 @@ void hunyuangraph_free_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 void hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph, int *level)
 {
 	int ori = level[0];
+
+	cudaDeviceSynchronize();
+	compute_edgecut_gpu(cgraph->nvtxs, &cgraph->mincut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
+	cudaDeviceSynchronize();
+
 	while(level[0] >= 0)
 	{
 		hunyuangraph_malloc_krefine(hunyuangraph_admin, cgraph);
@@ -541,6 +546,7 @@ void hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin_t *hunyuangraph_adm
 			break;
 		
 		cgraph = cgraph->finer;
+		cgraph->mincut = cgraph->coarser->mincut;
 		
 		hunyuangraph_kway_project(hunyuangraph_admin, cgraph);
 
