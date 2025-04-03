@@ -59,7 +59,7 @@ typedef struct hunyuangraph_graph_t {
 	//   int *cuda_scan_nedges_original;       //CUDA support scan array (cuda_scan_nedges_original[nedges])
 	int *tadjncy;      //CUDA support scan array (tadjncy[nedges])
 	int *cuda_maxwgt;                     //CUDA part weight array (cuda_maxwgt[npart])
-	int *cuda_minwgt;                     //CUDA part weight array (cuda_minwgt[npart])
+	int *cuda_poverload;
 	int *cuda_where;
 	int *cuda_label;
 	int *cuda_pwgts;
@@ -79,10 +79,26 @@ typedef struct hunyuangraph_graph_t {
 	int *cuda_balance;
 	int *cuda_bn;                             
 	int *cuda_to;
-	int *cuda_gain;		//	???
-	char *cuda_select;
+	// int *cuda_gain;		//	???
+	// char *cuda_select;
+	int *cuda_moved;
+	int *cuda_kway_bin;
+	int *h_kway_bin;
+	int *cuda_kway_idx;
+	int *cuda_kway_loss;
 	int *cuda_csr;
 	int *cuda_que;
+
+	int *cuda_opt_pwgts;
+	int *gain_offset;
+	int *gain_val;
+	int *gain_where;
+	int *dest_cache;
+	int *dest_part;
+	int *cuda_gain;
+	char *cuda_select;
+	char *lock;
+	int *pos_move;
 } hunyuangraph_graph_t;
 
 /*Memory allocation information*/

@@ -75,11 +75,8 @@ struct timeval begin_krefine_atomicadd;
 struct timeval end_krefine_atomicadd;
 
 // uncoarsen
-double uncoarsen_Sum_maxmin_pwgts = 0;
-double uncoarsen_select_bnd_vertices_warp = 0;
 double uncoarsen_Exnode_part1 = 0;
 double uncoarsen_Exnode_part2 = 0;
-double uncoarsen_compute_edgecut = 0;
 struct timeval begin_general;
 struct timeval   end_general;
 
@@ -178,6 +175,22 @@ struct timeval begin_gpu_bisection;
 struct timeval end_gpu_bisection;
 
 double init_else = 0;
+
+//  uncoarsen
+double uncoarsen_initpwgts = 0;
+double uncoarsen_calculateSum = 0;
+double uncoarsen_projectback = 0;
+double uncoarsen_Sum_maxmin_pwgts = 0;
+double uncoarsen_select_init_select = 0;
+double uncoarsen_select_bnd_vertices_warp = 0;
+double uncoarsen_moving_interaction = 0;
+double uncoarsen_update_select = 0;
+double uncoarsen_execute_move = 0;
+double uncoarsen_compute_edgecut = 0;
+double uncoarsen_gpu_malloc = 0;
+double uncoarsen_gpu_free = 0;
+struct timeval begin_gpu_kway;
+struct timeval end_gpu_kway;
 
 double set_cpu_graph = 0;
 struct timeval begin_set_cpu_graph;
@@ -403,26 +416,25 @@ void print_time_init()
 void print_time_uncoarsen()
 {
     printf("\n");
-    double Uncoarsen_else = part_uncoarsen - (krefine_atomicadd + uncoarsen_Sum_maxmin_pwgts + bndinfo_Find_real_bnd_info + bndinfo_init_bnd_info +
-                                              bndinfo_find_kayparams + bndinfo_initcucsr + bndinfo_bb_segsort + bndinfo_init_cu_que + bndinfo_findcsr +
-                                              uncoarsen_Exnode_part1 + uncoarsen_Exnode_part2);
-    
+    double Uncoarsen_else = part_uncoarsen - (uncoarsen_initpwgts + uncoarsen_calculateSum + uncoarsen_Sum_maxmin_pwgts + uncoarsen_select_init_select + \
+                                              uncoarsen_moving_interaction + uncoarsen_update_select + uncoarsen_execute_move + uncoarsen_select_bnd_vertices_warp + 
+                                              uncoarsen_projectback + uncoarsen_gpu_malloc + uncoarsen_gpu_free + uncoarsen_compute_edgecut);
+
     printf("---------------------------------------------------------\n");
     printf("Uncoarsen_time=            %10.3lf ms\n", part_uncoarsen);
-    printf("Uncoarsen uncoarsen_compute_edgecut    %10.3lf\n", uncoarsen_compute_edgecut);
-    printf("Uncoarsen uncoarsen_select_bnd_vertices_warp    %10.3lf\n", uncoarsen_select_bnd_vertices_warp);
-	// printf("Uncoarsen Sumpwgts                     %10.3lf %.3f%\n", krefine_atomicadd, krefine_atomicadd / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen Sum_maxmin_pwgts   %10.3lf %.3f%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen Find_real_bnd_info %10.3lf %.3f%\n", bndinfo_Find_real_bnd_info, bndinfo_Find_real_bnd_info / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen init_bnd_info      %10.3lf %.3f%\n", bndinfo_init_bnd_info, bndinfo_init_bnd_info / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen find_kayparams     %10.3lf %.3f%\n", bndinfo_find_kayparams, bndinfo_find_kayparams / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen initcucsr          %10.3lf %.3f%\n", bndinfo_initcucsr, bndinfo_initcucsr / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen bb_segsort         %10.3lf %.3f%\n", bndinfo_bb_segsort, bndinfo_bb_segsort / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen init_cu_que        %10.3lf %.3f%\n", bndinfo_init_cu_que, bndinfo_init_cu_que / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen findcsr            %10.3lf %.3f%\n", bndinfo_findcsr, bndinfo_findcsr / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen Exnode_part1       %10.3lf %.3f%\n", uncoarsen_Exnode_part1, uncoarsen_Exnode_part1 / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen Exnode_part2       %10.3lf %.3f%\n", uncoarsen_Exnode_part2, uncoarsen_Exnode_part2 / part_uncoarsen * 100);
-    // printf("Uncoarsen uncoarsen else               %10.3lf %.3f%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
+    printf("Uncoarsen initpwgts            %10.3lf %7.3lf%\n", uncoarsen_initpwgts, uncoarsen_initpwgts / part_uncoarsen * 100);
+    printf("Uncoarsen calculateSum         %10.3lf %7.3lf%\n", uncoarsen_calculateSum, uncoarsen_calculateSum / part_uncoarsen * 100);
+    printf("Uncoarsen Sum_maxmin_pwgts     %10.3lf %7.3lf%\n", uncoarsen_Sum_maxmin_pwgts, uncoarsen_Sum_maxmin_pwgts / part_uncoarsen * 100);
+    printf("Uncoarsen select_init          %10.3lf %7.3lf%\n", uncoarsen_select_init_select, uncoarsen_select_init_select / part_uncoarsen * 100);
+    printf("Uncoarsen select_bnd           %10.3lf %7.3lf%\n", uncoarsen_select_bnd_vertices_warp, uncoarsen_select_bnd_vertices_warp / part_uncoarsen * 100);
+    printf("Uncoarsen moving_interaction   %10.3lf %7.3lf%\n", uncoarsen_moving_interaction, uncoarsen_moving_interaction / part_uncoarsen * 100);
+    printf("Uncoarsen update_select        %10.3lf %7.3lf%\n", uncoarsen_update_select, uncoarsen_update_select / part_uncoarsen * 100);
+    printf("Uncoarsen execute_move         %10.3lf %7.3lf%\n", uncoarsen_execute_move, uncoarsen_execute_move / part_uncoarsen * 100);
+    printf("Uncoarsen projectback          %10.3lf %7.3lf%\n", uncoarsen_projectback, uncoarsen_projectback / part_uncoarsen * 100);
+    printf("Uncoarsen malloc               %10.3lf %7.3lf%\n", uncoarsen_gpu_malloc, uncoarsen_gpu_malloc / part_uncoarsen * 100);
+    printf("Uncoarsen free                 %10.3lf %7.3lf%\n", uncoarsen_gpu_free, uncoarsen_gpu_free / part_uncoarsen * 100);
+    printf("Uncoarsen compute_edgecut      %10.3lf %7.3lf%\n", uncoarsen_compute_edgecut, uncoarsen_compute_edgecut / part_uncoarsen * 100);
+    printf("Uncoarsen else                 %10.3lf %7.3lf%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
     printf("---------------------------------------------------------\n");
 }
 

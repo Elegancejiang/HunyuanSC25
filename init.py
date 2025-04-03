@@ -1,17 +1,25 @@
 import re
 
 def extract_gpu_edgecut(file_path):
-    edgecuts_init = {}
+    edgecuts_init = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
-            match = re.search(r'gpu p=\s*([\d.]+)', line)
-            idx_match = re.search(r'v=\s*([\d.]+)', line)
-            edgecut_match = re.search(r'edgecut=\s*([\d.]+)', line)
-            if match and idx_match and edgecut_match:
-                idx = int(idx_match.group(1))  # 假设v的值是整数
+            edgecut_match = re.search(r'best_edgecut=\s*([\d.]+)', line)
+            if edgecut_match:
                 edgecut_value = int(edgecut_match.group(1))
-                edgecuts_init[idx] = edgecut_value  # 直接使用v的值作为索引
+                edgecuts_init.append(edgecut_value)  # 直接使用v的值作为索引
     return edgecuts_init
+
+def extract_graph_names(file_path):
+    graph_names = []
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            # 匹配路径后的内容，直到遇到 .graph 或空格
+            path_match = re.search(r'graph:/media/jiangdie/新加卷/graph_10w/(.*?)(?=\.graph|\s|$)', line)
+            if path_match:
+                extracted_str = path_match.group(1)
+                graph_names.append(extracted_str)
+    return graph_names
 
 def extract_cpu_edgecut(file_path):
     edgecuts_init = {}
@@ -76,13 +84,14 @@ def extract_cpu_computetimes(file_path):
                 computetimes.append(computetime_value)
     return computetimes
 
-file_path = 'syncfree.txt'
+file_path = 'test.txt'
+graph_names = extract_graph_names(file_path)
 # gpu_edgecuts = extract_gpu_edgecut(file_path)
 # cpu_edgecuts = extract_cpu_edgecut(file_path)
-gpu_nvtxs = extract_gpu_nvtxs(file_path)
+# gpu_nvtxs = extract_gpu_nvtxs(file_path)
 # gpu_nedges = extract_gpu_nedges(file_path)
 # gpu_inittimes = extract_gpu_inittimes(file_path)
-cpu_BFStimes = extract_cpu_BFStimes(file_path)
+# cpu_BFStimes = extract_cpu_BFStimes(file_path)
 # cpu_computetimes = extract_cpu_computetimes(file_path)
 
 # sorted(gpu_edgecuts.items())
@@ -97,10 +106,17 @@ cpu_BFStimes = extract_cpu_BFStimes(file_path)
 #     # else:
 #     #     print(ptr)
 
+# 打印edgecuts，索引从0开始
+if graph_names:
+    for graph_name in graph_names:
+        print(graph_name)
+else:
+    print("graph_names values not found in the file.")
+
 # # 打印edgecuts，索引从0开始
 # if gpu_edgecuts:
-#     for idx, edgecut in sorted(cpu_edgecuts.items()):
-#         print(f"{edgecut}")
+#     for edgecut in gpu_edgecuts:
+#         print(edgecut)
 # else:
 #     print("gpu_edgecuts values not found in the file.")
 
@@ -111,12 +127,12 @@ cpu_BFStimes = extract_cpu_BFStimes(file_path)
 # else:
 #     print("cpu_edgecuts values not found in the file.")
 
-# nvtxs
-if gpu_nvtxs:
-    for nvtx in gpu_nvtxs:
-        print(nvtx)
-else:
-    print("gpu_nvtxs values not found in the file.")
+# # nvtxs
+# if gpu_nvtxs:
+#     for nvtx in gpu_nvtxs:
+#         print(nvtx)
+# else:
+#     print("gpu_nvtxs values not found in the file.")
 
 # # nedges
 # if gpu_nedges:
@@ -144,12 +160,12 @@ else:
 # else:
 #     print("cpu_BFStimes values not found in the file.")
 
-# BFStimes
-if cpu_BFStimes:
-    for BFStime in cpu_BFStimes:
-        print(BFStime)
-else:
-    print("cpu_BFStimes values not found in the file.")
+# # BFStimes
+# if cpu_BFStimes:
+#     for BFStime in cpu_BFStimes:
+#         print(BFStime)
+# else:
+#     print("cpu_BFStimes values not found in the file.")
 
 # # computetimes
 # if cpu_computetimes:

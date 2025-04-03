@@ -25,17 +25,25 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
 
 	printf("Coarsen end: level=%d cnvtxs=%d cnedges=%d adjwgtsum=%d\n", level, cgraph->nvtxs, cgraph->nedges, compute_graph_adjwgtsum_gpu(graph));
+	if(cgraph->nvtxs >= 100000)
+	{
+		printf("coarsen graph error\n");
+		exit(0);
+	}
 
-	print_time_coarsen();
-	print_time_topkfour_match();
+	// print_time_coarsen();
+	// print_time_topkfour_match();
 
 	// FILE *fp = fopen("graph.txt","w");
     // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
     // for(int a = 0; a < cgraph->nvtxs; a++)
     // {
-    // 	fprintf(fp, "%d ",cgraph->vwgt[a]);
+    // 	fprintf(fp, "%d %d %d\n",cgraph->vwgt[a], cgraph->xadj[a], cgraph->xadj[a + 1]);
     //     for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
-    //     	fprintf(fp, "%d %d ",cgraph->adjncy[b] + 1, cgraph->adjwgt[b]);
+    //     	fprintf(fp, "%10d ",cgraph->adjncy[b]);
+    //     fprintf(fp, "\n");
+	// 	for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+    //     	fprintf(fp, "%10d ",cgraph->adjwgt[b]);
     //     fprintf(fp, "\n");
     // }
     // fclose(fp);
@@ -52,6 +60,25 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
 
+	// cudaMemcpy(cgraph->where, cgraph->cuda_where, cgraph->nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
+	// for(int i = 0;i < cgraph->nvtxs;i++)
+	// 	printf("%10d %10d\n", i, cgraph->where[i]);
+	// FILE *fp = fopen("graph.txt","w");
+    // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
+    // for(int a = 0; a < cgraph->nvtxs; a++)
+    // {
+    // 	fprintf(fp, "%d %d %d %d\n",cgraph->vwgt[a], cgraph->where[a], cgraph->xadj[a], cgraph->xadj[a + 1]);
+    //     for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+    //     	fprintf(fp, "%10d ",cgraph->adjncy[b]);
+    //     fprintf(fp, "\n");
+	// 	for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+    //     	fprintf(fp, "%10d ",cgraph->where[cgraph->adjncy[b]]);
+    //     fprintf(fp, "\n");
+	// 	for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+    //     	fprintf(fp, "%10d ",cgraph->adjwgt[b]);
+    //     fprintf(fp, "\n");
+    // }
+    // fclose(fp);
 	// cudaDeviceSynchronize();
     // gettimeofday(&begin_gpu_bisection, NULL);
     // hunyuangraph_computecut_gpu<<<1, 1>>>(cgraph->nvtxs, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
@@ -59,7 +86,7 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
     // gettimeofday(&end_gpu_bisection, NULL);
     // computecut_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 
-	print_time_init();
+	// print_time_init();
 
 	// hunyuangraph_memcpy_coarsentoinit(cgraph);
 	// int edgecut;
@@ -72,7 +99,8 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	// cudaDeviceSynchronize();
 	gettimeofday(&begin_part_uncoarsen, NULL);
 	// hunyuangraph_GPU_uncoarsen(hunyuangraph_admin, graph, cgraph);
-	hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin, graph, cgraph, &level);
+	// hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin, graph, cgraph, &level);
+	hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin, graph, cgraph, &level);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_uncoarsen, NULL);
 	part_uncoarsen += (end_part_uncoarsen.tv_sec - begin_part_uncoarsen.tv_sec) * 1000 + (end_part_uncoarsen.tv_usec - begin_part_uncoarsen.tv_usec) / 1000.0;

@@ -5,7 +5,9 @@
 // #define ALIGNMENT 4
 #define hunyuangraph_GPU_cacheline 128
 #define SM_NUM 30
-#define IDX_MAX   INT64_MAX
+#define OverLoaded 1
+#define IDX_MAX   INT32_MAX
+#define IDX_MIN   INT32_MIN
 #define hunyuangraph_max(m,n) ((m)>=(n)?(m):(n))
 #define hunyuangraph_min(m,n) ((m)>=(n)?(n):(m))
 #define hunyuangraph_swap(m,n,temp) do{(temp)=(m);(m)=(n);(n)=(temp);} while(0) 
@@ -15,6 +17,22 @@
 #define hunyuangraph_listinsert(n,list,lptr,i) do{list[n]=i;lptr[i]=(n)++;} while(0) 
 #define hunyuangraph_listdelete(n,list,lptr,i) do{list[lptr[i]]=list[--(n)];lptr[list[n]]=lptr[i];lptr[i]=-1;} while(0) 
 #define M_GT_N(m,n) ((m)>(n))
+
+#define CHECK(call)                                   \
+do                                                    \
+{                                                     \
+    const cudaError_t error_code = call;              \
+    if (error_code != cudaSuccess)                    \
+    {                                                 \
+        printf("CUDA Error:\n");                      \
+        printf("    File:       %s\n", __FILE__);     \
+        printf("    Line:       %d\n", __LINE__);     \
+        printf("    Error code: %d\n", error_code);   \
+        printf("    Error text: %s\n",                \
+            cudaGetErrorString(error_code));          \
+        exit(1);                                      \
+    }                                                 \
+} while (0)
 
 #define _GKQSORT_SWAP(a, b, t) ((void)((t = *a), (*a = *b), (*b = t)))
 #define _GKQSORT_STACK_SIZE	    (8 * sizeof(size_t))

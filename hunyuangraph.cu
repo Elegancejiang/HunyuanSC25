@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	int best_edgecut = graph->nedges;
 	int *best_partition = (int *)malloc(sizeof(int) * graph->nvtxs);
 
-	for (int iter = 0; iter < 1; iter++)
+	for (int iter = 0; iter < 21; iter++)
 	{
 		init_timer();
 
@@ -49,10 +49,10 @@ int main(int argc, char **argv)
 		float imbalance = hunyuangraph_compute_imbalance_cpu(graph, part, nparts);
 
 		print_time_all(graph, part, edgecut, imbalance);
-		print_time_coarsen();
-		print_time_init();
-		print_time_uncoarsen();
-		print_time_topkfour_match();
+		// print_time_coarsen();
+		// print_time_init();
+		// print_time_uncoarsen();
+		// print_time_topkfour_match();
 
 		if (edgecut < best_edgecut)
 		{

@@ -46,7 +46,7 @@ void hunyuangraph_init_cpu_graph(hunyuangraph_graph_t *graph)
 	graph->cuda_pwgts = NULL;
 	graph->cuda_tpwgts = NULL;
 	graph->cuda_maxwgt = NULL;
-	graph->cuda_minwgt = NULL;
+	graph->cuda_poverload = NULL;
 	graph->cuda_balance = NULL;
 	graph->cuda_select = NULL;
 	graph->cuda_to = NULL;

@@ -797,7 +797,7 @@ __global__ void set_receive_send_topk(int nvtxs, const int *xadj, const int *adj
 	}*/
 }
 
-__global__ void set_receive_send_topk_one(int nvtxs, const int *xadj, const int *adjncy, int *match, const int offset)
+__global__ void set_receive_send_topk_one(int nvtxs, const int *xadj, const int *adjncy, int *match, const int offset, const int *vwgt, const int maxvwgt)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -810,6 +810,7 @@ __global__ void set_receive_send_topk_one(int nvtxs, const int *xadj, const int 
 	
 	int begin = __ldg(&xadj[vertex]);
 	int end   = __ldg(&xadj[vertex + 1]);
+	int wgt_v = vwgt[vertex];
 	int wait  = end - begin;
 
 	if(wait == 0)
@@ -821,7 +822,7 @@ __global__ void set_receive_send_topk_one(int nvtxs, const int *xadj, const int 
 	for(int j = end - 1;j >= begin && send_ptr < offset; j--)
 	{
 		int vertex_k = adjncy[j];
-		if(send_ptr < offset && match[vertex_k] == -1)
+		if(send_ptr < offset && match[vertex_k] == -1 && vwgt[vertex_k] + wgt_v < maxvwgt)
 		{
 			register_send[send_ptr] = vertex_k;
 			send_ptr++;
@@ -1384,16 +1385,17 @@ __global__ void leaf_matches_step1(int nvtxs, int *xadj, int *adjncy, int *match
 }
 
 //	leaf matches step2
-__global__ void leaf_matches_step2(int nvtxs, int *xadj, int *adjncy, int *match, int *length, int *tmp_match)
+__global__ void leaf_matches_step2(int nvtxs, int *xadj, int *adjncy, int *match, int *length, int *tmp_match, int *vwgt, int maxvwgt)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if(ii < nvtxs && tmp_match[ii] > 1)
 	{
-		int begin, end, flag;
+		int begin, end, flag, flag_wgt_v;
 		begin = xadj[ii];
 		end   = xadj[ii + 1];
 		flag = -1;
+		flag_wgt_v = 0;
 
 		for(int j = begin; j < end; j++)
 		{
@@ -1402,11 +1404,17 @@ __global__ void leaf_matches_step2(int nvtxs, int *xadj, int *adjncy, int *match
 			if(match[adj_vertex] == -1 && length[adj_vertex] == 1)
 			{
 				if(flag == -1)
+				{
 					flag = adj_vertex;
+					flag_wgt_v = vwgt[adj_vertex];
+				}
 				else 
 				{
-					match[flag] = adj_vertex;
-					match[adj_vertex] = flag;
+					if(flag_wgt_v + vwgt[adj_vertex] < maxvwgt)
+					{
+						match[flag] = adj_vertex;
+						match[adj_vertex] = flag;
+					}
 					flag = -1;
 				}
 			}
@@ -1508,7 +1516,7 @@ __global__ void leaf_matches_step2_subwarp(int num, int *xadj, int *adjncy, int 
 }
 
 //	twin matches
-__global__ void twin_matches_step1(int nvtxs, int *xadj, int *adjncy, int *match, int *length, int *tmp_match)
+__global__ void twin_matches_step1(int nvtxs, int *xadj, int *adjncy, int *match, int *length, int *tmp_match, int *vwgt, int maxvwgt)
 {
 	int lane_id = threadIdx.x & 31;
 	int warp_id = threadIdx.x >> 5;
@@ -1540,8 +1548,11 @@ __global__ void twin_matches_step1(int nvtxs, int *xadj, int *adjncy, int *match
                 if (keyexist != -1 && length[keyexist] == l) 
 				{
 					atomicExch(&tmp_match[hashadr], -1);
-					match[ii] = keyexist;
-					match[keyexist] = ii;
+					if(vwgt[ii] + vwgt[keyexist] < maxvwgt)
+					{
+						match[ii] = keyexist;
+						match[keyexist] = ii;
+					}
 					break;
 				}
 				else if(keyexist == -1)
@@ -1563,7 +1574,7 @@ __global__ void twin_matches_step1(int nvtxs, int *xadj, int *adjncy, int *match
 }
 
 //	isolate matches
-__global__ void isolate_matches_step1(int num, int *offset, int *idx, int *match)
+__global__ void isolate_matches_step1(int num, int *offset, int *idx, int *match, int *vwgt, int maxvwgt)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -1573,8 +1584,11 @@ __global__ void isolate_matches_step1(int num, int *offset, int *idx, int *match
 		if(match[id] == -1 && (ii & 1) == 1)
 		{
 			int v = idx[ii - 1];
-			match[v] = id;
-			match[id] = v;
+			if(vwgt[id] + vwgt[v] < maxvwgt)
+			{
+				match[v] = id;
+				match[id] = v;
+			}
 		}
 	}
 }
@@ -1628,16 +1642,17 @@ __global__ void relative_matches_step1(int nvtxs, int *xadj, int *adjncy, int *a
 	}
 }
 
-__global__ void relative_matches_step2(int nvtxs, int *xadj, int *adjncy, int *match, int *tmp_match, int *mark)
+__global__ void relative_matches_step2(int nvtxs, int *xadj, int *adjncy, int *match, int *tmp_match, int *mark, int *vwgt, int maxvwgt)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if(ii < nvtxs && tmp_match[ii] > 1)
 	{
-		int begin, end, flag;
+		int begin, end, flag, flag_wgt_v;
 		begin = xadj[ii];
 		end   = xadj[ii + 1];
 		flag  = 0;
+		flag_wgt_v = 0;
 		
 		for(int j = begin;j < end;j++)
 		{
@@ -1648,15 +1663,55 @@ __global__ void relative_matches_step2(int nvtxs, int *xadj, int *adjncy, int *m
 				if(flag == 0)
 				{
 					flag = adj_vertex;
+					flag_wgt_v = vwgt[adj_vertex];
 				}
 				else 
 				{
-					match[flag] = adj_vertex;
-					match[adj_vertex] = flag;
+					if(flag_wgt_v + vwgt[adj_vertex] < maxvwgt)
+					{
+						match[flag] = adj_vertex;
+						match[adj_vertex] = flag;
+					}
 					flag = 0;
 				}
 			}
 		}
+	}
+}
+
+__global__ void setup_unmatched(int nvtxs, int *match, int *unmatched, int *d_unmatched_num)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+	if(ii >= nvtxs)
+		return ;
+	
+	int vertex = ii;
+	int u = match[vertex];
+	if(u != -1)
+		return ;
+	
+	int write_ptr = atomicAdd(d_unmatched_num, 1);
+	unmatched[write_ptr] = vertex;
+}
+
+__global__ void forced_matches(int unmatched_num, int *unmatched, int *vwgt, int *match, int maxvwgt)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+	if(ii >= unmatched_num)
+		return ;
+	
+	if((ii & 1) == 1 || ii == unmatched_num - 1)
+		return ;
+	
+	int vertex = unmatched[ii];
+	int wgt_v = vwgt[vertex];
+	int u = unmatched[ii + 1];
+	int wgt_u = vwgt[u];
+	
+	if(wgt_v + wgt_u < maxvwgt)
+	{
+		match[vertex] = u;
+		match[u] = vertex;
 	}
 }
 
@@ -1751,18 +1806,18 @@ __global__ void print_graph(int nvtxs, int nedges, int *vwgt, int *xadj, int *ad
 	{
 		begin = xadj[i];
 		end   = xadj[i + 1];
-		// printf("%10d %10d %10d %10d\n", i, vwgt[i], begin, end);
-		// for(j = begin;j < end;j++)
-		// 	printf("%10d ", adjncy[j]);
-		// printf("\n");
-		// for(j = begin;j < end;j++)
-		// 	printf("%10d ", adjwgt[j]);
-		// printf("\n");
-
-		printf("%10d|", i);
+		printf("%10d %10d %10d %10d\n", i, vwgt[i], begin, end);
 		for(j = begin;j < end;j++)
 			printf("%10d ", adjncy[j]);
 		printf("\n");
+		for(j = begin;j < end;j++)
+			printf("%10d ", adjwgt[j]);
+		printf("\n");
+
+		// printf("%10d|", i);
+		// for(j = begin;j < end;j++)
+		// 	printf("%10d ", adjncy[j]);
+		// printf("\n");
 	}
 }
 
@@ -1792,6 +1847,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 {
 	int nvtxs = graph->nvtxs;
 	int nedges = graph->nedges;
+	int maxvwgt = hunyuangraph_admin->maxvwgt;
 	int cnvtxs = 0;
 
 	// tesst
@@ -1799,7 +1855,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	double success_rate[5];
 
 	// cudaDeviceSynchronize();
-	// print_graph<<<1, 1>>>(32, nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+	// print_graph<<<1, 1>>>(nvtxs, nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
 	// cudaDeviceSynchronize();
 
 	// cudaDeviceSynchronize();
@@ -2277,7 +2333,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_match_kernel, NULL);
-			set_receive_send_topk_one<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, offset);
+			set_receive_send_topk_one<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, offset, graph->cuda_vwgt, maxvwgt);
 			// set_receive_send<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_match, receive, send, offset);
 			// switch (offset)
 			// {
@@ -2457,6 +2513,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf leaf matches begin\n", sum);
+		printf("leaf matches    ");
 		int *tmp_match;
 
 		cudaDeviceSynchronize();
@@ -2485,7 +2542,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		leaf_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match);
+		leaf_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match, graph->cuda_vwgt, maxvwgt);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		leaf_matches_step2_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -2553,9 +2610,11 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		// printf("sum=%10.0lf isolate matches begin\n", sum);
 		// printf("sum=%10.0lf isolate matches begin: have %10d isolate vertices\n", sum, tmp_num);
 
+		printf("isolate matches    ");
+
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		isolate_matches_step1<<<(tmp_num + 127) / 128, 128>>>(tmp_num, graph->bin_offset, graph->bin_idx, graph->cuda_match);
+		isolate_matches_step1<<<(tmp_num + 127) / 128, 128>>>(tmp_num, graph->bin_offset, graph->bin_idx, graph->cuda_match, graph->cuda_vwgt, maxvwgt);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		isolate_matches_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -2600,6 +2659,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf twin matches begin\n", sum);
+		printf("twin matches    ");
 		int *tmp_match;
 
 		cudaDeviceSynchronize();
@@ -2621,7 +2681,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		twin_matches_step1<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match);
+		twin_matches_step1<<<(nvtxs + 3) / 4, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, graph->length_vertex, tmp_match, graph->cuda_vwgt, maxvwgt);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		twin_matches_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -2678,6 +2738,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	if(sum / (double)nvtxs < 0.75)
 	{
 		// printf("sum=%10.0lf relative matches begin\n", sum);
+		printf("relative matches    ");
 		int *tmp_match, *tmp_mark;
 
 		cudaDeviceSynchronize();
@@ -2712,7 +2773,7 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 		
 		cudaDeviceSynchronize();
 		gettimeofday(&begin_gpu_match_kernel, NULL);
-		relative_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, tmp_match, tmp_mark);
+		relative_matches_step2<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_match, tmp_match, tmp_mark, graph->cuda_vwgt, maxvwgt);
 		cudaDeviceSynchronize();
 		gettimeofday(&end_gpu_match_kernel, NULL);
 		relative_matches_step2_time += (end_gpu_match_kernel.tv_sec - begin_gpu_match_kernel.tv_sec) * 1000 + (end_gpu_match_kernel.tv_usec - begin_gpu_match_kernel.tv_usec) / 1000.0;
@@ -2760,6 +2821,58 @@ hunyuangraph_graph_t *hunyuangraph_gpu_match(hunyuangraph_admin_t *hunyuangraph_
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_topkfour_match,NULL);
 	relative_time += (end_gpu_topkfour_match.tv_sec - begin_gpu_topkfour_match.tv_sec) * 1000 + (end_gpu_topkfour_match.tv_usec - begin_gpu_topkfour_match.tv_usec) / 1000.0;
+
+	if(is_need_count_match_num)
+	{
+		cudaDeviceSynchronize();
+		init_bin<<<1, 14>>>(14, match_bin);
+		cudaDeviceSynchronize();
+		check_match<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, graph->length_vertex, match_bin);
+		cudaDeviceSynchronize();
+		cudaMemcpy(match_num, match_bin, sizeof(int) * 14, cudaMemcpyDeviceToHost);
+		sum = 0;
+		for(int i = 0;i < 14;i++)
+			sum += match_num[i];
+		is_need_count_match_num = 0;
+	}
+	
+	if(sum / (double)nvtxs < 0.75)
+	{
+		printf("forced matches    ");
+
+		int *d_unmatched_num, *unmatched;
+		if(GPU_Memory_Pool)
+		{
+			unmatched = (int *)rmalloc_with_check(sizeof(int) * nvtxs, "unmatched");
+			d_unmatched_num = (int *)rmalloc_with_check(sizeof(int), "d_unmatched_num");
+		}
+		else 
+		{
+			cudaMalloc((void**)&unmatched, sizeof(int) *nvtxs);
+			cudaMalloc((void**)&d_unmatched_num, sizeof(int));
+		}
+
+		init_bin<<<1, 1>>>(1, d_unmatched_num);
+
+		setup_unmatched<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_match, unmatched, d_unmatched_num);
+
+		int h_unmatched_num;
+		cudaMemcpy(&h_unmatched_num, d_unmatched_num, sizeof(int), cudaMemcpyDeviceToHost);
+		forced_matches<<<(h_unmatched_num + 127) / 128, 128>>>(h_unmatched_num, unmatched, graph->cuda_vwgt, graph->cuda_match, maxvwgt);
+
+		if(GPU_Memory_Pool)
+		{
+			rfree_with_check((void *)d_unmatched_num, sizeof(int), "d_unmatched_num");
+			rfree_with_check((void *)unmatched, sizeof(int) * nvtxs, "unmatched");	//	unmatched
+		}
+		else 
+		{
+			cudaFree(d_unmatched_num);
+			cudaFree(unmatched);
+		}
+
+		is_need_count_match_num = 1;
+	}
 
 	// cudaDeviceSynchronize();
 	// init_bin<<<1, 14>>>(14, match_bin);

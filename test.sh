@@ -15,7 +15,7 @@ while IFS=',' read -r Name; do
     # ./hunyuangraph_SC24 /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_SC24.txt
     # ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_syncfree.txt
     # ./hunyuangraph_randommatch_syncfree /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> random_match_syncfree_exam.txt
-    ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> syncfree.txt
+    ./hunyuangraph /media/jiangdie/新加卷/graph_10w/${Name}.graph 8 1 >> test.txt
     echo "Processed $i files."
     i=$((i + 1)) # 更新计数器
 done < "$input"

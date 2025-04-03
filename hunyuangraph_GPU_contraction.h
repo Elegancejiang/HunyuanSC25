@@ -276,17 +276,32 @@ __global__ void mark_edges_subwarp(const int tbin, const int *tbin_offset, const
     if(subwarp_id >= num) 
         return ;
     
-    int tbin_row_offset = __ldg(&tbin_offset[tbin]) + subwarp_id; 
-    int vertex = __ldg(&tbin_idx[tbin_row_offset]);
-    int begin = __ldg(&txadj[vertex]);
-    int end   = __ldg(&txadj[vertex + 1]);
+    int tbin_row_offset =tbin_offset[tbin] + subwarp_id; 
+    int vertex =tbin_idx[tbin_row_offset];
+    int begin =txadj[vertex];
+    int end   =txadj[vertex + 1];
 
     int j = begin + lane_id;
-    if(j >= end) return ;
+
+    // 新逻辑：
+    // const int physical_lane = threadIdx.x % 32;  // 物理warp内的lane编号
+    // const int subwarp_index = physical_lane / SUBWARP_SIZE; // 子warp索引
+    // unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1) << (subwarp_index * SUBWARP_SIZE); // 子warp掩码
+
+    // unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
+    if(j >= end) 
+    {
+        // __syncwarp(mask);
+        return ;
+    }
     
-    int k = __ldg(&tadjncy[j]);
-    unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
+    int k =tadjncy[j];
+    // unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
+    const int physical_lane = threadIdx.x % 32;  // 物理warp内的lane编号
+    const int subwarp_index = physical_lane / SUBWARP_SIZE; // 子warp索引
+    unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1) << (subwarp_index * SUBWARP_SIZE); // 子warp掩码
     int k_front1 = __shfl_up_sync(mask, k, 1, SUBWARP_SIZE);
+    // int k_front1 = __shfl_up_sync(mask, k, 1);
     bool is_first = (j == begin);
     bool is_valid = (k != vertex) && ( is_first || (k != k_front1) );
     temp_scan[j] = is_valid ? 1 : 0;
@@ -584,17 +599,21 @@ __global__ void set_cadjncy_cadjwgt_subwarp(const int tbin, const int *tbin_offs
     if(subwarp_id >= num) 
         return ;
 
-    int tbin_row_offset = __ldg(&tbin_offset[tbin]) + subwarp_id; 
-    int vertex = __ldg(&tbin_idx[tbin_row_offset]);
-    int begin = __ldg(&txadj[vertex]);
-    int end   = __ldg(&txadj[vertex + 1]);
+    int tbin_row_offset = tbin_offset[tbin] + subwarp_id; 
+    int vertex = tbin_idx[tbin_row_offset];
+    int begin = txadj[vertex];
+    int end   = txadj[vertex + 1];
 
     int j = begin + lane_id;
     if(j >= end) return ;
 
-    int k = __ldg(&tadjncy[j]);
-    int mark_k = __ldg(&temp_scan[j]) - 1;
-    unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
+    int k = tadjncy[j];
+    int mark_k = temp_scan[j] - 1;
+    const int physical_lane = threadIdx.x % 32;  // 物理warp内的lane编号
+    const int subwarp_index = physical_lane / SUBWARP_SIZE; // 子warp索引
+    unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1) << (subwarp_index * SUBWARP_SIZE); // 子warp掩码
+    // int k_front1 = __shfl_up_sync(mask, k, 1, SUBWARP_SIZE);
+    // unsigned mask = (SUBWARP_SIZE == 32) ? 0xffffffff : ((1u << SUBWARP_SIZE) - 1);
     int k_front1 = __shfl_up_sync(mask, k, 1, SUBWARP_SIZE);
 
     bool is_valid = (k != vertex);
@@ -605,7 +624,7 @@ __global__ void set_cadjncy_cadjwgt_subwarp(const int tbin, const int *tbin_offs
         if(need_add)
             cadjncy[mark_k] = k;
             
-        atomicAdd(&cadjwgt[mark_k], __ldg(&tadjwgt[j]));
+        atomicAdd(&cadjwgt[mark_k], tadjwgt[j]);
     }
 }
 

@@ -15,6 +15,9 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "chrono": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "*.tcc": "cpp",
+        "system_error": "cpp",
+        "mutex": "cpp"
     }
 }

@@ -55,6 +55,7 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
     // graph->vwgt = (int *)malloc(sizeof(int) * nvtxs);
     // graph->adjncy = (int *)malloc(sizeof(int) * nedges);
     // graph->adjwgt = (int *)malloc(sizeof(int) * nedges);
+    // graph->where = (int *)malloc(sizeof(int) * nvtxs);
 
     // cudaDeviceSynchronize();
     // gettimeofday(&begin_coarsen_memcpy, NULL);
@@ -128,6 +129,22 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
     coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
 }
 
+__global__ void exam_cvwgt(int nvtxs, int nparts, int tvwgt, int *vwgt, int *flag)
+{
+    int ii = blockIdx.x * blockDim.x + threadIdx.x;
+    if(ii >= nvtxs)
+        return ;
+
+    int max_allow = tvwgt / nparts * 1.03;
+    // if(ii == 0)
+    //     printf("tvwgt=%d nparts=%d max_allow=%d\n", tvwgt, nparts, max_allow);
+    if(vwgt[ii] > max_allow)
+    {
+        printf("vertex=%d vwgt=%d max_allow=%d\n", ii, vwgt[ii], max_allow);
+        flag[0] = 1;
+    }
+}
+
 /*Gpu multilevel coarsen*/
 hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *level)
 {
@@ -160,9 +177,35 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         graph = graph->coarser;
         level[0]++;
 
+        int h_flag, *d_flag;
+        h_flag = 0;
+        if(GPU_Memory_Pool)
+            d_flag = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+        else 
+            cudaMalloc((void**)&d_flag, sizeof(int));
+        cudaMemcpy(d_flag, &h_flag, sizeof(int), cudaMemcpyHostToDevice);
+        exam_cvwgt<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, hunyuangraph_admin->nparts, graph->tvwgt[0], graph->cuda_vwgt, d_flag);
+        cudaMemcpy(&h_flag, d_flag, sizeof(int), cudaMemcpyDeviceToHost);
+        if(GPU_Memory_Pool)
+            lfree_with_check(d_flag, sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+        else 
+            cudaFree(d_flag);
+        if(h_flag == 1)
+        {
+            printf("hunyuangraph_GPU_coarsen: warning: coarsen graph has a vertex with weight > nvtxs / nparts * 1.03\n");
+            // break;
+        }
+
+        // if(level[0] == 22)
+        //     break;
+
         // cudaDeviceSynchronize();
-        // check_graph<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, graph->nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
-	    // cudaDeviceSynchronize();
+        // print_graph<<<1, 1>>>(graph->nvtxs, graph->nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+        // cudaDeviceSynchronize();
+
+        cudaDeviceSynchronize();
+        check_graph<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, graph->nedges, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt);
+	    cudaDeviceSynchronize();
 
         // if(level[0] < 2)
         printf("level %2d: nvtxs %10d nedges %10d\n", level[0], graph->nvtxs, graph->nedges);
