@@ -18,6 +18,8 @@
         "algorithm": "cpp",
         "*.tcc": "cpp",
         "system_error": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "functional": "cpp",
+        "target": "cpp"
     }
 }

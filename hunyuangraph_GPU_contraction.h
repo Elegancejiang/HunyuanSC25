@@ -723,8 +723,10 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	// print_xadj<<<1, 1>>>(11, graph->txadj);
 	// cudaDeviceSynchronize();
 
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     if(GPU_Memory_Pool)
     {
         prefixsum(graph->txadj + 1, graph->txadj + 1, cnvtxs, prefixsum_blocksize, 1);	//0:lmalloc,1:rmalloc
@@ -734,10 +736,11 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
         thrust::inclusive_scan(thrust::device, graph->txadj, graph->txadj + cnvtxs + 1, graph->txadj);
         // thrust::exclusive_scan(thrust::device, graph->txadj, graph->txadj + cnvtxs + 1, graph->txadj);
     }
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     exclusive_scan_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
-    
+#endif  
     // cudaDeviceSynchronize();
 	// print_xadj<<<1, 1>>>(11, graph->txadj);
 	// cudaDeviceSynchronize();
@@ -746,8 +749,10 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
     // cudaMalloc((void**)&graph->tadjncy,nedges * sizeof(int));
     // cudaMalloc((void**)&graph->tadjwgt,nedges * sizeof(int));
 	int *bb_keysB_d, *bb_valsB_d;
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc,NULL);
+#endif
     if(GPU_Memory_Pool)
     {
         bb_keysB_d = (int *)rmalloc_with_check(sizeof(int) * nedges,"hunyuangraph_gpu_create_cgraph: bb_keysB_d");
@@ -760,6 +765,7 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
         cudaMalloc((void**)&graph->tadjncy, sizeof(int) * nedges);
         cudaMalloc((void**)&graph->tadjwgt, sizeof(int) * nedges);
     }
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc,NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
@@ -770,8 +776,10 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
     //     if(num != 0)
 	// 	    printf("set_tadjncy_tadjwgt_subwarp %d begin num=%d %d\n", i, num, (int)pow(2, i));
     // }
+
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     // set_tadjncy_tadjwgt<<<(nvtxs + 3) / 4,128>>>(graph->txadj,graph->cuda_xadj,graph->cuda_match,graph->cuda_adjncy,graph->cuda_cmap,\
     //     graph->tadjncy,graph->tadjwgt,graph->cuda_adjwgt,nvtxs);
     for(int i = 1;i < 14;i++)
@@ -841,10 +849,12 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
             break;
 		}
 	}
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     set_tadjncy_tadjwgt_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
-	// printf("set_tadjncy_tadjwgt end\n");
+#endif
+    // printf("set_tadjncy_tadjwgt end\n");
     // printf("tadjncy/tadjwgt\n");
     // cudaDeviceSynchronize();
 	// print_xadj<<<1, 1>>>(160, graph->tadjncy);
@@ -855,45 +865,60 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
     if(GPU_Memory_Pool)
     {
         int *bb_counter, *bb_id;
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&begin_malloc,NULL);
+#endif
         // bb_keysB_d = (int *)rmalloc_with_check(sizeof(int) * nedges,"bb_keysB_d");
         // bb_valsB_d = (int *)rmalloc_with_check(sizeof(int) * nedges,"bb_valsB_d");
         bb_id      = (int *)rmalloc_with_check(sizeof(int) * cnvtxs,"bb_id");
         bb_counter = (int *)rmalloc_with_check(sizeof(int) * 13,"bb_counter");
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&end_malloc,NULL);
         coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+
         // printf("hunyuangraph_segmengtsort malloc end\n");
+
         cudaDeviceSynchronize();
         gettimeofday(&begin_gpu_contraction,NULL);
+#endif
         hunyuangraph_segmengtsort(graph->tadjncy, graph->tadjwgt, nedges, graph->txadj, cnvtxs, bb_counter, bb_id, bb_keysB_d, bb_valsB_d);
         // segment_sort<<<(cnvtxs + 127) / 128, 128>>>(graph->tadjncy, graph->tadjwgt, nedges, graph->txadj, cnvtxs);
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&end_gpu_contraction,NULL);
         ncy_segmentsort_gpu_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
-        
+
         // printf("hunyuangraph_segmengtsort end\n");
+
         cudaDeviceSynchronize();
         gettimeofday(&begin_free,NULL);
+#endif
         rfree_with_check((void *)bb_counter, sizeof(int) * 13,"bb_counter");		//bb_counter
         rfree_with_check((void *)bb_id, sizeof(int) * cnvtxs,"bb_id");				//bb_id
         graph->tadjncy = bb_keysB_d;
         graph->tadjwgt = bb_valsB_d;
         rfree_with_check((void *)graph->tadjwgt, sizeof(int) * nedges,"bb_valsB_d");		//tadjwgt
         rfree_with_check((void *)graph->tadjncy, sizeof(int) * nedges,"bb_keysB_d");		//tadjncy
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&end_free,NULL);
         coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+#endif
     }
     else
     {
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&begin_gpu_contraction,NULL);
+#endif
         bb_segsort(graph->tadjncy, graph->tadjwgt, nedges, graph->txadj, cnvtxs);
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&end_gpu_contraction,NULL);
         ncy_segmentsort_gpu_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
+#endif
     }
     // cudaDeviceSynchronize();
 	// print_xadj<<<1, 1>>>(160, graph->tadjncy);
@@ -902,19 +927,23 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	// cudaDeviceSynchronize();
 
     int *temp_scan;
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc,NULL);
+#endif
     // cudaMalloc((void**)&temp_scan, nedges * sizeof(int));
     if(GPU_Memory_Pool)
     	temp_scan = (int *)rmalloc_with_check(sizeof(int) * nedges,"hunyuangraph_gpu_create_cgraph: temp_scan");
     else    
         cudaMalloc((void**)&temp_scan, sizeof(int) * nedges);
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc,NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
 
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     // mark_edges<<<(cnvtxs + 3) / 4,128>>>(graph->tadjncy,graph->txadj,temp_scan,cnvtxs);
     // mark_edges_shfl<<<(cnvtxs + 3) / 4,128>>>(graph->tadjncy, graph->txadj, temp_scan, cnvtxs);
     for(int i = 1;i < 14;i++)
@@ -971,6 +1000,7 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
             break;
 		}
 	}
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     mark_edges_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
@@ -982,10 +1012,13 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
+
     if(GPU_Memory_Pool)
         prefixsum(temp_scan,temp_scan,nedges,prefixsum_blocksize,1);	//0:lmalloc,1:rmalloc
     else
         thrust::inclusive_scan(thrust::device,temp_scan, temp_scan + nedges, temp_scan);
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     inclusive_scan_time2 += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
@@ -996,21 +1029,26 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
 
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc,NULL);
+#endif
     // cudaMalloc((void**)&cgraph->cuda_xadj, (cnvtxs+1)*sizeof(int));
     if(GPU_Memory_Pool)
     	cgraph->cuda_xadj = (int *)lmalloc_with_check(sizeof(int) * (cnvtxs + 1),"hunyuangraph_gpu_create_cgraph: xadj");
     else 
         cudaMalloc((void**)&cgraph->cuda_xadj, sizeof(int) * (cnvtxs + 1));
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc,NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
 
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     set_cxadj<<<(cnvtxs + 128) / 128,128>>>(graph->txadj,temp_scan,cgraph->cuda_xadj,cnvtxs);
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     set_cxadj_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
+#endif
     // printf("set_cxadj end\n");
     // printf("cxadj\n");
     // cudaDeviceSynchronize();
@@ -1020,8 +1058,10 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
     cudaMemcpy(&cgraph->nedges, &cgraph->cuda_xadj[cnvtxs], sizeof(int), cudaMemcpyDeviceToHost);
     int cnedges = cgraph->nedges;
 
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc,NULL);
+#endif
     // cudaMalloc((void**)&cgraph->cuda_adjncy, cgraph->nedges * sizeof(int));
     // cudaMalloc((void**)&cgraph->cuda_adjwgt, cgraph->nedges * sizeof(int));
     if(GPU_Memory_Pool)
@@ -1072,19 +1112,23 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
         cudaMalloc((void**)&cgraph->cuda_adjncy, sizeof(int) * cnedges);
         cudaMalloc((void**)&cgraph->cuda_adjwgt, sizeof(int) * cnedges);
     }
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc,NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
     
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     init_cadjwgt<<<(cnedges + 127) / 128,128>>>(cgraph->cuda_adjwgt,cnedges);
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     init_cadjwgt_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
     // printf("init_cadjwgt end\n");
     cudaDeviceSynchronize();
     gettimeofday(&begin_gpu_contraction,NULL);
+#endif
     // set_cadjncy_cadjwgt<<<(cnvtxs + 3) / 4,128>>>(graph->tadjncy,graph->txadj,\
     //     graph->tadjwgt,temp_scan,cgraph->cuda_xadj,cgraph->cuda_adjncy,cgraph->cuda_adjwgt,cnvtxs);
     // set_cadjncy_cadjwgt_shfl<<<(cnvtxs + 3) / 4,128>>>(graph->tadjncy,graph->txadj,\
@@ -1157,19 +1201,22 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
             break;
 		}
 	}
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_gpu_contraction,NULL);
     set_cadjncy_cadjwgt_time += (end_gpu_contraction.tv_sec - begin_gpu_contraction.tv_sec) * 1000 + (end_gpu_contraction.tv_usec - begin_gpu_contraction.tv_usec) / 1000.0;
+#endif
     // cudaDeviceSynchronize();
 	// print_xadj<<<1, 1>>>(11, cgraph->cuda_xadj);
 	// cudaDeviceSynchronize();
 	cgraph->tvwgt[0] = graph->tvwgt[0];  
 
 	// printf("cnvtxs=%d cnedges=%d ",cnvtxs,cgraph->nedges);
-    
+
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_free,NULL);
-
+#endif
     if(GPU_Memory_Pool)
     {
         rfree_with_check((void *)temp_scan, sizeof(int) * nedges,"hunyuangraph_gpu_create_cgraph: temp_scan");			//temp_scan
@@ -1190,9 +1237,11 @@ void hunyuangraph_gpu_create_cgraph(hunyuangraph_admin_t *hunyuangraph_admin, hu
         cudaFree(graph->txadj);
         cudaFree(graph->cuda_match);
     }
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_free,NULL);
     coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+#endif
 
     free(graph->h_tbin_offset);
 }

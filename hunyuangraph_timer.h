@@ -191,12 +191,56 @@ double uncoarsen_execute_move = 0;
 double uncoarsen_compute_edgecut = 0;
 double uncoarsen_gpu_malloc = 0;
 double uncoarsen_gpu_free = 0;
+double uncoarsen_gpu_memcpy = 0;
 struct timeval begin_gpu_kway;
 struct timeval end_gpu_kway;
 double uncoarsen_lp = 0;
 double uncoarsen_rw = 0;
 double uncoarsen_rs = 0;
 double uncoarsen_pm = 0;
+double uncoarsen_init_vals = 0;
+double uncoarsen_set_gain_offset = 0;
+double uncoarsen_prefixsum = 0;
+double uncoarsen_set_gain_val = 0;
+double uncoarsen_compute_imb = 0;
+double uncoarsen_is_balance = 0;
+double lp_init = 0;
+double lp_select_dest_part = 0;
+double lp_filter_potential_vertex = 0;
+double lp_afterburner_heuristic = 0;
+double lp_filter_beneficial_moves = 0;
+double lp_set_lock = 0;
+double pm_count_change1 = 0;
+double pm_pm_cuda = 0;
+double pm_update_large = 0;
+double pm_count_change2 = 0;
+struct timeval begin_gpu_kway_pm;
+struct timeval end_gpu_kway_pm;
+double pm_update_mark_adjacent = 0;
+double pm_update_init = 0;
+double pm_update_reset_conn_DS = 0;
+struct timeval begin_gpu_kway_pm_update;
+struct timeval end_gpu_kway_pm_update;
+double rw_parts = 0;
+double rw_select_dest_parts = 0;
+double rw_init = 0;
+double rw_assign_move_scores = 0;
+double rw_prefixsum = 0;
+double rw_filter_scores_below_cutoff = 0;
+struct timeval begin_gpu_kway_rw;
+struct timeval end_gpu_kway_rw;
+double rs_init = 0;
+double rs_assign_move_scores_part1 = 0;
+double rs_prefixsum = 0;
+double rs_assign_move_scores_part2 = 0;
+double rs_assign_move_scores_part3 = 0;
+double rs_find_score_cutoffs = 0;
+double rs_filter_below_cutoffs = 0;
+double rs_balance_scan_evicted_vertices = 0;
+double rs_cookie_cutter = 0;
+double rs_select_dest_parts = 0;
+struct timeval begin_gpu_kway_rs;
+struct timeval end_gpu_kway_rs;
 
 double set_cpu_graph = 0;
 struct timeval begin_set_cpu_graph;
@@ -340,12 +384,52 @@ void init_timer()
     uncoarsen_projectback = 0;
     uncoarsen_gpu_malloc = 0;
     uncoarsen_gpu_free = 0;
+    uncoarsen_gpu_memcpy = 0;
     uncoarsen_compute_edgecut = 0;
 
+    uncoarsen_init_vals = 0;
+    uncoarsen_compute_imb = 0;
+    uncoarsen_set_gain_offset = 0;
+    uncoarsen_prefixsum = 0;
+    uncoarsen_set_gain_val = 0;    
+    uncoarsen_is_balance = 0;  
     uncoarsen_lp = 0;
     uncoarsen_rw = 0;
     uncoarsen_rs = 0;
     uncoarsen_pm = 0;
+
+    lp_init = 0;
+    lp_select_dest_part = 0;
+    lp_filter_potential_vertex = 0;
+    lp_afterburner_heuristic = 0;
+    lp_filter_beneficial_moves = 0;
+    lp_set_lock = 0;
+
+    pm_count_change1 = 0;
+    pm_pm_cuda = 0;
+    pm_update_large = 0;
+    pm_count_change2 = 0;
+    pm_update_mark_adjacent = 0;
+    pm_update_init = 0;
+    pm_update_reset_conn_DS = 0;
+
+    rw_parts = 0;
+    rw_select_dest_parts = 0;
+    rw_init = 0;
+    rw_assign_move_scores = 0;
+    rw_prefixsum = 0;
+    rw_filter_scores_below_cutoff = 0;
+
+    rs_init = 0;
+    rs_assign_move_scores_part1 = 0;
+    rs_prefixsum = 0;
+    rs_assign_move_scores_part2 = 0;
+    rs_assign_move_scores_part3 = 0;
+    rs_find_score_cutoffs = 0;
+    rs_filter_below_cutoffs = 0;
+    rs_balance_scan_evicted_vertices = 0;
+    rs_cookie_cutter = 0;
+    rs_select_dest_parts = 0;
 }
 
 void print_time_all(hunyuangraph_graph_t *graph, int *part, int edgecut, float imbalance)
@@ -458,18 +542,55 @@ void print_time_init()
 void print_time_uncoarsen()
 {
     printf("\n");
-    double Uncoarsen_else = part_uncoarsen - (uncoarsen_lp + uncoarsen_rw + uncoarsen_rs + uncoarsen_pm + \
-                                              uncoarsen_projectback + uncoarsen_gpu_malloc + uncoarsen_gpu_free + uncoarsen_compute_edgecut);
+    double Uncoarsen_else = part_uncoarsen - (uncoarsen_init_vals + uncoarsen_compute_imb + uncoarsen_set_gain_offset + uncoarsen_prefixsum + uncoarsen_set_gain_val + \
+                                              uncoarsen_is_balance + uncoarsen_lp + uncoarsen_rw + uncoarsen_rs + uncoarsen_pm + \
+                                              uncoarsen_projectback + uncoarsen_gpu_malloc + uncoarsen_gpu_free + uncoarsen_gpu_memcpy + uncoarsen_compute_edgecut);
 
     printf("---------------------------------------------------------\n");
     printf("Uncoarsen_time=            %10.3lf ms\n", part_uncoarsen);
+    printf("Uncoarsen init_vals         %10.3lf %7.3lf%\n", uncoarsen_init_vals, uncoarsen_init_vals / part_uncoarsen * 100);
+    printf("Uncoarsen compute_imb          %10.3lf %7.3lf%\n", uncoarsen_compute_imb, uncoarsen_compute_imb / part_uncoarsen * 100);
+    printf("Uncoarsen set_gain_offset      %10.3lf %7.3lf%\n", uncoarsen_set_gain_offset, uncoarsen_set_gain_offset / part_uncoarsen * 100);
+    printf("Uncoarsen prefixsum            %10.3lf %7.3lf%\n", uncoarsen_prefixsum, uncoarsen_prefixsum / part_uncoarsen * 100);
+    printf("Uncoarsen set_gain_val         %10.3lf %7.3lf%\n", uncoarsen_set_gain_val, uncoarsen_set_gain_val / part_uncoarsen * 100);
+    printf("Uncoarsen is_balance           %10.3lf %7.3lf%\n", uncoarsen_is_balance, uncoarsen_is_balance / part_uncoarsen * 100);
     printf("Uncoarsen lp                   %10.3lf %7.3lf%\n", uncoarsen_lp, uncoarsen_lp / part_uncoarsen * 100);
+    printf("Uncoarsen lp_init                  %10.3lf %7.3lf%\n", lp_init, lp_init / uncoarsen_lp * 100);
+    printf("Uncoarsen lp_select_dest_part      %10.3lf %7.3lf%\n", lp_select_dest_part, lp_select_dest_part / uncoarsen_lp * 100);
+    // printf("Uncoarsen lp_filter_potential      %10.3lf %7.3lf%\n", lp_filter_potential_vertex, lp_filter_potential_vertex / uncoarsen_lp * 100);
+    printf("Uncoarsen lp_afterburner_heuristic %10.3lf %7.3lf%\n", lp_afterburner_heuristic, lp_afterburner_heuristic / uncoarsen_lp * 100);
+    printf("Uncoarsen lp_filter_beneficial_    %10.3lf %7.3lf%\n", lp_filter_beneficial_moves, lp_filter_beneficial_moves / uncoarsen_lp * 100);
+    // printf("Uncoarsen lp_set_lock              %10.3lf %7.3lf%\n", lp_set_lock, lp_set_lock / uncoarsen_lp * 100);
     printf("Uncoarsen rw                   %10.3lf %7.3lf%\n", uncoarsen_rw, uncoarsen_rw / part_uncoarsen * 100);
+    printf("Uncoarsen rw_init                  %10.3lf %7.3lf%\n", rw_init, rw_init / uncoarsen_rw * 100);
+    printf("Uncoarsen rw_parts                 %10.3lf %7.3lf%\n", rw_parts, rw_parts / uncoarsen_rw * 100);
+    printf("Uncoarsen rw_select_dest_parts     %10.3lf %7.3lf%\n", rw_select_dest_parts, rw_select_dest_parts / uncoarsen_rw * 100);
+    // printf("Uncoarsen rw_assign_move_scores    %10.3lf %7.3lf%\n", rw_assign_move_scores, rw_assign_move_scores / uncoarsen_rw * 100);
+    printf("Uncoarsen rw_prefixsum             %10.3lf %7.3lf%\n", rw_prefixsum, rw_prefixsum / uncoarsen_rw * 100);
+    printf("Uncoarsen rw_filter_scores_        %10.3lf %7.3lf%\n", rw_filter_scores_below_cutoff, rw_filter_scores_below_cutoff / uncoarsen_rw * 100);
     printf("Uncoarsen rs                   %10.3lf %7.3lf%\n", uncoarsen_rs, uncoarsen_rs / part_uncoarsen * 100);
+    printf("Uncoarsen rs_init                  %10.3lf %7.3lf%\n", rs_init, rs_init / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_assign_move_1         %10.3lf %7.3lf%\n", rs_assign_move_scores_part1, rs_assign_move_scores_part1 / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_prefixsum             %10.3lf %7.3lf%\n", rs_prefixsum, rs_prefixsum / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_assign_move_2         %10.3lf %7.3lf%\n", rs_assign_move_scores_part2, rs_assign_move_scores_part2 / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_assign_move_3         %10.3lf %7.3lf%\n", rs_assign_move_scores_part3, rs_assign_move_scores_part3 / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_find_score_cutoffs    %10.3lf %7.3lf%\n", rs_find_score_cutoffs, rs_find_score_cutoffs / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_filter_below_cutoffs  %10.3lf %7.3lf%\n", rs_filter_below_cutoffs, rs_filter_below_cutoffs / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_balance_scan_         %10.3lf %7.3lf%\n", rs_balance_scan_evicted_vertices, rs_balance_scan_evicted_vertices / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_cookie_cutter         %10.3lf %7.3lf%\n", rs_cookie_cutter, rs_cookie_cutter / uncoarsen_rs * 100);
+    printf("Uncoarsen rs_select_dest_parts     %10.3lf %7.3lf%\n", rs_select_dest_parts, rs_select_dest_parts / uncoarsen_rs * 100);
     printf("Uncoarsen pm                   %10.3lf %7.3lf%\n", uncoarsen_pm, uncoarsen_pm / part_uncoarsen * 100);
+    printf("Uncoarsen pm_count_change1         %10.3lf %7.3lf%\n", pm_count_change1, pm_count_change1 / uncoarsen_pm * 100);
+    printf("Uncoarsen pm_pm_cuda               %10.3lf %7.3lf%\n", pm_pm_cuda, pm_pm_cuda / uncoarsen_pm * 100);
+    printf("Uncoarsen pm_update_large          %10.3lf %7.3lf%\n", pm_update_large, pm_update_large / uncoarsen_pm * 100);
+    printf("Uncoarsen pm_init                      %10.3lf %7.3lf%\n", pm_update_init, pm_update_init / pm_update_large * 100);
+    printf("Uncoarsen pm_mark_adjacent             %10.3lf %7.3lf%\n", pm_update_mark_adjacent, pm_update_mark_adjacent / pm_update_large * 100);
+    printf("Uncoarsen pm_reset_conn_DS             %10.3lf %7.3lf%\n", pm_update_reset_conn_DS, pm_update_reset_conn_DS / pm_update_large * 100);
+    printf("Uncoarsen pm_count_change2         %10.3lf %7.3lf%\n", pm_count_change2, pm_count_change2 / uncoarsen_pm * 100);
     printf("Uncoarsen projectback          %10.3lf %7.3lf%\n", uncoarsen_projectback, uncoarsen_projectback / part_uncoarsen * 100);
     printf("Uncoarsen malloc               %10.3lf %7.3lf%\n", uncoarsen_gpu_malloc, uncoarsen_gpu_malloc / part_uncoarsen * 100);
     printf("Uncoarsen free                 %10.3lf %7.3lf%\n", uncoarsen_gpu_free, uncoarsen_gpu_free / part_uncoarsen * 100);
+    printf("Uncoarsen memcpy               %10.3lf %7.3lf%\n", uncoarsen_gpu_memcpy, uncoarsen_gpu_memcpy / part_uncoarsen * 100);
     printf("Uncoarsen compute_edgecut      %10.3lf %7.3lf%\n", uncoarsen_compute_edgecut, uncoarsen_compute_edgecut / part_uncoarsen * 100);
     printf("Uncoarsen else                 %10.3lf %7.3lf%\n", Uncoarsen_else, Uncoarsen_else / part_uncoarsen * 100);
     printf("---------------------------------------------------------\n");

@@ -243,12 +243,16 @@ int compute_edgecut_gpu(int nvtxs, int *edgecut, int *xadj, int *adjncy, int *ad
 	edgecut[0] = 0;
 	cudaMemcpy(edgecut_d, edgecut, sizeof(int), cudaMemcpyHostToDevice);
 
-	gettimeofday(&begin_general, NULL);
+#ifdef TIMER
 	cudaDeviceSynchronize();
+	gettimeofday(&begin_general, NULL);
+#endif
 	compute_edgecut<<<(nvtxs + 3) / 4, 128>>>(nvtxs, edgecut_d, xadj, adjncy, adjwgt, where);
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_general, NULL);
 	uncoarsen_compute_edgecut += (end_general.tv_sec - begin_general.tv_sec) * 1000.0 + (end_general.tv_usec - begin_general.tv_usec) / 1000.0;
+#endif
 	// printf("Uncoarsen uncoarsen_compute_edgecut    %10.3lf\n", uncoarsen_compute_edgecut);
 
 	cudaMemcpy(edgecut, edgecut_d, sizeof(int), cudaMemcpyDeviceToHost);
@@ -298,7 +302,7 @@ int compute_graph_select_gpu(hunyuangraph_graph_t *graph)
 	cudaMemcpy(sum_block_d, &sum_block, sizeof(int), cudaMemcpyHostToDevice);
 
 	compute_select<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, sum_block_d, graph->cuda_select);
-	cudaDeviceSynchronize();
+	// cudaDeviceSynchronize();
 
 	cudaMemcpy(&sum_block, sum_block_d, sizeof(int), cudaMemcpyDeviceToHost);
 

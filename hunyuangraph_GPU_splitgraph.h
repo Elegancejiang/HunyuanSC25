@@ -350,16 +350,16 @@ void splitgraph_GPU(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph
 	gettimeofday(&end_malloc_split, NULL);
 	malloc_split += (end_malloc_split.tv_sec - begin_malloc_split.tv_sec) * 1000 + (end_malloc_split.tv_usec - begin_malloc_split.tv_usec) / 1000.0;
 
-	cudaDeviceSynchronize();
-	gettimeofday(&begin_memcpy_split, NULL);
+	// cudaDeviceSynchronize();
+	// gettimeofday(&begin_memcpy_split, NULL);
 	// cudaMemcpy(graph->cuda_xadj,graph->xadj,sizeof(int) * (graph->nvtxs + 1), cudaMemcpyHostToDevice);
 	// cudaMemcpy(graph->cuda_adjncy,graph->adjncy,sizeof(int) * graph->nedges, cudaMemcpyHostToDevice);
 	// cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,sizeof(int) * graph->nedges, cudaMemcpyHostToDevice);
 	// cudaMemcpy(graph->cuda_vwgt,graph->vwgt,sizeof(int) * graph->nvtxs, cudaMemcpyHostToDevice);
 	// cudaMemcpy(graph->cuda_where,graph->where,sizeof(int) * graph->nvtxs, cudaMemcpyHostToDevice);
-	cudaDeviceSynchronize();
-	gettimeofday(&end_memcpy_split, NULL);
-	memcpy_split += (end_memcpy_split.tv_sec - begin_memcpy_split.tv_sec) * 1000 + (end_memcpy_split.tv_usec - begin_memcpy_split.tv_usec) / 1000.0;
+	// cudaDeviceSynchronize();
+	// gettimeofday(&end_memcpy_split, NULL);
+	// memcpy_split += (end_memcpy_split.tv_sec - begin_memcpy_split.tv_sec) * 1000 + (end_memcpy_split.tv_usec - begin_memcpy_split.tv_usec) / 1000.0;
 
 	// rgraph:where=0, rgraph:where=1
 	// 计算左右子图各自的顶点数

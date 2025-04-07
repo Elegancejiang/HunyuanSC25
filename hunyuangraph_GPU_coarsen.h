@@ -11,8 +11,10 @@ void hunyuangraph_malloc_coarseninfo(hunyuangraph_admin_t *hunyuangraph_admin, h
     int nvtxs = graph->nvtxs;
     int nedges = graph->nedges;
 
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc, NULL);
+#endif
     // cudaMalloc((void**)&graph->cuda_match,nvtxs * sizeof(int));
     if(GPU_Memory_Pool)
     {
@@ -38,9 +40,11 @@ void hunyuangraph_malloc_coarseninfo(hunyuangraph_admin_t *hunyuangraph_admin, h
         cudaMalloc((void**)&graph->cuda_cmap, sizeof(int) * nvtxs);
         cudaMalloc((void**)&graph->cuda_where, sizeof(int) * nvtxs);
     }
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc, NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+#endif
 
     if(level != 0)
         graph->h_bin_offset = (int *)malloc(sizeof(int) * 15);
@@ -68,8 +72,10 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
     // coarsen_memcpy += (end_coarsen_memcpy.tv_sec - begin_coarsen_memcpy.tv_sec) * 1000 + (end_coarsen_memcpy.tv_usec - begin_coarsen_memcpy.tv_usec) / 1000.0;
 
     int *length_bin, *bin_size;
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_malloc, NULL);
+#endif
     if(GPU_Memory_Pool)
 	{
 		graph->length_vertex = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "hunyuangraph_memcpy_coarsentoinit: graph->length_vertex");
@@ -86,9 +92,11 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
         cudaMalloc((void**)&length_bin, sizeof(int) * 14);
 		cudaMalloc((void**)&bin_size, sizeof(int) * 14);
 	}
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_malloc, NULL);
     coarsen_malloc += (end_malloc.tv_sec - begin_malloc.tv_sec) * 1000 + (end_malloc.tv_usec - begin_malloc.tv_usec) / 1000.0;
+#endif
 
 	init_bin<<<1, 14>>>(14, length_bin);
 	init_bin<<<1, 14>>>(15, graph->bin_offset);
@@ -112,8 +120,10 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
     graph->h_bin_offset = (int *)malloc(sizeof(int) * 15);
     cudaMemcpy(graph->h_bin_offset, graph->bin_offset, sizeof(int) * 15, cudaMemcpyDeviceToHost);
 
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&begin_free,NULL);
+#endif
     if(GPU_Memory_Pool)
 	{
 		rfree_with_check(bin_size, sizeof(int) * 14, "hunyuangraph_memcpy_coarsentoinit: bin_size");
@@ -124,9 +134,11 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
 		cudaFree(length_bin);
 		cudaFree(bin_size);
 	}
+#ifdef TIMER
     cudaDeviceSynchronize();
     gettimeofday(&end_free,NULL);
     coarsen_free += (end_free.tv_sec - begin_free.tv_sec) * 1000 + (end_free.tv_usec - begin_free.tv_usec) / 1000.0;
+#endif
 }
 
 __global__ void exam_cvwgt(int nvtxs, int nparts, int tvwgt, int *vwgt, int *flag)
@@ -158,21 +170,28 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         hunyuangraph_malloc_coarseninfo(hunyuangraph_admin, graph, level[0]);
         // printf("hunyuangraph_malloc_coarseninfo end\n");
 
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&begin_part_match, NULL);
+#endif
         hunyuangraph_graph_t *cgraph = hunyuangraph_gpu_match(hunyuangraph_admin, graph, level[0]);
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&end_part_match, NULL);
         part_match += (end_part_match.tv_sec - begin_part_match.tv_sec) * 1000 + (end_part_match.tv_usec - begin_part_match.tv_usec) / 1000.0;
-
+#endif
         // printf("hunyuangraph_gpu_match end\n");
 
+#ifdef TIMER
         cudaDeviceSynchronize();
         gettimeofday(&begin_part_contruction, NULL);
+#endif
         hunyuangraph_gpu_create_cgraph(hunyuangraph_admin, graph, cgraph);
-        cudaDeviceSynchronize();
+#ifdef TIMER
+       cudaDeviceSynchronize();
         gettimeofday(&end_part_contruction, NULL);
         part_contruction += (end_part_contruction.tv_sec - begin_part_contruction.tv_sec) * 1000 + (end_part_contruction.tv_usec - begin_part_contruction.tv_usec) / 1000.0;
+#endif
 
         graph = graph->coarser;
         level[0]++;
@@ -208,7 +227,7 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
 	    // cudaDeviceSynchronize();
 
         // if(level[0] < 2)
-        printf("level %2d: nvtxs %10d nedges %10d\n", level[0], graph->nvtxs, graph->nedges);
+        // printf("level %2d: nvtxs %10d nedges %10d\n", level[0], graph->nvtxs, graph->nedges);
 
         // break;
         

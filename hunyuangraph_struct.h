@@ -91,6 +91,9 @@ typedef struct hunyuangraph_graph_t {
 
 	int *cuda_opt_pwgts;
 	int *gain_offset;
+	// int *gain_bin;
+	// int *h_gain_bin;
+	// int *gain_idx;
 	int *gain_val;
 	int *gain_where;
 	int *dest_cache;

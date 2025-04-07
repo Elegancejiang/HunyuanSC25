@@ -11,5 +11,5 @@ export NVCOMPUTE="$HOME/.nsight-compute"
 #     ./hunyuangraph /media/jiangdie/新加卷/graph_10w/audikw_1.graph 8 > test.txt
 
 #   使用 --kernel-name 替代 --kernel-regex
-sudo -E env "PATH=$PATH" "NVCOMPUTE=$NVCOMPUTE" ncu --set full --kernel-name "set_cadjncy_cadjwgt_subwarp" \
-  ./hunyuangraph /media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 8 1 >> set_cadjncy_cadjwgt_subwarp_ldg.txt
+sudo -E env "PATH=$PATH" "NVCOMPUTE=$NVCOMPUTE" ncu --set full --kernel-name "set_gain_val_warp" \
+  ./hunyuangraph /media/jiangdie/新加卷/graph_10w/hugebubbles-00000.graph 8 1 >> set_gain_val_warp.txt

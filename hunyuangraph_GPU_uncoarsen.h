@@ -210,12 +210,16 @@ void hunyuangraph_kway_project(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 	int nvtxs = graph->nvtxs;
 	hunyuangraph_graph_t *cgraph = graph->coarser;
 
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway, NULL);
+#endif
 	projectback<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_where, cgraph->cuda_where, graph->cuda_cmap, nvtxs);
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway, NULL);
 	uncoarsen_projectback += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+#endif
 }
 
 /*Free graph uncoarsening phase params*/
@@ -437,6 +441,10 @@ void hunyuangraph_malloc_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	int nparts = hunyuangraph_admin->nparts;
 	int nvtxs = graph->nvtxs;
 
+#ifdef TIMER
+	cudaDeviceSynchronize();
+	gettimeofday(&begin_gpu_kway, NULL);
+#endif
 	if(GPU_Memory_Pool)
 	{
 		graph->cuda_opt_pwgts = (int *)lmalloc_with_check(sizeof(int) * nparts, "hunyuangraph_GPU_uncoarsen_SC25_copy: graph->cuda_opt_pwgts");
@@ -465,22 +473,35 @@ void hunyuangraph_malloc_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 		cudaMalloc((void **)&graph->lock, sizeof(char) * nvtxs);
 		cudaMalloc((void **)&graph->pos_move, sizeof(int) * nvtxs);
 	}
+#ifdef TIMER
+	cudaDeviceSynchronize();
+	gettimeofday(&end_gpu_kway, NULL);
+	uncoarsen_gpu_malloc += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+
+	// graph->h_gain_bin = (int *)malloc(sizeof(int) * 13);
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway, NULL);
+#endif
 	init_val<<<(nparts + 31) / 32, 32>>>(nparts, 0, graph->cuda_pwgts);
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway, NULL);
 	uncoarsen_initpwgts += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+#endif
 
 	compute_opt_max_pwgts<<<(nparts + 31) / 32, 32>>>(nparts, graph->tvwgt[0], graph->cuda_opt_pwgts, graph->cuda_maxwgt);
 
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway, NULL);
+#endif
 	calculateSum<<<(nvtxs + 127) / 128, 128, nparts * sizeof(int)>>>(nvtxs, nparts, graph->cuda_pwgts, graph->cuda_where, graph->cuda_vwgt);
+#ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway, NULL);
 	uncoarsen_calculateSum += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+#endif
 
 	// inittpwgts<<<nparts / 32 + 1, 32>>>(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts[0], nparts);
 	// cudaMemcpy(graph->cuda_tpwgts, hunyuangraph_admin->tpwgts, nparts * sizeof(float), cudaMemcpyHostToDevice);
@@ -491,6 +512,10 @@ void hunyuangraph_free_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 	int nvtxs = graph->nvtxs;
 	int nparts = hunyuangraph_admin->nparts;
 
+#ifdef TIMER
+	cudaDeviceSynchronize();
+	gettimeofday(&begin_gpu_kway, NULL);
+#endif
 	if(GPU_Memory_Pool)
 	{
 		lfree_with_check(graph->pos_move, sizeof(int) * nvtxs, "hunyuangraph_GPU_uncoarsen_SC25_copy: graph->pos_move");
@@ -519,15 +544,19 @@ void hunyuangraph_free_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuan
 		cudaFree(graph->cuda_poverload);
 		cudaFree(graph->cuda_opt_pwgts);
 	}
+#ifdef TIMER
+	cudaDeviceSynchronize();
+	gettimeofday(&end_gpu_kway, NULL);
+	uncoarsen_gpu_free += (end_gpu_kway.tv_sec - begin_gpu_kway.tv_sec) * 1000.0 + (end_gpu_kway.tv_usec - begin_gpu_kway.tv_usec) / 1000.0;
+#endif
+	// free(graph->h_gain_bin);
 }
 
 void hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, hunyuangraph_graph_t *cgraph, int *level)
 {
 	int ori = level[0];
 
-	cudaDeviceSynchronize();
 	compute_edgecut_gpu(cgraph->nvtxs, &cgraph->mincut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
-	cudaDeviceSynchronize();
 
 	while(level[0] >= 0)
 	{
@@ -542,6 +571,7 @@ void hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin_t *hunyuangraph_adm
 		// if(level[0] < ori - 1)
 		// 	exit(0);
 
+		// printf("level=%10d\n", level[0]);
 		if(level[0] == 0)
 			break;
 		
