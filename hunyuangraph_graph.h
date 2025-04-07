@@ -166,6 +166,7 @@ float hunyuangraph_compute_imbalance_cpu(hunyuangraph_graph_t *graph, int *where
 
 	for(i = 0;i < nparts;i++)
 		imbalance = max(imbalance, (float)pwgts[i] / (float)((float)graph->nvtxs / (float)nparts));
+	imbalance -= (IMB - 1.03);
 	return imbalance;
 }
 

@@ -12,7 +12,7 @@ __global__ void Sum_maxmin_pwgts(int *maxwgt, float *tpwgts, int tvwgt, int npar
 	{
 		float result = tpwgts[ii] * tvwgt;
 
-		maxwgt[ii] = int(result * 1.03);
+		maxwgt[ii] = int(result * IMB);
 	}
 }
 
@@ -1826,6 +1826,17 @@ __global__ void exam_partition(int nvtxs, int nparts, int *vwgt, int *xadj, int 
 	}
 }
 
+__global__ void exam_same(int num, int *right, int *check)
+{
+	int ii = blockIdx.x * blockDim.x + threadIdx.x;
+	if(ii >= num)
+		return ;
+	
+	if(right[ii] != check[ii])
+		printf("ii=%10d right=%10d check=%10d\n", ii, right[ii], check[ii]);
+
+}
+
 
 template<class K>
 __global__ void init_val(int length, K val, K *num)
@@ -1886,10 +1897,10 @@ __global__ void select_dest_part(int nvtxs, double filter_ratio, int *dest_cache
 	//finds potential destination as most connected part excluding p
 	for(int j = begin;j < end;j++)
 	{
-		int j_where = gain_where[j];
-		if(j_where == -1)
-			break;
 		int j_conn = gain_val[j];
+		if(j_conn == -1)
+			break;
+		int j_where = gain_where[j];
 		if(j_conn > b_conn && j_where != p)
 		{
 			best = j_where;
@@ -2048,7 +2059,23 @@ __global__ void afterburner_heuristic(int num_pos, int *filter_idx, int *dest_pa
 		select[vertex] = 1;
 }
 
-__global__ void filter_beneficial_moves(int num_pos, char *select, int *new_num_pos, int *filter_idx, int *pos_move, char *lock)
+__global__ void filter_beneficial_moves(int num_pos, char *select, int *new_num_pos, int *filter_idx, int *pos_move)
+{
+	int ii = blockDim.x * blockIdx.x + threadIdx.x;
+	if(ii >= num_pos)
+		return ;
+	
+	int vertex = filter_idx[ii];
+	if(select[vertex] == 1)
+	{
+		int write_ptr = atomicAdd(new_num_pos, 1);
+		pos_move[write_ptr] = vertex;
+		select[vertex] = 0;
+		// printf("vertex=%10d write_ptr=%10d pos_move=%10d\n", vertex, write_ptr, pos_move[write_ptr]);
+	}
+}
+
+__global__ void filter_beneficial_moves_lock(int num_pos, char *select, int *new_num_pos, int *filter_idx, int *pos_move, char *lock)
 {
 	int ii = blockDim.x * blockIdx.x + threadIdx.x;
 	if(ii >= num_pos)
@@ -2143,10 +2170,10 @@ int jetlp(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph,
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm, NULL);
 #endif
-	// select_dest_part<<<(nvtxs + 127) / 128, 128>>>(nvtxs, filter_ratio, graph->dest_cache, graph->dest_part, graph->cuda_where, graph->gain_offset, \
-	// 	graph->gain_val, graph->gain_where, graph->cuda_gain);
-	select_dest_part_filter_vertex<<<(nvtxs + 127) / 128, 128>>>(nvtxs, filter_ratio, graph->dest_cache, graph->dest_part, graph->cuda_where, graph->gain_offset, \
-		graph->gain_val, graph->gain_where, graph->lock, pregain, d_num_pos, filter_idx);
+	select_dest_part<<<(nvtxs + 127) / 128, 128>>>(nvtxs, filter_ratio, graph->dest_cache, graph->dest_part, graph->cuda_where, graph->gain_offset, \
+		graph->gain_val, graph->gain_where, graph->cuda_gain);
+	// select_dest_part_filter_vertex<<<(nvtxs + 127) / 128, 128>>>(nvtxs, filter_ratio, graph->dest_cache, graph->dest_part, graph->cuda_where, graph->gain_offset, \
+	// 	graph->gain_val, graph->gain_where, graph->lock, pregain, d_num_pos, filter_idx);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -2162,7 +2189,7 @@ int jetlp(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph,
 
 	// cudaDeviceSynchronize();
 	// gettimeofday(&begin_gpu_kway_pm, NULL);
-	// filter_potential_vertex<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->dest_part, graph->lock, pregain, graph->cuda_gain, d_num_pos, filter_idx);
+	filter_potential_vertex<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->dest_part, graph->lock, pregain, graph->cuda_gain, d_num_pos, filter_idx);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 	// cudaDeviceSynchronize();
@@ -2234,7 +2261,8 @@ int jetlp(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph,
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm, NULL);
 #endif
-	init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->lock);
+	// init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->lock);
+	init_val<<<(nvtxs + 127) / 128, 128>>>(nvtxs, (char)0, graph->lock);
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway_pm, NULL);
@@ -2243,8 +2271,8 @@ int jetlp(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph,
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm, NULL);
 #endif
-	// filter_beneficial_moves<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->cuda_select, d_num_pos, filter_idx, graph->pos_move);
-	filter_beneficial_moves<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->cuda_select, d_num_pos, filter_idx, graph->pos_move, graph->lock);
+	filter_beneficial_moves<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->cuda_select, d_num_pos, filter_idx, graph->pos_move);
+	// filter_beneficial_moves_lock<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->cuda_select, d_num_pos, filter_idx, graph->pos_move, graph->lock);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -2289,7 +2317,7 @@ int jetlp(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph,
 
 	// cudaDeviceSynchronize();
 	// gettimeofday(&begin_gpu_kway_pm, NULL);
-	// set_lock<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->pos_move, graph->lock);
+	set_lock<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->pos_move, graph->lock);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 	// cudaDeviceSynchronize();
@@ -2477,53 +2505,54 @@ __global__ void assign_move_scores_part2(const int nvtxs, int *where, int *pover
 __global__ void assign_move_scores_part3(const int num_pos, int *least_bad_moves, int *balance_scan, int *vwgt)
 {
 	int ii = blockDim.x * blockIdx.x + threadIdx.x;
-	if(ii >= num_pos)
+	if(ii > num_pos)
 		return ;
 	
-	// printf("ii=%10d vertex=%10d\n", ii, least_bad_moves[ii]);
-	int vertex = least_bad_moves[ii];
-	int wgt_v = vwgt[vertex];
-
-	balance_scan[ii + 1] = wgt_v;
+	if(ii == num_pos)
+		balance_scan[0] = 0;
+	else 
+	{
+		// printf("ii=%10d vertex=%10d\n", ii, least_bad_moves[ii]);
+		int vertex = least_bad_moves[ii];
+		balance_scan[ii + 1] = vwgt[vertex];
+	}
 
 	// printf("ii=%10d balance_scan=%10d\n", ii, balance_scan[ii]);
 }
 
-__global__ void find_score_cutoffs(const int nparts, const int *bucket_offsets, const int *poverload, const int *pwgts, \
-	const int *maxwgt, const int *balance_scan, int *evict_start, int *evict_end, const int sections)
+__global__ void find_score_cutoffs(const int nparts, int *bucket_offsets, int *poverload, int *pwgts, int *maxwgt, int *balance_scan, \
+	int *evict_start, int *evict_end, const int sections)
 {
 	int ii = blockDim.x * blockIdx.x + threadIdx.x;
 	if(ii >= nparts)
 		return ;
 	
 	int idx = ii;
-	const int base = idx * max_buckets * sections;
-    const int bucket_start_base = __ldg(&bucket_offsets[base]);
-    evict_start[idx] = bucket_start_base;  // 合并写入
-	// evict_start[idx] = bucket_offsets[idx * max_buckets * sections];
-
-	if (__ldg(&poverload[idx]) != OverLoaded) 
-	{
-        evict_end[idx] = bucket_start_base;
-        return;
-    }
+	evict_start[idx] = bucket_offsets[idx * max_buckets * sections];
 	
-	const int evict_total = __ldg(&pwgts[idx]) - __ldg(&maxwgt[idx]);
-    const int bucket_end = __ldg(&bucket_offsets[base + max_buckets * sections]);
-    const int target = __ldg(&balance_scan[bucket_start_base]) + evict_total;
-
-	// 二分查找优化（展开循环 + 位运算）
-    int low = bucket_start_base;
-    int high = bucket_end;
-	while(low + 1 < high)
+	if(poverload[idx] == OverLoaded)
 	{
-        const int mid = (low + high) >> 1;
-        if (mid == low) 
-			break;
-        (__ldg(&balance_scan[mid]) >= target) ? (high = mid) : (low = mid);
-    }
-    evict_end[idx] = high;
+		int evict_total = pwgts[idx] - maxwgt[idx];
+		int bucket_start = bucket_offsets[idx * max_buckets * sections];
+		int bucket_end   = bucket_offsets[(idx + 1) * max_buckets * sections];
+		int find = balance_scan[bucket_start] + evict_total;
+		int mid = (bucket_start + bucket_end) / 2;
 
+		while(bucket_start + 1 < bucket_end)
+		{
+			if(balance_scan[mid] >= find)
+				bucket_end = mid;
+			else
+				bucket_start = mid;
+			mid = (bucket_start + bucket_end) / 2;
+		}
+
+		evict_end[idx] = bucket_end;
+	}
+	else
+		evict_end[idx] = bucket_offsets[idx * max_buckets * sections];
+	
+	// printf("idx=%10d evict_start=%10d evict_end=%10d\n", idx, evict_start[idx], evict_end[idx]);
 }
 
 __global__ void filter_below_cutoffs(const int num_pos, int *least_bad_moves, int *where, int *evict_end, int *d_num_pos, int *pos_move)
@@ -2546,13 +2575,16 @@ __global__ void filter_below_cutoffs(const int num_pos, int *least_bad_moves, in
 __global__ void balance_scan_evicted_vertices(const int num_pos, int *pos_move, int *vwgt, int *balance_scan)
 {
 	int ii = blockDim.x * blockIdx.x + threadIdx.x;
-	if(ii >= num_pos)
+	if(ii > num_pos)
 		return ;
-
-	int vertex = pos_move[ii];
-	int wgt_v = vwgt[vertex];
-
-	balance_scan[ii + 1] = wgt_v;
+	
+	if(ii == num_pos)
+		balance_scan[0] = 0;
+	else
+	{
+		int vertex = pos_move[ii];
+		balance_scan[ii + 1] = vwgt[vertex];
+	}
 
 	// printf("ii=%10d balance_scan=%10d\n", ii, balance_scan[ii]);
 }
@@ -2573,11 +2605,14 @@ __global__ void cookie_cutter(int *evict_start, int *evict_end, const int nparts
 		int start = evict_start[p];
 		int end = num_pos;
 		int find = balance_scan[start] + select;
-		int mid = (start + end) >> 1;
+		int mid = (start + end) / 2;
 		while(start + 1 < end)
 		{
-			(__ldg(&balance_scan[mid]) >= find) ? (end = mid) : (start = mid);
-			mid = (start + end) >> 1;
+			if(balance_scan[mid] >= find)
+				end = mid;
+			else
+				start = mid;
+			mid = (start + end) / 2;
 		}
 
 		if(abs(balance_scan[end] - find) < abs(balance_scan[start] - find))
@@ -2603,11 +2638,11 @@ __global__ void select_dest_parts_rs(const int num_pos, const int nparts, int *e
 	p--;
 
 	int vertex = pos_move[ii];
-	// if(ii < evict_end[p])
-	// 	dest_part[vertex] = p;
-	// else
-	// 	dest_part[vertex] = where[vertex];
-	dest_part[vertex] = (ii < evict_end[p]) ? p : where[vertex];
+	if(ii < evict_end[p])
+		dest_part[vertex] = p;
+	else
+		dest_part[vertex] = where[vertex];
+	// dest_part[vertex] = (ii < evict_end[p]) ? p : where[vertex];
 	
 	// printf("vertex=%10d where=%10d p=%10d evict_start=%10d evict_end=%10d dest_part=%10d\n", vertex, where[vertex], p, evict_start[p], evict_end[p], dest_part[vertex]);
 }
@@ -2798,8 +2833,8 @@ int jetrs(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_rs, NULL);
 #endif
-	cudaMemset(balance_scan, 0, sizeof(int));
-	assign_move_scores_part3<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, least_bad_moves, balance_scan, graph->cuda_vwgt);
+	// cudaMemset(balance_scan, 0, sizeof(int));
+	assign_move_scores_part3<<<(h_num_pos + 1 + 127) / 128, 128>>>(h_num_pos, least_bad_moves, balance_scan, graph->cuda_vwgt);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -2842,7 +2877,7 @@ int jetrs(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_rs, NULL);
 #endif
-	filter_below_cutoffs<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, least_bad_moves, graph->cuda_where, evict_end, d_num_pos, graph->pos_move);
+	filter_below_cutoffs<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, least_bad_moves, graph->cuda_where, evict_end, d_num_pos, graph->pos_move);	
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -2894,8 +2929,8 @@ int jetrs(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_rs, NULL);
 #endif
-	cudaMemset(balance_scan, 0, sizeof(int));
-	balance_scan_evicted_vertices<<<(h_num_pos + 127) / 128, 128>>>(h_num_pos, graph->pos_move, graph->cuda_vwgt, balance_scan);
+	// cudaMemset(balance_scan, 0, sizeof(int));
+	balance_scan_evicted_vertices<<<(h_num_pos + 1 + 127) / 128, 128>>>(h_num_pos, graph->pos_move, graph->cuda_vwgt, balance_scan);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -3248,22 +3283,22 @@ int jetrw(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 #endif
 	if(GPU_Memory_Pool)
 	{
-		// max_dest = (int *)lmalloc_with_check(sizeof(int) * nparts, "jetrw: max_dest");
+		max_dest = (int *)lmalloc_with_check(sizeof(int) * nparts, "jetrw: max_dest");
 		bucket_offsets = (int *)lmalloc_with_check(sizeof(int) * (t_minibuckets + 1), "jetrw: bucket_offsets");
 		total_undersized = (int *)lmalloc_with_check(sizeof(int), "jetrw: total_undersized");
 		undersized = (int *)lmalloc_with_check(sizeof(int) * nparts, "jetrw: undersized");
-		// save_gains = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "jetrw: save_gains");
+		save_gains = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "jetrw: save_gains");
 		bid = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "jetrw: bid");
 		vscore = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "jetrw: vscore");
 		d_num_pos = (int *)lmalloc_with_check(sizeof(int), "jetrw: d_num_pos");
 	}
 	else
 	{
-		// cudaMalloc((void **)&max_dest, sizeof(int) * nparts);
+		cudaMalloc((void **)&max_dest, sizeof(int) * nparts);
 		cudaMalloc((void **)&bucket_offsets, sizeof(int) * (t_minibuckets + 1));
 		cudaMalloc((void **)&total_undersized, sizeof(int));
 		cudaMalloc((void **)&undersized, sizeof(int) * nparts);
-		// cudaMalloc((void **)&save_gains, sizeof(int) * nvtxs);
+		cudaMalloc((void **)&save_gains, sizeof(int) * nvtxs);
 		cudaMalloc((void **)&bid, sizeof(int) * nvtxs);
 		cudaMalloc((void **)&vscore, sizeof(int) * nvtxs);
 		cudaMalloc((void **)&d_num_pos, sizeof(int));
@@ -3288,13 +3323,13 @@ int jetrw(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_rw, NULL);
 #endif
-	// set_maxdest<<<(nparts + 31) / 32, 32>>>(nparts, max_dest, graph->cuda_maxwgt);
+	set_maxdest<<<(nparts + 31) / 32, 32>>>(nparts, max_dest, graph->cuda_maxwgt);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 	// printf("set_maxdest end\n");
 
-	// init_undersized_parts_list<<<(nparts + 31) / 32, 32>>>(nparts, graph->cuda_pwgts, max_dest, undersized, total_undersized);
-	set_maxdest_init_undersized_parts_list<<<(nparts + 31) / 32, 32>>>(nparts, graph->cuda_maxwgt, graph->cuda_pwgts, undersized, total_undersized);
+	init_undersized_parts_list<<<(nparts + 31) / 32, 32>>>(nparts, graph->cuda_pwgts, max_dest, undersized, total_undersized);
+	// set_maxdest_init_undersized_parts_list<<<(nparts + 31) / 32, 32>>>(nparts, graph->cuda_maxwgt, graph->cuda_pwgts, undersized, total_undersized);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -3306,12 +3341,12 @@ int jetrw(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_rw, NULL);
 #endif
-	// select_dest_parts_rw<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->cuda_vwgt, graph->cuda_pwgts, graph->cuda_maxwgt, \
-	// 	graph->cuda_opt_pwgts, graph->gain_offset, graph->gain_where, graph->gain_val, graph->dest_part, save_gains, undersized, \
-	// 	total_undersized);
-	select_dest_parts_assign_move_scores<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->cuda_vwgt, graph->cuda_pwgts, graph->cuda_maxwgt, \
-		graph->cuda_opt_pwgts, graph->gain_offset, graph->gain_where, graph->gain_val, graph->dest_part, undersized, \
-		total_undersized, bid, sections, &bucket_offsets[1], vscore);
+	select_dest_parts_rw<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->cuda_vwgt, graph->cuda_pwgts, graph->cuda_maxwgt, \
+		graph->cuda_opt_pwgts, graph->gain_offset, graph->gain_where, graph->gain_val, graph->dest_part, save_gains, undersized, \
+		total_undersized);
+	// select_dest_parts_assign_move_scores<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->cuda_vwgt, graph->cuda_pwgts, graph->cuda_maxwgt, \
+	// 	graph->cuda_opt_pwgts, graph->gain_offset, graph->gain_where, graph->gain_val, graph->dest_part, undersized, \
+	// 	total_undersized, bid, sections, &bucket_offsets[1], vscore);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 #ifdef TIMER
@@ -3328,8 +3363,8 @@ int jetrw(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 
 	// cudaDeviceSynchronize();
 	// gettimeofday(&begin_gpu_kway_rw, NULL);
-	// assign_move_scores<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->dest_part, bid, save_gains, graph->cuda_vwgt, sections, \
-	// 	&bucket_offsets[1], vscore);
+	assign_move_scores<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_where, graph->dest_part, bid, save_gains, graph->cuda_vwgt, sections, \
+		&bucket_offsets[1], vscore);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
 	// cudaDeviceSynchronize();
@@ -3381,22 +3416,22 @@ int jetrw(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
 		lfree_with_check(d_num_pos, sizeof(int), "jetrw: d_num_pos");
 		lfree_with_check(vscore, sizeof(int) * nvtxs, "jetrw: vscore");
 		lfree_with_check(bid, sizeof(int) * nvtxs, "jetrw: bid");
-		// lfree_with_check(save_gains, sizeof(int) * nvtxs, "jetrw: save_gains");
+		lfree_with_check(save_gains, sizeof(int) * nvtxs, "jetrw: save_gains");
 		lfree_with_check(undersized, sizeof(int) * nparts, "jetrw: undersized");
 		lfree_with_check(total_undersized, sizeof(int), "jetrw: total_undersized");
 		lfree_with_check(bucket_offsets, sizeof(int) * (t_minibuckets + 1), "jetrw: bucket_offsets");
-		// lfree_with_check(max_dest, sizeof(int) * nparts, "jetrw: max_dest");
+		lfree_with_check(max_dest, sizeof(int) * nparts, "jetrw: max_dest");
 	}
 	else
 	{
 		cudaFree(d_num_pos);
 		cudaFree(vscore);
 		cudaFree(bid);
-		// cudaFree(save_gains);
+		cudaFree(save_gains);
 		cudaFree(undersized);
 		cudaFree(total_undersized);
 		cudaFree(bucket_offsets);
-		// cudaFree(max_dest);
+		cudaFree(max_dest);
 	}
 #ifdef TIMER
 	cudaDeviceSynchronize();
@@ -3497,6 +3532,8 @@ __global__ void reset_conn_DS_warp(int nvtxs, int nparts, int *mark, int *gain_o
 	int vertex = warp_id;
 	if(mark[vertex] == 0)
 		return ;
+	
+	dest_cache[vertex] = -1;
 
 	int begin = xadj[vertex];
 	int end   = xadj[vertex + 1];
@@ -3511,12 +3548,31 @@ __global__ void reset_conn_DS_warp(int nvtxs, int nparts, int *mark, int *gain_o
 	}
 	__syncwarp();
 
+	// 	for(int i = lane_id;i < nparts;i += 32)
+	// 	{
+	// 		int tmp_val = vals[i];
+	// 		printf("vertex=%10d i=%10d lane_id=%10d gain_where=%10d vals=%10d\n", vertex, i, lane_id, i, tmp_val);
+	// 	}
+	// __syncwarp();
+
 	for(int i = lane_id;i < nparts;i += 32)
 		sub[i] = (vals[i] == 0) ? 1 : 0;
 	__syncwarp();
 
+	// 	for(int i = lane_id;i < nparts;i += 32)
+	// 	{
+	// 		printf("scan_prefixsum begin vertex=%10d i=%10d sub=%10d\n", vertex, i, sub[i]);
+	// 	}
+	// __syncwarp();
+
 	scan_prefixsum(lane_id, nparts, sub, vertex);
 	__syncwarp();
+
+	// 	for(int i = lane_id;i < nparts;i += 32)
+	// 	{
+	// 		printf("scan_prefixsum end   vertex=%10d i=%10d sub=%10d\n", vertex, i, sub[i]);
+	// 	}
+	// __syncwarp();
 
 	for(int i = lane_id;i < nparts;i += 32)
 	{
@@ -3528,11 +3584,25 @@ __global__ void reset_conn_DS_warp(int nvtxs, int nparts, int *mark, int *gain_o
 		}
 	}
 
+	// __syncwarp();
+	// 	for(int i = gain_begin + lane_id;i < gain_end;i += 32)
+	// 	{
+	// 		printf("mid gain_end - gain_begin=%10d vertex=%10d i=%10d gain_where=%10d gain_vals=%10d ptr=%10d offset=%10d\n", gain_end - gain_begin, vertex, i, gain_where[i], gain_val[i], gain_begin + nparts - sub[nparts - 1], sub[nparts - 1]);
+	// 	}
+	// __syncwarp();
+
 	for(int i = gain_begin + nparts - sub[nparts - 1] + lane_id;i < gain_end;i += 32)
 	{
 		gain_where[i] = -1;
 		gain_val[i] = 0;
 	}
+
+	// __syncwarp();
+	// for(int i = gain_begin + lane_id;i < gain_end;i += 32)
+	// {
+	// 	printf("gain_end - gain_begin=%10d vertex=%10d i=%10d gain_where=%10d gain_vals=%10d\n", gain_end - gain_begin, vertex, i, gain_where[i], gain_val[i]);
+	// }
+
 }
 
 void update_large(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int h_num_pos)
@@ -3540,8 +3610,7 @@ void update_large(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t
 	int nvtxs = graph->nvtxs;
 	int nparts = hunyuangraph_admin->nparts;
 
-	// int *mark, *vals;
-	int *mark;
+	int *mark, *vals;
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm_update, NULL);
@@ -3589,12 +3658,35 @@ void update_large(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm_update, NULL);
 #endif
+
+	/*printf("-------------------------------------------------------------------------------------\n");
+	int gain_size;
+	cudaMemcpy(&gain_size, &graph->gain_offset[nvtxs], sizeof(int), cudaMemcpyDeviceToHost);
+	int *g_val, *g_where;
+	if(GPU_Memory_Pool)
+	{
+		g_val = (int *)lmalloc_with_check(sizeof(int) * gain_size, "k_refine: g_val");
+		g_where = (int *)lmalloc_with_check(sizeof(int) * gain_size, "k_refine: g_where");
+	}
+	else
+	{
+		cudaMalloc((void **)&g_val, sizeof(int) * gain_size);
+		cudaMalloc((void **)&g_where, sizeof(int) * gain_size);
+	}
+	cudaMemcpy(g_val, graph->gain_val, sizeof(int) * gain_size, cudaMemcpyDeviceToDevice);
+	cudaMemcpy(g_where, graph->gain_where, sizeof(int) * gain_size, cudaMemcpyDeviceToDevice);*/
+
 	// reset_conn_DS<<<(nvtxs + 127) / 128, 128>>>(nvtxs, nparts, mark, graph->gain_offset, graph->dest_cache, graph->gain_val, \
 	// 	graph->gain_where, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where, vals);
 	reset_conn_DS_warp<<<(nvtxs + 3) / 4, 128, 8 * nparts * sizeof(int)>>>(nvtxs, nparts, mark, graph->gain_offset, graph->dest_cache, graph->gain_val, \
 		graph->gain_where, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
 	// CHECK(cudaGetLastError());
     // CHECK(cudaDeviceSynchronize());
+
+	// cudaDeviceSynchronize();
+	// exam_gain<<<1, 1>>>(nvtxs, nparts, graph->gain_offset, graph->gain_val, graph->gain_where, graph->cuda_where);
+	// cudaDeviceSynchronize();
+	// printf("-------------------------------------------------------------------------------------\n");
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway_pm_update, NULL);
@@ -3604,6 +3696,38 @@ void update_large(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway_pm_update, NULL);
 #endif
+	
+	/*cudaDeviceSynchronize();
+	reset_conn_DS_warp<<<(nvtxs + 3) / 4, 128, 8 * nparts * sizeof(int)>>>(nvtxs, nparts, mark, graph->gain_offset, graph->dest_cache, g_val, \
+		g_where, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
+	CHECK(cudaGetLastError());
+    CHECK(cudaDeviceSynchronize());
+	cudaDeviceSynchronize();
+	
+	// cudaDeviceSynchronize();
+	// exam_gain<<<1, 1>>>(nvtxs, nparts, graph->gain_offset, g_val, g_where, graph->cuda_where);
+	// cudaDeviceSynchronize();
+	
+	printf("update_large reset_conn_DS_warp\n");
+	cudaDeviceSynchronize();
+	exam_same<<<(gain_size + 127) / 128, 128>>>(gain_size, graph->gain_val, g_val);
+	cudaDeviceSynchronize();
+	printf("-------------------------------------------------------------------------------------\n");
+	cudaDeviceSynchronize();
+	exam_same<<<(gain_size + 127) / 128, 128>>>(gain_size, graph->gain_where, g_where);
+	cudaDeviceSynchronize();
+
+	if(GPU_Memory_Pool)
+	{
+		lfree_with_check(g_where, sizeof(int) * gain_size, "k_refine: g_where");
+		lfree_with_check(g_val, sizeof(int) * gain_size, "k_refine: g_val");
+	}
+	else
+	{
+		cudaFree(g_where);
+		cudaFree(g_val);
+	}*/
+
 	if(GPU_Memory_Pool)
 	{
 		// lfree_with_check(vals, sizeof(int) * nvtxs * nparts, "update_large: vals");
@@ -3614,6 +3738,8 @@ void update_large(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t
 		// cudaFree(vals);
 		cudaFree(mark);
 	}
+
+	// exit(0)
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway_pm_update, NULL);
@@ -3703,8 +3829,7 @@ __global__ void count_edgecut_change1(int num_pos, int nparts, int *pos_move, in
 		int b_con = lookup(gain_val + begin, gain_where + begin, best, end - begin);
 		change = b_con - p_con;
 
-		// if(blockIdx.x == 0)
-		// 	printf("ii=%10d veretx=%10d p=%10d best=%10d p_con=%10d b_con=%10d change=%10d\n", ii, vertex, p, best, p_con, b_con, change);
+		// printf("veretx=%10d p=%10d best=%10d p_con=%10d b_con=%10d change=%10d\n", vertex, p, best, p_con, b_con, change);
 	}
 	__syncthreads();
 	
@@ -4233,17 +4358,6 @@ __global__ void set_gain_val_warp(const int nvtxs, const int nparts, int *xadj, 
 
 }
 
-__global__ void exam_same(int num, int *right, int *check)
-{
-	int ii = blockIdx.x * blockDim.x + threadIdx.x;
-	if(ii >= num)
-		return ;
-	
-	if(right[ii] != check[ii])
-		printf("ii=%10d right=%10d check=%10d\n", ii, right[ii], check[ii]);
-
-}
-
 void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph, int *level)
 {
 	int nparts = hunyuangraph_admin->nparts;
@@ -4267,15 +4381,15 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 		d_best_imb = (float *)lmalloc_with_check(sizeof(float), "d_best_imb");
 	else
 		cudaMalloc((void **)&d_best_imb, sizeof(float));
-	
-	int block_size = next_pow2(nparts);
-	if(block_size > 1024)
-		compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
-	else 
-	{
-		block_size = min(1024, next_pow2(nparts)); 
-		compute_imb<<<1, block_size, block_size * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
-	}
+	compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
+	// int block_size = next_pow2(nparts);
+	// if(block_size > 1024)
+	// 	compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
+	// else 
+	// {
+	// 	block_size = min(1024, next_pow2(nparts)); 
+	// 	compute_imb<<<1, block_size, block_size * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
+	// }
 	cudaMemcpy(&h_best_imb, d_best_imb, sizeof(float), cudaMemcpyDeviceToHost);
 
 	if(GPU_Memory_Pool)
@@ -4293,13 +4407,9 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 	gettimeofday(&begin_gpu_kway, NULL);
 #endif
 	if(GPU_Memory_Pool)
-	{
 		best_where = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "best_where");
-	}
 	else
-	{
 		cudaMalloc((void **)&best_where, sizeof(int) * nvtxs);
-	}
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway, NULL);
@@ -4393,17 +4503,13 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 #endif
 	// printf("set_gain_val_warp end\n");
 	
-	/* // exit(0);
+	// exit(0);
 
-	if(GPU_Memory_Pool)
+	/*if(GPU_Memory_Pool)
 		lfree_with_check(vals, sizeof(int) * nvtxs * nparts, "vals");
 	else
 		cudaFree(vals);
 	
-	// cudaDeviceSynchronize();
-	// exam_gain<<<1, 1>>>(nvtxs, nparts, graph->gain_offset, graph->gain_val, graph->gain_where, graph->cuda_where);
-	// cudaDeviceSynchronize();
-
 	// cudaDeviceSynchronize();
 	// exam_gain<<<1, 1>>>(nvtxs, nparts, graph->gain_offset, graph->gain_val, graph->gain_where, graph->cuda_where);
 	// cudaDeviceSynchronize();
@@ -4460,8 +4566,10 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 	gettimeofday(&begin_gpu_kway, NULL);
 #endif
 	init_val<<<(nvtxs + 127) / 128, 128>>>(nvtxs, -1, graph->dest_cache);
-	init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->lock);
-	init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->cuda_select);
+	init_val<<<(nvtxs + 127) / 128, 128>>>(nvtxs, (char)0, graph->lock);
+	init_val<<<(nvtxs + 127) / 128, 128>>>(nvtxs, (char)0, graph->cuda_select);
+	// init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->lock);
+	// init_val<char><<<(nvtxs + 127) / 128, 128>>>(nvtxs, 0, graph->cuda_select);
 #ifdef TIMER
 	cudaDeviceSynchronize();
 	gettimeofday(&end_gpu_kway, NULL);
@@ -4576,15 +4684,15 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 			d_curr_imb = (float *)lmalloc_with_check(sizeof(float), "d_curr_imb");
 		else
 			cudaMalloc((void **)&d_curr_imb, sizeof(float));
-		
-		// int block_size = next_pow2(nparts);
-		if(block_size > 1024)
-			compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
-		else 
-		{
-			// block_size = min(1024, next_pow2(nparts)); 
-			compute_imb<<<1, block_size, block_size * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
-		}
+		compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
+		// // int block_size = next_pow2(nparts);
+		// if(block_size > 1024)
+		// 	compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
+		// else 
+		// {
+		// 	// block_size = min(1024, next_pow2(nparts)); 
+		// 	compute_imb<<<1, block_size, block_size * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
+		// }
 		cudaMemcpy(&h_curr_imb, d_curr_imb, sizeof(float), cudaMemcpyDeviceToHost);
 
 		if(GPU_Memory_Pool)
@@ -4616,7 +4724,7 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 		// else
 		// 	cudaFree(d_curr_imb);
 
-		if(h_best_imb > 1.03 && h_curr_imb < h_best_imb)
+		if(h_best_imb > IMB && h_curr_imb < h_best_imb)
 		{
 			h_best_imb = h_curr_imb;
 			best_cut = graph->mincut;
@@ -4633,7 +4741,7 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
 #endif
 			count = 0;
 		}
-		else if(graph->mincut < best_cut && (h_curr_imb <= 1.03 || h_curr_imb <= h_best_imb))
+		else if(graph->mincut < best_cut && (h_curr_imb <= IMB || h_curr_imb <= h_best_imb))
 		{
 			if(graph->mincut < tol * best_cut)
 				count = 0;

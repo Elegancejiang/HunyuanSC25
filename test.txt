@@ -1,5 +1,0 @@
-wb-edu                  best_edgecut=343776     246887
-audikw_1                best_edgecut=785249     763280
-hugebubbles-00000       best_edgecut=10433      9562
-cage15                  best_edgecut=1891398    1709860
-amazon-2008             best_edgecut=193073     188309

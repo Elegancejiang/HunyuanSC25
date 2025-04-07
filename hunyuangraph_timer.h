@@ -557,15 +557,15 @@ void print_time_uncoarsen()
     printf("Uncoarsen lp                   %10.3lf %7.3lf%\n", uncoarsen_lp, uncoarsen_lp / part_uncoarsen * 100);
     printf("Uncoarsen lp_init                  %10.3lf %7.3lf%\n", lp_init, lp_init / uncoarsen_lp * 100);
     printf("Uncoarsen lp_select_dest_part      %10.3lf %7.3lf%\n", lp_select_dest_part, lp_select_dest_part / uncoarsen_lp * 100);
-    // printf("Uncoarsen lp_filter_potential      %10.3lf %7.3lf%\n", lp_filter_potential_vertex, lp_filter_potential_vertex / uncoarsen_lp * 100);
+    printf("Uncoarsen lp_filter_potential      %10.3lf %7.3lf%\n", lp_filter_potential_vertex, lp_filter_potential_vertex / uncoarsen_lp * 100);
     printf("Uncoarsen lp_afterburner_heuristic %10.3lf %7.3lf%\n", lp_afterburner_heuristic, lp_afterburner_heuristic / uncoarsen_lp * 100);
     printf("Uncoarsen lp_filter_beneficial_    %10.3lf %7.3lf%\n", lp_filter_beneficial_moves, lp_filter_beneficial_moves / uncoarsen_lp * 100);
-    // printf("Uncoarsen lp_set_lock              %10.3lf %7.3lf%\n", lp_set_lock, lp_set_lock / uncoarsen_lp * 100);
+    printf("Uncoarsen lp_set_lock              %10.3lf %7.3lf%\n", lp_set_lock, lp_set_lock / uncoarsen_lp * 100);
     printf("Uncoarsen rw                   %10.3lf %7.3lf%\n", uncoarsen_rw, uncoarsen_rw / part_uncoarsen * 100);
     printf("Uncoarsen rw_init                  %10.3lf %7.3lf%\n", rw_init, rw_init / uncoarsen_rw * 100);
     printf("Uncoarsen rw_parts                 %10.3lf %7.3lf%\n", rw_parts, rw_parts / uncoarsen_rw * 100);
     printf("Uncoarsen rw_select_dest_parts     %10.3lf %7.3lf%\n", rw_select_dest_parts, rw_select_dest_parts / uncoarsen_rw * 100);
-    // printf("Uncoarsen rw_assign_move_scores    %10.3lf %7.3lf%\n", rw_assign_move_scores, rw_assign_move_scores / uncoarsen_rw * 100);
+    printf("Uncoarsen rw_assign_move_scores    %10.3lf %7.3lf%\n", rw_assign_move_scores, rw_assign_move_scores / uncoarsen_rw * 100);
     printf("Uncoarsen rw_prefixsum             %10.3lf %7.3lf%\n", rw_prefixsum, rw_prefixsum / uncoarsen_rw * 100);
     printf("Uncoarsen rw_filter_scores_        %10.3lf %7.3lf%\n", rw_filter_scores_below_cutoff, rw_filter_scores_below_cutoff / uncoarsen_rw * 100);
     printf("Uncoarsen rs                   %10.3lf %7.3lf%\n", uncoarsen_rs, uncoarsen_rs / part_uncoarsen * 100);

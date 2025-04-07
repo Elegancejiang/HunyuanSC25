@@ -433,7 +433,7 @@ __global__ void compute_opt_max_pwgts(int nparts, int tvwgt, int *opt_pwgts, int
 	
 	int val = (tvwgt / nparts);
 	opt_pwgts[ii] = val;
-	maxwgt[ii] = val * 1.03;
+	maxwgt[ii] = val * IMB;
 }
 
 void hunyuangraph_malloc_krefine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *graph)
@@ -569,7 +569,7 @@ void hunyuangraph_GPU_uncoarsen_SC25_copy(hunyuangraph_admin_t *hunyuangraph_adm
 		hunyuangraph_free_krefine(hunyuangraph_admin, cgraph);
 
 		// if(level[0] < ori - 1)
-		// 	exit(0);
+			// exit(0);
 
 		// printf("level=%10d\n", level[0]);
 		if(level[0] == 0)
