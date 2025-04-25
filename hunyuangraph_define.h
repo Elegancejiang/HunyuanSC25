@@ -4,7 +4,7 @@
 /*Define functions*/
 // #define ALIGNMENT 4
 #define hunyuangraph_GPU_cacheline 128
-#define SM_NUM 30
+#define SM_NUM 170
 #define IMB 1.04
 #define OverLoaded 1
 #define IDX_MAX   INT32_MAX

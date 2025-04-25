@@ -350,25 +350,25 @@ void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, h
 {
 	Mallocinit_refineinfo(hunyuangraph_admin, cgraph);
 
-	int edgecut;
-	cudaDeviceSynchronize();
-	compute_edgecut_gpu(cgraph->nvtxs, &edgecut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
-	cudaDeviceSynchronize();
-	printf("edgecut:%10d\n", edgecut);
+	// int edgecut;
+	// cudaDeviceSynchronize();
+	compute_edgecut_gpu(cgraph->nvtxs, &cgraph->mincut, cgraph->cuda_xadj, cgraph->cuda_adjncy, cgraph->cuda_adjwgt, cgraph->cuda_where);
+	// cudaDeviceSynchronize();
+	// printf("edgecut:%10d\n", edgecut);
 
-	printf("level=%d nvtxs=%d nedges=%d \n", level[0], cgraph->nvtxs, cgraph->nedges);
-	int h_flag, *d_flag;
-	h_flag = 0;
-	d_flag = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
-	cudaMemcpy(d_flag, &h_flag, sizeof(int), cudaMemcpyHostToDevice);
-	exam_cvwgt<<<(cgraph->nvtxs + 127) / 128, 128>>>(cgraph->nvtxs, hunyuangraph_admin->nparts, cgraph->tvwgt[0], cgraph->cuda_vwgt, d_flag);
-	cudaMemcpy(&h_flag, d_flag, sizeof(int), cudaMemcpyDeviceToHost);
-	lfree_with_check(d_flag, sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
-	if(h_flag == 1)
-	{
-	    printf("hunyuangraph_GPU_coarsen: warning: coarsen graph has a vertex with weight > nvtxs / nparts * 1.03\n");
-	    // break;
-	}
+	// printf("level=%d nvtxs=%d nedges=%d \n", level[0], cgraph->nvtxs, cgraph->nedges);
+	// int h_flag, *d_flag;
+	// h_flag = 0;
+	// d_flag = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+	// cudaMemcpy(d_flag, &h_flag, sizeof(int), cudaMemcpyHostToDevice);
+	// exam_cvwgt<<<(cgraph->nvtxs + 127) / 128, 128>>>(cgraph->nvtxs, hunyuangraph_admin->nparts, cgraph->tvwgt[0], cgraph->cuda_vwgt, d_flag);
+	// cudaMemcpy(&h_flag, d_flag, sizeof(int), cudaMemcpyDeviceToHost);
+	// lfree_with_check(d_flag, sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+	// if(h_flag == 1)
+	// {
+	//     printf("hunyuangraph_GPU_coarsen: warning: coarsen graph has a vertex with weight > nvtxs / nparts * 1.03\n");
+	//     // break;
+	// }
 	hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph, level);
 	// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
 	// float imbalance = hunyuangraph_compute_imbalance_cpu(cgraph, cgraph->cuda_where, hunyuangraph_admin->nparts);
@@ -383,18 +383,18 @@ void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, h
 			cgraph = cgraph->finer;
 			level[0]--;
 
-			int h_flag, *d_flag;
-			h_flag = 0;
-			d_flag = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
-			cudaMemcpy(d_flag, &h_flag, sizeof(int), cudaMemcpyHostToDevice);
-			exam_cvwgt<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, hunyuangraph_admin->nparts, graph->tvwgt[0], graph->cuda_vwgt, d_flag);
-			cudaMemcpy(&h_flag, d_flag, sizeof(int), cudaMemcpyDeviceToHost);
-			lfree_with_check(d_flag, sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
-			if(h_flag == 1)
-			{
-			    printf("hunyuangraph_GPU_coarsen: warning: coarsen graph has a vertex with weight > nvtxs / nparts * 1.03\n");
-			    // break;
-			}
+			// int h_flag, *d_flag;
+			// h_flag = 0;
+			// d_flag = (int *)lmalloc_with_check(sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+			// cudaMemcpy(d_flag, &h_flag, sizeof(int), cudaMemcpyHostToDevice);
+			// exam_cvwgt<<<(graph->nvtxs + 127) / 128, 128>>>(graph->nvtxs, hunyuangraph_admin->nparts, graph->tvwgt[0], graph->cuda_vwgt, d_flag);
+			// cudaMemcpy(&h_flag, d_flag, sizeof(int), cudaMemcpyDeviceToHost);
+			// lfree_with_check(d_flag, sizeof(int), "hunyuangraph_GPU_coarsen: d_flag");
+			// if(h_flag == 1)
+			// {
+			//     printf("hunyuangraph_GPU_coarsen: warning: coarsen graph has a vertex with weight > nvtxs / nparts * 1.03\n");
+			//     // break;
+			// }
 
 			// cudaMalloc((void**)&cgraph->cuda_where, cgraph->nvtxs * sizeof(int));
 
@@ -408,11 +408,11 @@ void hunyuangraph_GPU_uncoarsen_SC25(hunyuangraph_admin_t *hunyuangraph_admin, h
 			// if(cgraph->nvtxs >= 1000)
 			// 	exit(0);
 
-			printf("level=%d nvtxs=%d nedges=%d \n", level[0], cgraph->nvtxs, cgraph->nedges);
+			// printf("level=%d nvtxs=%d nedges=%d \n", level[0], cgraph->nvtxs, cgraph->nedges);
 			hunyuangraph_k_refinement_SC25(hunyuangraph_admin, cgraph, level);
 
-			if(level[0] == 20)
-			exit(0);
+			// if(level[0] == 20)
+			// exit(0);
 			// hunyuangraph_k_refinement(hunyuangraph_admin, cgraph);
 			// hunyuangraph_k_refinement_me(hunyuangraph_admin,cgraph);
 

@@ -39,7 +39,12 @@ int main(int argc, char **argv)
 	int best_edgecut = graph->nedges;
 	int *best_partition = (int *)malloc(sizeof(int) * graph->nvtxs);
 
-	for (int iter = 0; iter < 21; iter++)
+	double best_alltime, best_coarsentime, best_inittime, best_uncoarsentime;
+	best_alltime = 0x3f3f3f3f;
+	best_coarsentime = 0x3f3f3f3f;
+	best_inittime = 0x3f3f3f3f;
+	best_uncoarsentime = 0x3f3f3f3f;
+	for (int iter = 0; iter < 2; iter++)
 	{
 		init_timer();
 
@@ -49,6 +54,15 @@ int main(int argc, char **argv)
 		float imbalance = hunyuangraph_compute_imbalance_cpu(graph, part, nparts);
 
 		print_time_all(graph, part, edgecut, imbalance);
+
+		if(best_alltime > part_all)
+			best_alltime = part_all;
+		if(best_coarsentime > part_coarsen)
+			best_coarsentime = part_coarsen;
+		if(best_inittime > part_init)
+			best_inittime = part_init;
+		if(best_uncoarsentime > part_uncoarsen)
+			best_uncoarsentime = part_uncoarsen;
 #ifdef TIMER
 		print_time_coarsen();
 		print_time_init();
@@ -70,7 +84,16 @@ int main(int argc, char **argv)
 		// 	print_time_uncoarsen();
 	}
 
-	printf("best_edgecut=%d\n", best_edgecut);
+	if(part_uncoarsen < best_alltime - best_coarsentime - best_inittime);
+		part_uncoarsen = best_alltime - best_coarsentime - best_inittime;
+	printf("best_alltime=         %10.3lf\n", best_alltime);
+	printf("best_coarsentime=     %10.3lf\n", best_coarsentime);
+	printf("best_inittime=        %10.3lf\n", best_inittime);
+	printf("best_uncoarsentime=   %10.3lf\n", best_uncoarsentime);
+	
+#ifdef FIGURE14_EDGECUT
+	printf("best_edgecut=         %10d\n", best_edgecut);
+#endif
 
 	// hunyuangraph_writetofile(filename, part, graph->nvtxs, nparts);
 

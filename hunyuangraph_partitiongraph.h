@@ -17,6 +17,17 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 
 	// printf("Coarsen begin\n");
 
+#ifdef FIGURE9_TIME
+	hunyuangraph_admin->time_coarsen = (double *)malloc(sizeof(double) * 100);
+#endif
+
+#ifdef FIGURE10_EXHAUSTIVE
+	goto figure10_exhaustive;
+#endif
+#ifdef DFIGURE10_SAMPLING
+	goto figure10_sampling;
+#endif
+
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_coarsen, NULL);
 	cgraph = hunyuangarph_coarsen(hunyuangraph_admin, graph, &level);
@@ -24,6 +35,7 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 	gettimeofday(&end_part_coarsen, NULL);
 	part_coarsen += (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
 
+	// printf("Coarsen end: level=%d cnvtxs=%d cnedges=%d\n", level, cgraph->nvtxs, cgraph->nedges);
 	// printf("Coarsen end: level=%d cnvtxs=%d cnedges=%d adjwgtsum=%d\n", level, cgraph->nvtxs, cgraph->nedges, compute_graph_adjwgtsum_gpu(graph));
 	if(cgraph->nvtxs >= 100000)
 	{
@@ -31,35 +43,61 @@ void hunyuangraph_kway_partition(hunyuangraph_admin_t *hunyuangraph_admin, hunyu
 		exit(0);
 	}
 
+#ifdef FIGURE9_TIME
+	for(int a = 0;a < level;a++)
+		printf("level=%3d time=%10.3lf ms\n", a+1, hunyuangraph_admin->time_coarsen[a]);
+#endif
+
 	// print_time_coarsen();
 	// print_time_topkfour_match();
 
-	// FILE *fp = fopen("graph.txt","w");
-    // fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
-    // for(int a = 0; a < cgraph->nvtxs; a++)
-    // {
-    // 	fprintf(fp, "%d %d %d\n",cgraph->vwgt[a], cgraph->xadj[a], cgraph->xadj[a + 1]);
-    //     for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
-    //     	fprintf(fp, "%10d ",cgraph->adjncy[b]);
-    //     fprintf(fp, "\n");
-	// 	for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
-    //     	fprintf(fp, "%10d ",cgraph->adjwgt[b]);
-    //     fprintf(fp, "\n");
-    // }
-    // fclose(fp);
+#ifdef FIGURE10_CGRAPH
+	FILE *fp = fopen("graph.txt","w");
+    fprintf(fp, "%d %d 011\n",cgraph->nvtxs,cgraph->nedges / 2);
+    for(int a = 0; a < cgraph->nvtxs; a++)
+    {
+    	fprintf(fp, "%d ",cgraph->vwgt[a]);
+        for(int b = cgraph->xadj[a]; b < cgraph->xadj[a + 1]; b++)
+        	fprintf(fp, "%d %d ",cgraph->adjncy[b] + 1, cgraph->adjwgt[b]);
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 
-	// exit(0);
+#endif
+
+#ifdef FIGURE9_SUM
+	exit(0);
+#endif
+#ifdef FIGURE9_TIME
+	exit(0);
+#endif
+#ifdef FIGURE10_CGRAPH
+	exit(0);
+#endif
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_part_init, NULL);
 	// hunyuangarph_initialpartition(hunyuangraph_admin, cgraph);
 	// hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
-	// cgraph = graph;
+#ifdef FIGURE10_EXHAUSTIVE
+figure10_exhaustive:
+	cgraph = graph;
+#endif
+#ifdef FIGURE10_SAMPLING
+figure10_sampling:
+	cgraph = graph;
+#endif
 	hunyuangraph_gpu_initialpartition(hunyuangraph_admin, cgraph);
 	cudaDeviceSynchronize();
 	gettimeofday(&end_part_init, NULL);
 	part_init += (end_part_init.tv_sec - begin_part_init.tv_sec) * 1000 + (end_part_init.tv_usec - begin_part_init.tv_usec) / 1000.0;
 
+#ifdef FIGURE10_EXHAUSTIVE
+	exit(0);
+#endif
+#ifdef FIGURE10_SAMPLING
+	exit(0);
+#endif
 	// cudaMemcpy(cgraph->where, cgraph->cuda_where, cgraph->nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
 	// for(int i = 0;i < cgraph->nvtxs;i++)
 	// 	printf("%10d %10d\n", i, cgraph->where[i]);
@@ -181,8 +219,15 @@ void hunyuangraph_malloc_original_coarseninfo(hunyuangraph_admin_t *hunyuangraph
 
 	init_vwgt<<<(nvtxs + 127) / 128, 128>>>(graph->cuda_vwgt, nvtxs);
 	init_adjwgt<<<(nedges + 127) / 128, 128>>>(graph->cuda_adjwgt, nedges);
-	// cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
-	// cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
+
+#ifdef FIGURE10_EXHAUSTIVE
+	cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
+	cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
+#endif
+#ifdef FIGURE10_SAMPLING
+	cudaMemcpy(graph->cuda_vwgt,graph->vwgt,nvtxs*sizeof(int),cudaMemcpyHostToDevice);
+	cudaMemcpy(graph->cuda_adjwgt,graph->adjwgt,nedges*sizeof(int),cudaMemcpyHostToDevice);
+#endif
 
 	int *length_bin, *bin_size;
 	if(GPU_Memory_Pool)

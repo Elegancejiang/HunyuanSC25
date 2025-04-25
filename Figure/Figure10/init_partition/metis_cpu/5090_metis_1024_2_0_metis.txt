@@ -1,0 +1,54 @@
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/wb-edu_gpu_1024.graph nparts=2
+      0 edgecut=1312577
+      1 edgecut=1296161
+      2 edgecut=1309402
+      3 edgecut=1299579
+      4 edgecut=1320878
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/amazon-2008_gpu_1024.graph nparts=2
+      0 edgecut=215530
+      1 edgecut=250909
+      2 edgecut=227806
+      3 edgecut=210694
+      4 edgecut=259557
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/vas_stokes_4M_gpu_1024.graph nparts=2
+      0 edgecut=2629537
+      1 edgecut=1058061
+      2 edgecut=1397961
+      3 edgecut=1513851
+      4 edgecut=1715132
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/road_usa_gpu_1024.graph nparts=2
+      0 edgecut=19636
+      1 edgecut=20777
+      2 edgecut=20356
+      3 edgecut=19564
+      4 edgecut=21648
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/nlpkkt120_gpu_1024.graph nparts=2
+      0 edgecut=2038537
+      1 edgecut=2038473
+      2 edgecut=2932931
+      3 edgecut=2039013
+      4 edgecut=2983272
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/Bump_2911_gpu_1024.graph nparts=2
+      0 edgecut=1318885
+      1 edgecut=1307231
+      2 edgecut=1346588
+      3 edgecut=1554192
+      4 edgecut=1316822
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/cage15_gpu_1024.graph nparts=2
+      0 edgecut=2336634
+      1 edgecut=2447437
+      2 edgecut=2539658
+      3 edgecut=2492776
+      4 edgecut=2595231
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/hugebubbles-00000_gpu_1024.graph nparts=2
+      0 edgecut=36573
+      1 edgecut=29680
+      2 edgecut=37491
+      3 edgecut=37991
+      4 edgecut=36190
+filename=/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/init_graphs/kron_g500-logn21_gpu_1024.graph nparts=2
+      0 edgecut=23003128
+      1 edgecut=23003128
+      2 edgecut=23002557
+      3 edgecut=23003128
+      4 edgecut=23003128

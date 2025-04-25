@@ -1,0 +1,2 @@
+Graph Name,metis_time (ms),mt_time (ms),parmetis_time (ms),jet_time (ms),ptscotch_time (ms),mt_KaHip_time (ms),Kaminpar_time (ms),Hunyuan_time (ms)
+Geomean,6407523.650945821,47957686.67670754,54732280.24903548,253773120.66168293,3717917.8240986126,1036738673.8043597,31056581.789126527,1036738673.8043597

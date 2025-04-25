@@ -3842,7 +3842,7 @@ __global__ void exam_answer(int start_num, int *answer)
 {
     for(int i = 0;i < start_num;i++)
         // printf("%7d %10d\n", i, answer[i]);
-        printf("%10d\n", answer[i]);
+        printf("i=%5d edgecut=%10d\n", i, answer[i]);
 }
 
 __global__ void hunyuangraph_gpu_update_where(int nvtxs, int shared_size, int *where, int *pwgts, hunyuangraph_int8_t *num, int best_id)
@@ -3918,7 +3918,7 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     {
         printf("****You are trying to partition too many parts!****\n");
         printf("    nparts=%d nvtxs=%d\n", nparts, graph->nvtxs);
-		exit(0);
+		// exit(0);
     }
 
     int *global_edgecut;
@@ -3943,8 +3943,10 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     }
     // printf("start_num=%d nvtxs=%d\n", start_num, graph->nvtxs);
     //  test
-    // start_num = graph->nvtxs;
-    // sampling = 0;
+#ifdef FIGURE10_EXHAUSTIVE
+    start_num = graph->nvtxs;
+    sampling = 0;
+#endif
 
     
 	//	GPU Bisection
@@ -4168,10 +4170,16 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
 
     // exit(0);
 
-    // cudaDeviceSynchronize();
-    // exam_answer<<<1, 1>>>(start_num, global_edgecut);
-    // cudaDeviceSynchronize();
-    
+#ifdef FIGURE10_EXHAUSTIVE
+    cudaDeviceSynchronize();
+    exam_answer<<<1, 1>>>(start_num, global_edgecut);
+    cudaDeviceSynchronize();
+#endif
+#ifdef FIGURE10_SAMPLING
+    cudaDeviceSynchronize();
+    exam_answer<<<1, 1>>>(start_num, global_edgecut);
+    cudaDeviceSynchronize();
+#endif
     //  select the best where
     int *best_id_gpu, best_id;
     if(GPU_Memory_Pool)
@@ -4265,8 +4273,6 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
     gettimeofday(&end_gpu_bisection, NULL);
     update_answer_gpu_time += (end_gpu_bisection.tv_sec - begin_gpu_bisection.tv_sec) * 1000 + (end_gpu_bisection.tv_usec - begin_gpu_bisection.tv_usec) / 1000.0;
 #endif
-    // exam_answer<<<1, 1>>>(answer);
-
     // exit(0);
 
 	//	SplitGraph
@@ -4290,12 +4296,12 @@ void hunyuangraph_gpu_RecursiveBisection(hunyuangraph_admin_t *hunyuangraph_admi
         if(lgraph->nvtxs < (nparts >> 1))
         {
             printf("lgraph is too small, lgraph->nvtxs=%d should greater than or equal to %d\n", lgraph->nvtxs, (nparts >> 1));
-            exit(0);
+            // exit(0);
         }
         if(rgraph->nvtxs < nparts - (nparts >> 1))
         {
             printf("rgraph is too small, rgraph->nvtxs=%d should greater than or equal to %d\n", rgraph->nvtxs, nparts - (nparts >> 1));
-            exit(0);
+            // exit(0);
         }
 
         // cudaMemcpy(graph->where, graph->cuda_where, sizeof(int) * graph->nvtxs, cudaMemcpyDeviceToHost);

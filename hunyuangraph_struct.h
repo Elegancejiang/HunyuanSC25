@@ -146,6 +146,7 @@ typedef struct hunyuangraph_admin_t {
   hunyuangraph_mcore_t *mcore;    
   size_t nbrpoolsize;      
   size_t nbrpoolcpos;                  
+    double *time_coarsen;
 
 } hunyuangraph_admin_t;
 

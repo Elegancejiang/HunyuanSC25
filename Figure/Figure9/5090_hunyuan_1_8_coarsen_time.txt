@@ -1,0 +1,254 @@
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/wb-edu.graph 9845725 92472210 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7813d6000000
+back_pointer=   0x781a02c99980
+begin partition
+level=  1 time=    22.376 ms
+level=  2 time=    44.444 ms
+level=  3 time=    57.827 ms
+level=  4 time=    64.800 ms
+level=  5 time=    68.943 ms
+level=  6 time=    71.478 ms
+level=  7 time=    73.524 ms
+level=  8 time=    75.049 ms
+level=  9 time=    76.200 ms
+level= 10 time=    77.278 ms
+level= 11 time=    78.398 ms
+level= 12 time=    79.211 ms
+level= 13 time=    80.183 ms
+level= 14 time=    81.158 ms
+level= 15 time=    82.063 ms
+level= 16 time=    82.763 ms
+level= 17 time=    83.563 ms
+level= 18 time=    84.296 ms
+level= 19 time=    85.004 ms
+level= 20 time=    85.611 ms
+level= 21 time=    86.113 ms
+level= 22 time=    86.525 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/amazon-2008.graph 735323 7046944 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7277e6000000
+back_pointer=   0x727e12c99980
+begin partition
+level=  1 time=     1.291 ms
+level=  2 time=     2.293 ms
+level=  3 time=     3.153 ms
+level=  4 time=     4.138 ms
+level=  5 time=     5.020 ms
+level=  6 time=     5.864 ms
+level=  7 time=     6.756 ms
+level=  8 time=     7.580 ms
+level=  9 time=     8.374 ms
+level= 10 time=     9.141 ms
+level= 11 time=     9.880 ms
+level= 12 time=    10.600 ms
+level= 13 time=    11.276 ms
+level= 14 time=    11.895 ms
+level= 15 time=    12.457 ms
+level= 16 time=    12.955 ms
+level= 17 time=    13.328 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/vas_stokes_4M.graph 4382246 195417042 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7abad6000000
+back_pointer=   0x7ac102c99980
+begin partition
+level=  1 time=    15.964 ms
+level=  2 time=    29.723 ms
+level=  3 time=    37.700 ms
+level=  4 time=    41.948 ms
+level=  5 time=    44.161 ms
+level=  6 time=    45.560 ms
+level=  7 time=    46.438 ms
+level=  8 time=    47.143 ms
+level=  9 time=    47.911 ms
+level= 10 time=    48.618 ms
+level= 11 time=    49.265 ms
+level= 12 time=    49.904 ms
+level= 13 time=    50.492 ms
+level= 14 time=    51.044 ms
+level= 15 time=    51.585 ms
+level= 16 time=    52.103 ms
+level= 17 time=    52.626 ms
+level= 18 time=    53.134 ms
+level= 19 time=    53.512 ms
+level= 20 time=    53.968 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/road_usa.graph 23947347 57708624 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7d2446000000
+back_pointer=   0x7d2a72c99980
+begin partition
+level=  1 time=    13.671 ms
+level=  2 time=    27.299 ms
+level=  3 time=    35.742 ms
+level=  4 time=    40.999 ms
+level=  5 time=    44.478 ms
+level=  6 time=    46.414 ms
+level=  7 time=    47.882 ms
+level=  8 time=    48.774 ms
+level=  9 time=    49.544 ms
+level= 10 time=    50.175 ms
+level= 11 time=    50.781 ms
+level= 12 time=    51.291 ms
+level= 13 time=    51.766 ms
+level= 14 time=    52.243 ms
+level= 15 time=    52.729 ms
+level= 16 time=    53.210 ms
+level= 17 time=    53.717 ms
+level= 18 time=    54.261 ms
+level= 19 time=    54.777 ms
+level= 20 time=    55.324 ms
+level= 21 time=    55.863 ms
+level= 22 time=    56.394 ms
+level= 23 time=    56.895 ms
+level= 24 time=    57.376 ms
+level= 25 time=    57.757 ms
+level= 26 time=    58.213 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/nlpkkt120.graph 3542400 93303392 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7a3c18000000
+back_pointer=   0x7a4244c99980
+begin partition
+level=  1 time=     8.355 ms
+level=  2 time=    17.730 ms
+level=  3 time=    24.188 ms
+level=  4 time=    28.473 ms
+level=  5 time=    31.039 ms
+level=  6 time=    32.736 ms
+level=  7 time=    34.072 ms
+level=  8 time=    35.216 ms
+level=  9 time=    36.280 ms
+level= 10 time=    37.540 ms
+level= 11 time=    38.739 ms
+level= 12 time=    40.106 ms
+level= 13 time=    41.309 ms
+level= 14 time=    42.098 ms
+level= 15 time=    42.804 ms
+level= 16 time=    43.435 ms
+level= 17 time=    44.006 ms
+level= 18 time=    44.423 ms
+level= 19 time=    44.889 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/Bump_2911.graph 2911419 124818480 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7c7054000000
+back_pointer=   0x7c7680c99980
+begin partition
+level=  1 time=     8.841 ms
+level=  2 time=    14.807 ms
+level=  3 time=    18.027 ms
+level=  4 time=    19.291 ms
+level=  5 time=    20.038 ms
+level=  6 time=    20.642 ms
+level=  7 time=    21.180 ms
+level=  8 time=    21.682 ms
+level=  9 time=    22.167 ms
+level= 10 time=    22.687 ms
+level= 11 time=    23.196 ms
+level= 12 time=    23.711 ms
+level= 13 time=    24.225 ms
+level= 14 time=    24.749 ms
+level= 15 time=    25.238 ms
+level= 16 time=    25.711 ms
+level= 17 time=    26.188 ms
+level= 18 time=    26.552 ms
+level= 19 time=    27.003 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/cage15.graph 5154859 94044692 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7c7e94000000
+back_pointer=   0x7c84c0c99980
+begin partition
+level=  1 time=     7.743 ms
+level=  2 time=    16.014 ms
+level=  3 time=    22.152 ms
+level=  4 time=    26.444 ms
+level=  5 time=    29.465 ms
+level=  6 time=    31.547 ms
+level=  7 time=    33.080 ms
+level=  8 time=    34.250 ms
+level=  9 time=    35.164 ms
+level= 10 time=    36.194 ms
+level= 11 time=    37.096 ms
+level= 12 time=    37.855 ms
+level= 13 time=    38.568 ms
+level= 14 time=    39.221 ms
+level= 15 time=    39.844 ms
+level= 16 time=    40.414 ms
+level= 17 time=    40.936 ms
+level= 18 time=    41.324 ms
+level= 19 time=    41.788 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/hugebubbles-00000.graph 18318143 54940162 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7a7842000000
+back_pointer=   0x7a7e6ec99980
+begin partition
+level=  1 time=     6.268 ms
+level=  2 time=    10.550 ms
+level=  3 time=    14.374 ms
+level=  4 time=    17.469 ms
+level=  5 time=    19.153 ms
+level=  6 time=    20.026 ms
+level=  7 time=    20.655 ms
+level=  8 time=    21.173 ms
+level=  9 time=    21.646 ms
+level= 10 time=    22.070 ms
+level= 11 time=    22.591 ms
+level= 12 time=    23.075 ms
+level= 13 time=    23.541 ms
+level= 14 time=    23.993 ms
+level= 15 time=    24.451 ms
+level= 16 time=    24.926 ms
+level= 17 time=    25.416 ms
+level= 18 time=    25.898 ms
+level= 19 time=    26.393 ms
+level= 20 time=    26.914 ms
+level= 21 time=    27.407 ms
+level= 22 time=    27.867 ms
+level= 23 time=    28.234 ms
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/kron_g500-logn21.graph 2097152 182081864 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x799652000000
+back_pointer=   0x799c7ec99980
+begin partition
+level=  1 time=    92.092 ms
+level=  2 time=   188.314 ms
+level=  3 time=   285.951 ms
+level=  4 time=   362.763 ms
+level=  5 time=   422.599 ms
+level=  6 time=   469.043 ms
+level=  7 time=   510.546 ms
+level=  8 time=   541.815 ms
+level=  9 time=   560.645 ms
+level= 10 time=   569.142 ms
+level= 11 time=   572.315 ms
+level= 12 time=   573.662 ms
+level= 13 time=   574.497 ms
+level= 14 time=   575.136 ms
+level= 15 time=   575.667 ms
+level= 16 time=   576.126 ms
+level= 17 time=   576.570 ms

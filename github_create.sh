@@ -8,4 +8,6 @@ git branch -M main
 # 移除旧的远程仓库
 git remote remove origin
 git remote add origin git@github.com:Elegancejiang/HunyuanGraph_SC25_0.0.0.git
+# 更改远程仓库
+git remote set-url origin git@github.com:Elegancejiang/HunyuanSC25.git
 git push -u origin main

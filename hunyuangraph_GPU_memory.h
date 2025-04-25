@@ -51,7 +51,8 @@ void Malloc_GPU_Memory(size_t nvtxs, size_t nedges)
     // size_t usableMem = totalMem - freeMem;
 
     // 计算剩余的部分显存大小
-    size_t remainingMem = freeMem / 5 * 4;
+    // size_t remainingMem = freeMem - nedges * 3 * sizeof(int);
+	size_t remainingMem = freeMem / 5 * 4;
 
     // 对齐缓存行
     if (remainingMem % hunyuangraph_GPU_cacheline != 0)

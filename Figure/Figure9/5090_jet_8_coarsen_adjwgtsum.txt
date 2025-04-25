@@ -1,0 +1,527 @@
+Reading 740596403 bytes from /home/lyj/graph_10w/wb-edu.graph
+Read graph from /home/lyj/graph_10w/wb-edu.graph in 0.632s
+vertices: 9845725; edges: 46236105
+level=0 nvtxs=9845725 adjwgt_sum=92472210
+level=1 nvtxs=5513032 adjwgt_sum=87446076
+level=2 nvtxs=3207961 adjwgt_sum=81788226
+level=3 nvtxs=1934431 adjwgt_sum=75006232
+level=4 nvtxs=1202501 adjwgt_sum=67393890
+level=5 nvtxs=682789 adjwgt_sum=59554546
+level=6 nvtxs=391864 adjwgt_sum=51722172
+level=7 nvtxs=225924 adjwgt_sum=44388298
+level=8 nvtxs=130943 adjwgt_sum=37438546
+level=9 nvtxs=76155 adjwgt_sum=31079050
+level=10 nvtxs=44333 adjwgt_sum=24877490
+level=11 nvtxs=25881 adjwgt_sum=18933212
+level=12 nvtxs=15143 adjwgt_sum=13453384
+level=13 nvtxs=8897 adjwgt_sum=9216616
+level=14 nvtxs=5236 adjwgt_sum=6473792
+level=15 nvtxs=3091 adjwgt_sum=4952312
+level=16 nvtxs=1831 adjwgt_sum=3893320
+level=17 nvtxs=1082 adjwgt_sum=3151134
+level=18 nvtxs=644 adjwgt_sum=2551408
+level=19 nvtxs=380 adjwgt_sum=2249502
+level=20 nvtxs=236 adjwgt_sum=2046818
+level=21 nvtxs=145 adjwgt_sum=1866046
+level=22 nvtxs=87 adjwgt_sum=1769210
+level=23 nvtxs=51 adjwgt_sum=1666542
+Initial 709937 0.053520 51
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+23    710916          0.050103  51           940             0.001112              13               0             0.000071               
+22    711359          0.047784  87           2684            0.000817              13               0             0.000059               
+21    711523          0.040818  145          8036            0.001344              14               0             0.000092               
+20    699530          0.026958  236          20522           0.002109              25               6             0.000082               
+19    690105          0.020582  380          49408           0.002450              29               7             0.000083               
+18    667891          0.028949  644          109260          0.001686              20               5             0.000082               
+17    646165          0.029556  1082         196102          0.002472              28               7             0.000086               
+16    617297          0.028298  1831         271432          0.001767              20               5             0.000086               
+15    588198          0.029487  3091         342088          0.002144              24               6             0.000087               
+14    561627          0.029887  5236         405722          0.001725              20               5             0.000083               
+13    534928          0.029990  8897         477562          0.003075              36               9             0.000084               
+12    506110          0.029818  15143        568206          0.001758              20               5             0.000085               
+11    475800          0.029994  25881        701932          0.001760              20               5             0.000084               
+10    445026          0.029987  44333        905338          0.001691              20               5             0.000080               
+9     417557          0.029997  76155        1244002         0.001693              19               6             0.000083               
+8     391903          0.029985  130943       1818562         0.001598              17               6             0.000085               
+7     367440          0.029983  225924       2772788         0.001575              16               5             0.000084               
+6     346911          0.029998  391864       4357826         0.001902              15               6             0.000100               
+5     327585          0.030000  682789       7005232         0.002673              18               7             0.000115               
+4     309877          0.030000  1202501      11533492        0.003191              15               6             0.000127               
+3     298389          0.030000  1934431      18411406        0.004903              16               7             0.000162               
+2     286780          0.030000  3207961      30867152        0.007255              16               8             0.000212               
+1     273847          0.029999  5513032      53898424        0.010691              15               7             0.000278               
+0     256006          0.030000  9845725      92472210        0.018252              16               8             0.000438               
+Final cut: 256006; Max part cut: 115212; imb: 1.030000; largest: 1267637; smallest: 1012989
+Coarsening time: 1.90485
+ - Coarsening aggregation time: 1.81709
+ - Coarsening contraction time: 0.08334
+Initial partitioning time: 0.00120
+Uncoarsening time: 0.08319
+Coarse graph free time: 0.00571
+Total Partitioning Time: 2.00499
+Comm size: 266468
+graph /home/lyj/graph_10w/wb-edu.graph, min edgecut found is 256006
+Reading 48990401 bytes from /home/lyj/graph_10w/amazon-2008.graph
+Read graph from /home/lyj/graph_10w/amazon-2008.graph in 0.0462s
+vertices: 735323; edges: 3523472
+level=0 nvtxs=735323 adjwgt_sum=7046944
+level=1 nvtxs=437514 adjwgt_sum=6451326
+level=2 nvtxs=269586 adjwgt_sum=5744690
+level=3 nvtxs=164340 adjwgt_sum=4959654
+level=4 nvtxs=102622 adjwgt_sum=4166184
+level=5 nvtxs=59902 adjwgt_sum=3549852
+level=6 nvtxs=35312 adjwgt_sum=3102112
+level=7 nvtxs=22052 adjwgt_sum=2773238
+level=8 nvtxs=13070 adjwgt_sum=2535260
+level=9 nvtxs=7823 adjwgt_sum=2349144
+level=10 nvtxs=4649 adjwgt_sum=2200028
+level=11 nvtxs=2783 adjwgt_sum=2063830
+level=12 nvtxs=1664 adjwgt_sum=1941812
+level=13 nvtxs=995 adjwgt_sum=1852068
+level=14 nvtxs=600 adjwgt_sum=1748926
+level=15 nvtxs=350 adjwgt_sum=1653840
+level=16 nvtxs=207 adjwgt_sum=1572096
+level=17 nvtxs=127 adjwgt_sum=1496378
+level=18 nvtxs=77 adjwgt_sum=1415334
+level=19 nvtxs=47 adjwgt_sum=1314744
+Initial 546241 0.135678 47
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+19    546241          0.135678  47           660             0.000950              12               0             0.000065               
+18    546241          0.135678  77           1868            0.001209              12               0             0.000096               
+17    544568          0.032301  127          5420            0.001577              16               0             0.000095               
+16    544008          0.025099  207          13318           0.001114              13               3             0.000082               
+15    516348          0.026318  350          37098           0.001560              20               5             0.000075               
+14    496666          0.027569  600          83748           0.002241              28               7             0.000078               
+13    484871          0.029734  995          166058          0.001687              20               5             0.000082               
+12    466015          0.029701  1664         271742          0.002428              28               7             0.000085               
+11    446976          0.029930  2783         396052          0.002437              28               7             0.000085               
+10    425853          0.029973  4649         529816          0.002416              28               7             0.000084               
+9     403830          0.029821  7823         668468          0.002789              32               9             0.000085               
+8     379283          0.029897  13070        824948          0.002272              27               8             0.000082               
+7     353612          0.029995  22052        999478          0.001635              19               6             0.000082               
+6     331473          0.029995  35312        1206266         0.001631              19               6             0.000082               
+5     306883          0.029984  59902        1473152         0.001712              19               6             0.000085               
+4     284890          0.029995  102622       1842354         0.001997              20               6             0.000094               
+3     264823          0.029995  164340       2382818         0.002759              27               7             0.000095               
+2     245424          0.029995  269586       3271646         0.003335              30               9             0.000101               
+1     224991          0.029995  437514       4779348         0.003942              31               9             0.000114               
+0     193897          0.029995  735323       7046944         0.003637              23               7             0.000127               
+Final cut: 193897; Max part cut: 91941; imb: 1.029995; largest: 94673; smallest: 72637
+Coarsening time: 0.02895
+ - Coarsening aggregation time: 0.01671
+ - Coarsening contraction time: 0.00994
+Initial partitioning time: 0.00096
+Uncoarsening time: 0.04479
+Coarse graph free time: 0.00228
+Total Partitioning Time: 0.07781
+Comm size: 224354
+graph /home/lyj/graph_10w/amazon-2008.graph, min edgecut found is 193897
+Reading 1512112413 bytes from /home/lyj/graph_10w/vas_stokes_4M.graph
+Read graph from /home/lyj/graph_10w/vas_stokes_4M.graph in 1.14s
+vertices: 4382246; edges: 97708521
+level=0 nvtxs=4382246 adjwgt_sum=195417042
+level=1 nvtxs=2275623 adjwgt_sum=191203796
+level=2 nvtxs=1192605 adjwgt_sum=184223572
+level=3 nvtxs=637658 adjwgt_sum=174752186
+level=4 nvtxs=352479 adjwgt_sum=163809540
+level=5 nvtxs=204880 adjwgt_sum=152182938
+level=6 nvtxs=125787 adjwgt_sum=140363676
+level=7 nvtxs=65897 adjwgt_sum=128808642
+level=8 nvtxs=34882 adjwgt_sum=117310034
+level=9 nvtxs=18680 adjwgt_sum=105297952
+level=10 nvtxs=10145 adjwgt_sum=92658270
+level=11 nvtxs=5593 adjwgt_sum=79682002
+level=12 nvtxs=3152 adjwgt_sum=67193298
+level=13 nvtxs=1799 adjwgt_sum=55983592
+level=14 nvtxs=1068 adjwgt_sum=45907838
+level=15 nvtxs=652 adjwgt_sum=37107884
+level=16 nvtxs=405 adjwgt_sum=29875456
+level=17 nvtxs=250 adjwgt_sum=24644384
+level=18 nvtxs=143 adjwgt_sum=19159680
+level=19 nvtxs=86 adjwgt_sum=15829614
+level=20 nvtxs=50 adjwgt_sum=12435788
+Initial 3652271 0.096812 50
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+20    3997312         0.042263  50           308             0.001386              16               0             0.000075               
+19    4123901         0.035848  86           534             0.000821              13               0             0.000059               
+18    3536025         0.018409  143          912             0.002515              27               3             0.000091               
+17    3510039         0.028800  250          1808            0.001959              23               5             0.000082               
+16    2830101         0.025404  405          3276            0.002503              32               8             0.000076               
+15    2820586         0.029139  652          6144            0.001250              16               4             0.000075               
+14    2506767         0.029585  1068         12208           0.001748              24               10            0.000071               
+13    2387257         0.025059  1799         24172           0.002131              29               14            0.000072               
+12    2269179         0.029625  3152         48946           0.001466              20               7             0.000071               
+11    2085392         0.029992  5593         101072          0.003562              48               19            0.000073               
+10    2009025         0.029386  10145        214700          0.001433              19               9             0.000072               
+9     1884151         0.029952  18680        459952          0.003191              44               19            0.000071               
+8     1753462         0.029963  34882        996032          0.004013              54               23            0.000073               
+7     1671375         0.029979  65897        2137728         0.004680              62               29            0.000074               
+6     1580089         0.029997  125787       4552758         0.002480              29               13            0.000080               
+5     1475286         0.029999  204880       9584556         0.004150              48               22            0.000082               
+4     1397398         0.029999  352479       19704468        0.004278              40               18            0.000094               
+3     1327248         0.029999  637658       39021590        0.004870              35               17            0.000113               
+2     1256009         0.029997  1192605      75059916        0.005348              26               13            0.000141               
+1     1163360         0.029999  2275623      136620614       0.010370              30               15            0.000240               
+0     1006243         0.029999  4382246      195417042       0.011008              18               9             0.000292               
+Final cut: 1006243; Max part cut: 338745; imb: 1.029999; largest: 564214; smallest: 495801
+Coarsening time: 0.11418
+ - Coarsening aggregation time: 0.06502
+ - Coarsening contraction time: 0.04461
+Initial partitioning time: 0.00076
+Uncoarsening time: 0.07769
+Coarse graph free time: 0.00619
+Total Partitioning Time: 0.20661
+Comm size: 182015
+graph /home/lyj/graph_10w/vas_stokes_4M.graph, min edgecut found is 1006243
+Reading 516432535 bytes from /home/lyj/graph_10w/road_usa.graph
+Read graph from /home/lyj/graph_10w/road_usa.graph in 0.488s
+vertices: 23947347; edges: 28854312
+level=0 nvtxs=23947347 adjwgt_sum=57708624
+level=1 nvtxs=14107616 adjwgt_sum=38029162
+level=2 nvtxs=8446596 adjwgt_sum=25732296
+level=3 nvtxs=5159461 adjwgt_sum=17732834
+level=4 nvtxs=3218552 adjwgt_sum=12442588
+level=5 nvtxs=1972495 adjwgt_sum=8881884
+level=6 nvtxs=1228126 adjwgt_sum=6351438
+level=7 nvtxs=730061 adjwgt_sum=4597546
+level=8 nvtxs=451926 adjwgt_sum=3299496
+level=9 nvtxs=281906 adjwgt_sum=2414838
+level=10 nvtxs=167918 adjwgt_sum=1786336
+level=11 nvtxs=104136 adjwgt_sum=1310634
+level=12 nvtxs=62149 adjwgt_sum=973570
+level=13 nvtxs=38623 adjwgt_sum=720522
+level=14 nvtxs=23124 adjwgt_sum=537612
+level=15 nvtxs=13924 adjwgt_sum=400568
+level=16 nvtxs=8404 adjwgt_sum=296564
+level=17 nvtxs=5067 adjwgt_sum=221506
+level=18 nvtxs=3166 adjwgt_sum=164202
+level=19 nvtxs=1898 adjwgt_sum=123776
+level=20 nvtxs=1153 adjwgt_sum=92262
+level=21 nvtxs=696 adjwgt_sum=69636
+level=22 nvtxs=432 adjwgt_sum=50824
+level=23 nvtxs=261 adjwgt_sum=38098
+level=24 nvtxs=158 adjwgt_sum=27578
+level=25 nvtxs=97 adjwgt_sum=21272
+level=26 nvtxs=58 adjwgt_sum=15396
+Initial 2783 0.079387 58
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+26    3052            0.070678  58           224             0.001328              15               0             0.000077               
+25    3616            0.039396  97           392             0.000953              15               0             0.000060               
+24    2186            0.015539  158          642             0.002747              34               7             0.000079               
+23    2071            0.027468  261          1086            0.002400              32               8             0.000073               
+22    2071            0.027468  432          1828            0.000966              12               3             0.000076               
+21    1862            0.025990  696          3060            0.002763              36               9             0.000075               
+20    1796            0.026586  1153         5036            0.002350              31               9             0.000074               
+19    1668            0.027530  1898         8332            0.002316              32               17            0.000070               
+18    1593            0.029848  3166         13854           0.001601              22               11            0.000070               
+17    1569            0.027566  5067         22640           0.001190              16               10            0.000071               
+16    1523            0.028560  8404         37638           0.001943              24               24            0.000079               
+15    1439            0.025585  13924        62288           0.001644              20               20            0.000079               
+14    1361            0.024107  23124        102478          0.001410              17               17            0.000079               
+13    1260            0.023453  38623        168148          0.001586              19               19            0.000080               
+12    1223            0.023183  62149        269498          0.001891              23               23            0.000079               
+11    1179            0.022952  104136       437454          0.001766              21               21            0.000081               
+10    1156            0.023010  167918       690906          0.001784              21               21            0.000081               
+9     1123            0.023055  281906       1099200         0.001728              19               19            0.000082               
+8     1073            0.023261  451926       1695940         0.001798              19               19            0.000088               
+7     1044            0.023250  730061       2618920         0.001963              18               18            0.000099               
+6     1008            0.023183  1228126      4123230         0.002287              18               18            0.000114               
+5     995             0.023203  1972495      6299882         0.002831              18               18            0.000139               
+4     977             0.023185  3218552      9772498         0.003741              19               19            0.000171               
+3     970             0.023197  5159461      15002120        0.004543              18               18            0.000214               
+2     965             0.023190  8446596      23339510        0.005643              15               15            0.000311               
+1     958             0.023211  14107616     36695372        0.008060              15               15            0.000440               
+0     956             0.023213  23947347     57708624        0.017472              22               22            0.000686               
+Final cut: 956; Max part cut: 419; imb: 1.023213; largest: 3062906; smallest: 2613406
+Coarsening time: 0.06327
+ - Coarsening aggregation time: 0.04083
+ - Coarsening contraction time: 0.01947
+Initial partitioning time: 0.00062
+Uncoarsening time: 0.08664
+Coarse graph free time: 0.00497
+Total Partitioning Time: 0.16817
+Comm size: 1908
+graph /home/lyj/graph_10w/road_usa.graph, min edgecut found is 956
+Reading 721885589 bytes from /home/lyj/graph_10w/nlpkkt120.graph
+Read graph from /home/lyj/graph_10w/nlpkkt120.graph in 0.557s
+vertices: 3542400; edges: 46651696
+level=0 nvtxs=3542400 adjwgt_sum=93303392
+level=1 nvtxs=1857306 adjwgt_sum=89933204
+level=2 nvtxs=964684 adjwgt_sum=86693990
+level=3 nvtxs=501850 adjwgt_sum=81885006
+level=4 nvtxs=262109 adjwgt_sum=75462320
+level=5 nvtxs=137765 adjwgt_sum=67926948
+level=6 nvtxs=72987 adjwgt_sum=60193604
+level=7 nvtxs=39014 adjwgt_sum=52813728
+level=8 nvtxs=21125 adjwgt_sum=46021644
+level=9 nvtxs=11593 adjwgt_sum=39957330
+level=10 nvtxs=6500 adjwgt_sum=34618382
+level=11 nvtxs=3771 adjwgt_sum=29902028
+level=12 nvtxs=2286 adjwgt_sum=25827828
+level=13 nvtxs=1399 adjwgt_sum=22221610
+level=14 nvtxs=851 adjwgt_sum=19267458
+level=15 nvtxs=484 adjwgt_sum=16547938
+level=16 nvtxs=273 adjwgt_sum=14145300
+level=17 nvtxs=156 adjwgt_sum=12060442
+level=18 nvtxs=89 adjwgt_sum=10295964
+level=19 nvtxs=54 adjwgt_sum=8694072
+Initial 2820360 0.074146 54
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+19    2832175         0.074040  54           364             0.001091              13               0             0.000069               
+18    3017405         0.030407  89           684             0.001126              16               0             0.000067               
+17    2758286         0.022184  156          1238            0.002533              30               7             0.000083               
+16    2418865         0.023579  273          2366            0.002821              35               9             0.000079               
+15    2125931         0.028214  484          4404            0.002980              39               11            0.000075               
+14    2036249         0.028234  851          8310            0.002488              32               8             0.000076               
+13    1977102         0.029876  1399         15408           0.001289              16               4             0.000077               
+12    1874116         0.028216  2286         28718           0.002237              28               7             0.000078               
+11    1771393         0.029968  3771         54664           0.001267              16               4             0.000076               
+10    1686478         0.029962  6500         106800          0.002254              28               7             0.000078               
+9     1543576         0.029813  11593        212852          0.004748              61               17            0.000077               
+8     1493907         0.029991  21125        432030          0.002166              28               10            0.000075               
+7     1387012         0.029914  39014        891754          0.002291              31               12            0.000071               
+6     1302104         0.029993  72987        1872064         0.002292              29               11            0.000075               
+5     1221638         0.029975  137765       4002808         0.003250              38               15            0.000081               
+4     1136807         0.030000  262109       8747934         0.003051              30               14            0.000092               
+3     1059496         0.029998  501850       19461744        0.004615              35               17            0.000113               
+2     996942          0.030000  964684       42181276        0.004700              23               10            0.000146               
+1     924703          0.030000  1857306      77317402        0.005557              14               7             0.000220               
+0     783464          0.030000  3542400      93303392        0.009979              24               12            0.000225               
+Final cut: 783464; Max part cut: 226866; imb: 1.030000; largest: 456084; smallest: 363270
+Coarsening time: 0.05402
+ - Coarsening aggregation time: 0.02399
+ - Coarsening contraction time: 0.02703
+Initial partitioning time: 0.00082
+Uncoarsening time: 0.06497
+Coarse graph free time: 0.00401
+Total Partitioning Time: 0.12689
+Comm size: 226237
+graph /home/lyj/graph_10w/nlpkkt120.graph, min edgecut found is 783464
+Reading 953066297 bytes from /home/lyj/graph_10w/Bump_2911.graph
+Read graph from /home/lyj/graph_10w/Bump_2911.graph in 0.722s
+vertices: 2911419; edges: 62409240
+level=0 nvtxs=2911419 adjwgt_sum=124818480
+level=1 nvtxs=1503469 adjwgt_sum=122002580
+level=2 nvtxs=791782 adjwgt_sum=116758484
+level=3 nvtxs=432180 adjwgt_sum=108300212
+level=4 nvtxs=250021 adjwgt_sum=97403902
+level=5 nvtxs=127812 adjwgt_sum=85941304
+level=6 nvtxs=65596 adjwgt_sum=75014660
+level=7 nvtxs=33806 adjwgt_sum=65081122
+level=8 nvtxs=17477 adjwgt_sum=56242900
+level=9 nvtxs=10916 adjwgt_sum=48441790
+level=10 nvtxs=5660 adjwgt_sum=41663744
+level=11 nvtxs=2961 adjwgt_sum=35787686
+level=12 nvtxs=1547 adjwgt_sum=30754512
+level=13 nvtxs=812 adjwgt_sum=26354282
+level=14 nvtxs=433 adjwgt_sum=22498588
+level=15 nvtxs=237 adjwgt_sum=19155416
+level=16 nvtxs=134 adjwgt_sum=16281136
+level=17 nvtxs=78 adjwgt_sum=13774936
+level=18 nvtxs=46 adjwgt_sum=11547556
+Initial 3974098 0.143347 46
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+18    3986855         0.143311  46           346             0.001077              13               0             0.000070               
+17    4047216         0.033463  78           664             0.001024              15               0             0.000064               
+16    3828407         0.029220  134          1282            0.001517              18               4             0.000082               
+15    3598973         0.029770  237          2418            0.001274              16               4             0.000076               
+14    3279271         0.029605  433          4666            0.001844              24               6             0.000075               
+13    3074265         0.029896  812          9050            0.003129              40               10            0.000077               
+12    2972403         0.029682  1547         17676           0.001327              18               7             0.000071               
+11    2780378         0.029687  2961         34920           0.001248              16               4             0.000075               
+10    2643969         0.029715  5660         68708           0.001257              16               5             0.000075               
+9     2422712         0.029882  10916        137220          0.005559              72               18            0.000076               
+8     2242806         0.029918  17477        277060          0.004148              53               14            0.000077               
+7     2140766         0.029967  33806        564838          0.001893              24               7             0.000076               
+6     2007058         0.029984  65596        1169194         0.001792              22               8             0.000077               
+5     1860639         0.029998  127812       2460894         0.003741              44               14            0.000082               
+4     1730324         0.029998  250021       5292098         0.004320              49               17            0.000083               
+3     1607089         0.029998  432180       11940272        0.004697              42               14            0.000101               
+2     1494973         0.029998  791782       29096650        0.007155              51               18            0.000121               
+1     1401985         0.029995  1503469      68682150        0.008683              39               13            0.000172               
+0     1201918         0.029998  2911419      124818480       0.009864              26               13            0.000238               
+Final cut: 1201918; Max part cut: 388308; imb: 1.029998; largest: 374845; smallest: 290447
+Coarsening time: 0.14953
+ - Coarsening aggregation time: 0.12249
+ - Coarsening contraction time: 0.02402
+Initial partitioning time: 0.00086
+Uncoarsening time: 0.06769
+Coarse graph free time: 0.00311
+Total Partitioning Time: 0.22439
+Comm size: 222789
+graph /home/lyj/graph_10w/Bump_2911.graph, min edgecut found is 1201918
+Reading 742989437 bytes from /home/lyj/graph_10w/cage15.graph
+Read graph from /home/lyj/graph_10w/cage15.graph in 0.565s
+vertices: 5154859; edges: 47022346
+level=0 nvtxs=5154859 adjwgt_sum=94044692
+level=1 nvtxs=2669414 adjwgt_sum=89073802
+level=2 nvtxs=1374946 adjwgt_sum=83722944
+level=3 nvtxs=705577 adjwgt_sum=79047526
+level=4 nvtxs=361129 adjwgt_sum=74945326
+level=5 nvtxs=184527 adjwgt_sum=71167284
+level=6 nvtxs=94247 adjwgt_sum=67491892
+level=7 nvtxs=48173 adjwgt_sum=63722910
+level=8 nvtxs=24658 adjwgt_sum=59764060
+level=9 nvtxs=12652 adjwgt_sum=55595404
+level=10 nvtxs=6501 adjwgt_sum=51379526
+level=11 nvtxs=3349 adjwgt_sum=47291070
+level=12 nvtxs=1725 adjwgt_sum=43361432
+level=13 nvtxs=890 adjwgt_sum=39787402
+level=14 nvtxs=461 adjwgt_sum=36465314
+level=15 nvtxs=243 adjwgt_sum=33460690
+level=16 nvtxs=129 adjwgt_sum=30436940
+level=17 nvtxs=69 adjwgt_sum=27501196
+level=18 nvtxs=37 adjwgt_sum=24548668
+Initial 9049319 0.115462 37
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+18    9049319         0.115462  37           972             0.001438              12               0             0.000106               
+17    9049319         0.115462  69           3090            0.001150              12               0             0.000092               
+16    8842940         0.023059  129          9178            0.001328              15               2             0.000085               
+15    7805524         0.022444  243          24220           0.003130              40               10            0.000077               
+14    7385913         0.029626  461          60436           0.001262              16               4             0.000076               
+13    6972377         0.029982  890          140502          0.001594              20               5             0.000077               
+12    6618442         0.029279  1725         307802          0.001639              20               5             0.000079               
+11    6058269         0.028854  3349         640064          0.003663              44               11            0.000082               
+10    5684363         0.029713  6501         1273974         0.003117              36               9             0.000085               
+9     5447796         0.029898  12652        2441472         0.001439              16               4             0.000085               
+8     5081897         0.029996  24658        4489324         0.002167              24               6             0.000087               
+7     4827825         0.029960  48173        7859110         0.002212              23               7             0.000091               
+6     4533115         0.029994  94247        13054302        0.002262              21               7             0.000098               
+5     4192023         0.029979  184527       20570524        0.003707              31               10            0.000109               
+4     3821137         0.029996  361129       30802444        0.006368              44               13            0.000130               
+3     3441986         0.029997  705577       43973062        0.006579              33               10            0.000168               
+2     3071947         0.029999  1374946      59716574        0.005594              16               5             0.000230               
+1     2676092         0.029999  2669414      76401890        0.009034              15               5             0.000366               
+0     1759003         0.029999  5154859      94044692        0.015239              27               11            0.000327               
+Final cut: 1759003; Max part cut: 653208; imb: 1.029999; largest: 663688; smallest: 588661
+Coarsening time: 0.06594
+ - Coarsening aggregation time: 0.02291
+ - Coarsening contraction time: 0.03935
+Initial partitioning time: 0.00108
+Uncoarsening time: 0.07566
+Coarse graph free time: 0.00562
+Total Partitioning Time: 0.15249
+Comm size: 1955595
+graph /home/lyj/graph_10w/cage15.graph, min edgecut found is 1759003
+Reading 479454985 bytes from /home/lyj/graph_10w/hugebubbles-00000.graph
+Read graph from /home/lyj/graph_10w/hugebubbles-00000.graph in 0.383s
+vertices: 18318143; edges: 27470081
+level=0 nvtxs=18318143 adjwgt_sum=54940162
+level=1 nvtxs=10110894 adjwgt_sum=38525664
+level=2 nvtxs=5628363 adjwgt_sum=26895368
+level=3 nvtxs=3148593 adjwgt_sum=19539598
+level=4 nvtxs=1760056 adjwgt_sum=14603892
+level=5 nvtxs=988520 adjwgt_sum=11017380
+level=6 nvtxs=560127 adjwgt_sum=8369726
+level=7 nvtxs=321741 adjwgt_sum=6402586
+level=8 nvtxs=188312 adjwgt_sum=4930254
+level=9 nvtxs=112741 adjwgt_sum=3823798
+level=10 nvtxs=69320 adjwgt_sum=2994402
+level=11 nvtxs=42845 adjwgt_sum=2373670
+level=12 nvtxs=26728 adjwgt_sum=1888832
+level=13 nvtxs=15967 adjwgt_sum=1510828
+level=14 nvtxs=9627 adjwgt_sum=1210580
+level=15 nvtxs=5836 adjwgt_sum=962530
+level=16 nvtxs=3551 adjwgt_sum=764450
+level=17 nvtxs=2150 adjwgt_sum=609428
+level=18 nvtxs=1296 adjwgt_sum=493164
+level=19 nvtxs=780 adjwgt_sum=394914
+level=20 nvtxs=472 adjwgt_sum=308904
+level=21 nvtxs=283 adjwgt_sum=240324
+level=22 nvtxs=172 adjwgt_sum=193456
+level=23 nvtxs=104 adjwgt_sum=148078
+level=24 nvtxs=65 adjwgt_sum=113272
+level=25 nvtxs=39 adjwgt_sum=84790
+Initial 22857 0.101019 39
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+25    23005           0.101008  39           142             0.001029              13               0             0.000066               
+24    25690           0.026566  65           256             0.001412              15               1             0.000091               
+23    24168           0.022811  104          436             0.001505              17               2             0.000086               
+22    24168           0.022811  172          736             0.000938              12               3             0.000073               
+21    21974           0.021410  283          1266            0.003337              43               10            0.000076               
+20    18812           0.028421  472          2144            0.002038              27               9             0.000074               
+19    18399           0.028382  780          3702            0.001680              22               7             0.000074               
+18    17823           0.029371  1296         6210            0.002172              29               15            0.000073               
+17    17823           0.029371  2150         10204           0.000982              12               3             0.000077               
+16    17512           0.026387  3551         17106           0.001772              23               14            0.000074               
+15    17512           0.026387  5836         28732           0.000879              12               4             0.000068               
+14    15976           0.029289  9627         48134           0.003015              41               26            0.000072               
+13    15564           0.029466  15967        80322           0.002255              31               15            0.000071               
+12    15009           0.029989  26728        134174          0.002922              41               21            0.000070               
+11    15009           0.029989  42845        220868          0.000950              12               7             0.000074               
+10    14401           0.029885  69320        366374          0.003089              39               29            0.000077               
+9     13840           0.029983  112741       617232          0.003761              47               27            0.000078               
+8     13596           0.029955  188312       1059064         0.002585              31               20            0.000080               
+7     13218           0.029994  321741       1837662         0.003258              35               21            0.000086               
+6     12766           0.029997  560127       3200352         0.005219              51               28            0.000097               
+5     12435           0.029900  988520       5543054         0.005046              41               29            0.000114               
+4     11949           0.029911  1760056      9420938         0.004961              33               26            0.000134               
+3     11612           0.029760  3148593      15371958        0.007518              39               35            0.000172               
+2     11132           0.029835  5628363      23236730        0.007132              27               27            0.000226               
+1     10687           0.029870  10110894     35858828        0.008459              19               19            0.000375               
+0     10312           0.029873  18318143     54940162        0.009143              13               13            0.000542               
+Final cut: 10312; Max part cut: 3376; imb: 1.029873; largest: 2358170; smallest: 2054703
+Coarsening time: 0.04219
+ - Coarsening aggregation time: 0.02061
+ - Coarsening contraction time: 0.01888
+Initial partitioning time: 0.00050
+Uncoarsening time: 0.09200
+Coarse graph free time: 0.00445
+Total Partitioning Time: 0.14915
+Comm size: 20624
+graph /home/lyj/graph_10w/hugebubbles-00000.graph, min edgecut found is 10312
+Reading 1362105643 bytes from /home/lyj/graph_10w/kron_g500-logn21.graph
+Read graph from /home/lyj/graph_10w/kron_g500-logn21.graph in 1.03s
+vertices: 2097152; edges: 91040932
+level=0 nvtxs=2097152 adjwgt_sum=182081864
+level=1 nvtxs=1150288 adjwgt_sum=181299048
+level=2 nvtxs=718749 adjwgt_sum=180550508
+level=3 nvtxs=406517 adjwgt_sum=180089546
+level=4 nvtxs=248178 adjwgt_sum=179678966
+level=5 nvtxs=153869 adjwgt_sum=179425218
+level=6 nvtxs=88437 adjwgt_sum=179248392
+level=7 nvtxs=54031 adjwgt_sum=179100330
+level=8 nvtxs=33399 adjwgt_sum=178998186
+level=9 nvtxs=20577 adjwgt_sum=178914488
+level=10 nvtxs=12759 adjwgt_sum=178850340
+level=11 nvtxs=7673 adjwgt_sum=178791560
+level=12 nvtxs=4360 adjwgt_sum=178715506
+level=13 nvtxs=2714 adjwgt_sum=178632226
+level=14 nvtxs=1471 adjwgt_sum=178520386
+level=15 nvtxs=917 adjwgt_sum=178344210
+level=16 nvtxs=474 adjwgt_sum=178043348
+level=17 nvtxs=241 adjwgt_sum=177495774
+level=18 nvtxs=122 adjwgt_sum=176439902
+level=19 nvtxs=62 adjwgt_sum=174376684
+Initial 74345314 0.036137 62
+Level Edge Cut        Imbalance Vertices     Edges           Total Refinement Time Total Iterations LP Iterations Average Iteration Time 
+19    74345314        0.036137  62           1902            0.001010              12               0             0.000069               
+18    74345314        0.036137  122          7164            0.001230              12               0             0.000098               
+17    74369546        0.025875  241          27756           0.001338              15               3             0.000086               
+16    74369546        0.025875  474          95352           0.001038              12               3             0.000082               
+15    74369546        0.025875  917          308062          0.001144              12               3             0.000091               
+14    74339161        0.026165  1471         939658          0.001231              12               3             0.000098               
+13    74293111        0.029556  2714         2711670         0.001378              12               3             0.000110               
+12    74199833        0.027805  4360         7642100         0.001715              12               3             0.000134               
+11    73792992        0.029949  7673         25215708        0.007609              24               6             0.000309               
+10    73311849        0.029865  12759        51923496        0.016111              28               7             0.000564               
+9     72719801        0.029789  20577        85170762        0.028489              28               7             0.000995               
+8     71488543        0.029953  33399        119616718       0.030604              16               5             0.001836               
+7     69550125        0.029991  54031        144961966       0.039812              16               5             0.002382               
+6     66059480        0.029991  88437        158952262       0.056570              24               6             0.002285               
+5     62359612        0.029968  153869       167688608       0.061397              24               6             0.002479               
+4     56385668        0.029991  248178       173021184       0.043325              16               4             0.002577               
+3     47579155        0.029999  406517       175902284       0.045092              22               7             0.001945               
+2     38324714        0.029999  718749       178180882       0.052445              24               7             0.002083               
+1     26232743        0.029999  1150288      179873666       0.039173              27               7             0.001352               
+0     16370676        0.029999  2097152      182081864       0.055530              26               7             0.001971               
+Final cut: 16370676; Max part cut: 16039024; imb: 1.029999; largest: 270008; smallest: 232424
+Coarsening time: 3.83428
+ - Coarsening aggregation time: 3.49145
+ - Coarsening contraction time: 0.30724
+Initial partitioning time: 0.00138
+Uncoarsening time: 0.48821
+Coarse graph free time: 0.02492
+Total Partitioning Time: 4.39913
+Comm size: 3266071
+graph /home/lyj/graph_10w/kron_g500-logn21.graph, min edgecut found is 16370676

@@ -1143,8 +1143,8 @@ __global__ void select_balance_vertex_to(int num, int nparts, int bin, int *bin_
 	if(vwgt[vertex] > maxwgt[me])
 		return ;
 
-	if(lane_id == 0)
-		printf("vertex=%d me=%d vwgt=%d poverload=%d\n", vertex, me, vwgt[vertex], poverload[me]);
+	// if(lane_id == 0)
+	// 	printf("vertex=%d me=%d vwgt=%d poverload=%d\n", vertex, me, vwgt[vertex], poverload[me]);
 	
 	int begin = xadj[vertex];
 	int end   = xadj[vertex + 1];
@@ -1206,8 +1206,8 @@ __global__ void select_balance_vertex_to(int num, int nparts, int bin, int *bin_
 		loss_to = -1;
 	}
 	// if(blockIdx.x == 0 && lane_id < nparts)
-	if(lane_id < nparts)
-		printf("vertex=%d id=%d loss_min=%d loss_to=%d\n", vertex, id, loss_min, loss_to);
+	// if(lane_id < nparts)
+	// 	printf("vertex=%d id=%d loss_min=%d loss_to=%d\n", vertex, id, loss_min, loss_to);
 
 	int range = min(32, nparts);
 	range >>= 1;
@@ -1233,12 +1233,12 @@ __global__ void select_balance_vertex_to(int num, int nparts, int bin, int *bin_
 	if(lane_id == 0)
 	{
 		// if(blockIdx.x == 0)
-			printf("vertex=%d me=%d id=%d loss_min=%d loss_to=%d before\n", vertex, me, id, loss_min, loss_to);
+			// printf("vertex=%d me=%d id=%d loss_min=%d loss_to=%d before\n", vertex, me, id, loss_min, loss_to);
 		if(loss_to == -1 || loss_min == -id)
 			return ;
 		
 		// printf("me=%d vertex=%d\n", me, vertex);
-		printf("vertex=%d me=%d id=%d loss_min=%d loss_to=%d\n", vertex, me, id, loss_min, loss_to);
+		// printf("vertex=%d me=%d id=%d loss_min=%d loss_to=%d\n", vertex, me, id, loss_min, loss_to);
 		select[vertex] = 1;
 		gain[vertex] = loss_min;
 		to[vertex] = loss_to;
@@ -1376,7 +1376,7 @@ __global__ void execute_move_balance_to(int nvtxs, int nparts, int *bin, int *kw
 	{
 		int vertex = bin_idx[ptr];
 		int from = where[vertex];
-		printf("vertex=%d vwgt=%d from=%d to=%d begin=%d end=%d ptr=%d\n", vertex, vwgt[vertex], from, part_id, begin, end, ptr);
+		// printf("vertex=%d vwgt=%d from=%d to=%d begin=%d end=%d ptr=%d\n", vertex, vwgt[vertex], from, part_id, begin, end, ptr);
 		if(pwgts[from] > maxwgt[from])
 		{
 			int wgt_v = vwgt[vertex];
@@ -1423,6 +1423,53 @@ __global__ void is_balance(int nvtxs, int nparts, int *pwgts, int *maxwgt, int *
 	}
 }
 
+__global__ void compute_imb(const int nparts, int *pwgts, int *opt_pwgts, float *imb)
+{
+	int ii = threadIdx.x;
+
+	extern __shared__ float imb_cache[];
+	imb_cache[ii] = 0.0;
+	__syncthreads();
+
+	// printf("0 part=%10d imb_cache=%10.3f\n", ii, imb_cache[ii]);
+
+	if(ii >= nparts)
+		return ;
+	
+	int p = ii;
+	int p_wgt = pwgts[p];
+	int opt_p_wgt = opt_pwgts[p];
+	float imb_val = (float)p_wgt / (float)opt_p_wgt;
+
+	imb_cache[ii] = imb_val;
+	for(int i = blockDim.x + ii;i < nparts;i += blockDim.x)
+		imb_cache[ii] = max(imb_val, imb_cache[ii]);
+
+	#pragma unroll
+	for(int range = blockDim.x >> 1;range >= 32;range >>= 1)
+	{
+		if(ii < range)
+			imb_cache[ii] = max(imb_cache[ii], imb_cache[ii + range]);
+		
+		__syncthreads();
+	}
+
+	if(ii < 32)
+	{
+		imb_val = imb_cache[ii];
+		#pragma unroll
+		for(int range = 16;range > 0;range >>= 1)
+		{
+			float tmp_imb = __shfl_down_sync(0xffffffff, imb_val, range, 32);
+			if(ii < range)
+				imb_val = max(imb_val, tmp_imb);
+		}
+	}
+
+	if(ii == 0)
+		imb[0] = imb_val;
+}
+
 __global__ void print_select(int nvtxs, char *select, int *to, int *gain, int *xadj)
 {
 	int ii = blockIdx.x * blockDim.x + threadIdx.x;
@@ -1460,6 +1507,32 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 	int edgecut;
 	int balance;
 	int select_sum;
+	/*int best_cut, *best_where;
+	float h_best_imb, *d_best_imb;
+
+	best_cut = graph->mincut;
+	graph->mincut = best_cut;
+
+	h_best_imb = 0;
+	if(GPU_Memory_Pool)
+		d_best_imb = (float *)lmalloc_with_check(sizeof(float), "d_best_imb");
+	else
+		cudaMalloc((void **)&d_best_imb, sizeof(float));
+	compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_best_imb);
+
+	cudaMemcpy(&h_best_imb, d_best_imb, sizeof(float), cudaMemcpyDeviceToHost);
+
+	if(GPU_Memory_Pool)
+		lfree_with_check(d_best_imb, sizeof(float), "d_best_imb");
+	else
+		cudaFree(d_best_imb);
+
+	if(GPU_Memory_Pool)
+		best_where = (int *)lmalloc_with_check(sizeof(int) * nvtxs, "best_where");
+	else
+		cudaMalloc((void **)&best_where, sizeof(int) * nvtxs);
+
+	cudaMemcpy(best_where, graph->cuda_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);*/
 
 	cudaDeviceSynchronize();
 	gettimeofday(&begin_gpu_kway, NULL);
@@ -1491,9 +1564,9 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		is_balance<<<(nparts + 31) / 32, 32>>>(nvtxs, nparts, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_balance, graph->cuda_poverload);
 		cudaDeviceSynchronize();
 
-		cudaDeviceSynchronize();
-		exam_pwgts<<<1, 1>>>(nparts, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_poverload);
-		cudaDeviceSynchronize();
+		// cudaDeviceSynchronize();
+		// exam_pwgts<<<1, 1>>>(nparts, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_poverload);
+		// cudaDeviceSynchronize();
 
 		cudaMemcpy(&balance, graph->cuda_balance, sizeof(int), cudaMemcpyDeviceToHost);
 		// printf("balance=%d\n", balance[0]);
@@ -1501,7 +1574,7 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		//	if balance
 		if(balance == 1)
 		{
-			printf("to reduce edgecut\n");
+			// printf("to reduce edgecut\n");
 			//	if balance, the lock for vertex moving can be unlocked 
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_kway, NULL);
@@ -1637,7 +1710,7 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 			cudaDeviceSynchronize();
 			int select_sum = compute_graph_select_gpu(graph);
 			cudaDeviceSynchronize();
-			printf("subwarp second_select=%10d\n", select_sum);
+			// printf("subwarp second_select=%10d\n", select_sum);
 
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_kway, NULL);
@@ -1648,7 +1721,7 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		}
 		else
 		{
-			printf("to balance\n");
+			// printf("to balance\n");
 			//	if unbalance
 			cudaDeviceSynchronize();
 			gettimeofday(&begin_gpu_kway, NULL);
@@ -1669,21 +1742,21 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 			cudaDeviceSynchronize();
 			select_sum = compute_graph_select_gpu(graph);
 			cudaDeviceSynchronize();
-			printf("second_select1=%10d\n", select_sum);
+			// printf("second_select1=%10d\n", select_sum);
 
 			if(select_sum == 0)
 				break;
 
 			cudaMemcpy(graph->h_kway_bin, graph->cuda_kway_bin, (nparts + 1) * sizeof(int), cudaMemcpyDeviceToHost);
 
-			printf("h_kway_bin:         0          1          2          3          4          5          6          7          8\n");
-			printf("h_kway_bin:");
-			for(int i = 0;i <= nparts;i++)
-			{
-				// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
-				printf("%10d ", graph->h_kway_bin[i]);
-			}
-			printf("\n");
+			// printf("h_kway_bin:         0          1          2          3          4          5          6          7          8\n");
+			// printf("h_kway_bin:");
+			// for(int i = 0;i <= nparts;i++)
+			// {
+			// 	// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
+			// 	printf("%10d ", graph->h_kway_bin[i]);
+			// }
+			// printf("\n");
 
 			int *kway_bin_size;
 			if(GPU_Memory_Pool)
@@ -1699,49 +1772,49 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 			
 			cudaMemcpy(graph->h_kway_bin, graph->cuda_kway_bin, (nparts + 1) * sizeof(int), cudaMemcpyDeviceToHost);
 
-			printf("h_kway_bin:");
-			for(int i = 0;i <= nparts;i++)
-			{
-				// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
-				printf("%10d ", graph->h_kway_bin[i]);
-			}
-			printf("\n");
+			// printf("h_kway_bin:");
+			// for(int i = 0;i <= nparts;i++)
+			// {
+			// 	// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
+			// 	printf("%10d ", graph->h_kway_bin[i]);
+			// }
+			// printf("\n");
 
 			init_moved<<<(nparts + 127) / 128, 128>>>(nparts, kway_bin_size);
 
-			printf("set_kway_idx begin\n");
+			// printf("set_kway_idx begin\n");
 			// set_kway_idx<<<(nvtxs + 127) / 128, 128>>>(nvtxs, nparts, 0, graph->bin_offset, graph->bin_idx, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, \
 			// 	graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to, graph->cuda_poverload, kway_bin_size, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
 			set_kway_idx_to<<<(nvtxs + 127) / 128, 128>>>(nvtxs, nparts, 0, graph->bin_offset, graph->bin_idx, graph->cuda_vwgt, graph->cuda_xadj, graph->cuda_adjncy, \
 				graph->cuda_adjwgt, graph->cuda_where, graph->cuda_select, graph->cuda_gain, graph->cuda_to, graph->cuda_poverload, kway_bin_size, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
 
-			printf("sort begin\n");
-			for(int i = 0;i < nparts;i++)
-			{
-				int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
-				if(num > 0)
-				{
-					thrust::sort_by_key(thrust::device, graph->cuda_kway_idx + graph->h_kway_bin[i], graph->cuda_kway_idx + graph->h_kway_bin[i + 1], graph->cuda_kway_loss + graph->h_kway_bin[i]);	//, thrust::greater<int>()
-					// sort_kway_idx<<<(num + 127) / 128, 128>>>(num, nparts, i, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
-					printf("nparts=%d:\n", i);
-					cudaDeviceSynchronize();
-					exam_loss_sort<<<1, 1>>>(num, nparts, i, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
-					cudaDeviceSynchronize();
-				}
-			}
+			// printf("sort begin\n");
+			// for(int i = 0;i < nparts;i++)
+			// {
+			// 	int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
+			// 	if(num > 0)
+			// 	{
+			// 		thrust::sort_by_key(thrust::device, graph->cuda_kway_idx + graph->h_kway_bin[i], graph->cuda_kway_idx + graph->h_kway_bin[i + 1], graph->cuda_kway_loss + graph->h_kway_bin[i]);	//, thrust::greater<int>()
+			// 		// sort_kway_idx<<<(num + 127) / 128, 128>>>(num, nparts, i, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
+			// 		printf("nparts=%d:\n", i);
+			// 		cudaDeviceSynchronize();
+			// 		exam_loss_sort<<<1, 1>>>(num, nparts, i, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_kway_loss);
+			// 		cudaDeviceSynchronize();
+			// 	}
+			// }
 
 			// count_move_num<<<nparts, 32>>>(nparts, graph->cuda_kway_bin, graph->cuda_kway_idx, graph->cuda_vwgt, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_poverload, kway_bin_size);
 
 			cudaMemcpy(graph->h_kway_bin, kway_bin_size, nparts * sizeof(int), cudaMemcpyDeviceToHost);
 
-			printf("  kway_bin:         0          1          2          3          4          5          6          7          8\n");
-			printf("  kway_bin:");
-			for(int i = 0;i < nparts;i++)
-			{
-				// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
-				printf("%10d ", graph->h_kway_bin[i]);
-			}
-			printf("\n");
+			// printf("  kway_bin:         0          1          2          3          4          5          6          7          8\n");
+			// printf("  kway_bin:");
+			// for(int i = 0;i < nparts;i++)
+			// {
+			// 	// int num = graph->h_kway_bin[i + 1] - graph->h_kway_bin[i];
+			// 	printf("%10d ", graph->h_kway_bin[i]);
+			// }
+			// printf("\n");
 
 			gettimeofday(&begin_gpu_kway, NULL);
 			init_select<<<(nvtxs + 127) / 128, 128>>>(nvtxs, graph->cuda_select);
@@ -1753,7 +1826,7 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 			cudaDeviceSynchronize();
 			select_sum = compute_graph_select_gpu(graph);
 			cudaDeviceSynchronize();
-			printf("second_select2=%10d\n", select_sum);
+			// printf("second_select2=%10d\n", select_sum);
 
 			if(GPU_Memory_Pool)
 				lfree_with_check(kway_bin_size, sizeof(int) * nparts, "kway_bin_size");
@@ -1770,10 +1843,9 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		// exam_where<<<1, 1>>>(nvtxs, graph->cuda_where);
 		// cudaDeviceSynchronize();
 
-		cudaDeviceSynchronize();
 		compute_edgecut_gpu(graph->nvtxs, &edgecut, graph->cuda_xadj, graph->cuda_adjncy, graph->cuda_adjwgt, graph->cuda_where);
-		cudaDeviceSynchronize();
-		printf("iter:%d %10d\n", iter, edgecut);
+
+		// printf("iter:%d %10d\n", iter, edgecut);
 
 		// cudaDeviceSynchronize();
 		// exam_pwgts<<<1, 1>>>(nparts, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_poverload);
@@ -1783,7 +1855,53 @@ void hunyuangraph_k_refinement_SC25(hunyuangraph_admin_t *hunyuangraph_admin, hu
 		// cudaDeviceSynchronize();
 		// is_balance<<<nparts, 32>>>(nvtxs, nparts, graph->cuda_pwgts, graph->cuda_maxwgt, graph->cuda_balance);
 		// cudaDeviceSynchronize();
+
+		//copy current partition and relevant data to output partition if following conditions pass
+		/*float h_curr_imb, *d_curr_imb;
+		h_curr_imb = 0;
+		if(GPU_Memory_Pool)
+			d_curr_imb = (float *)lmalloc_with_check(sizeof(float), "d_curr_imb");
+		else
+			cudaMalloc((void **)&d_curr_imb, sizeof(float));
+
+		compute_imb<<<1, 1024, 1024 * sizeof(float)>>>(nparts, graph->cuda_pwgts, graph->cuda_opt_pwgts, d_curr_imb);
+
+		cudaMemcpy(&h_curr_imb, d_curr_imb, sizeof(float), cudaMemcpyDeviceToHost);
+
+		if(GPU_Memory_Pool)
+			lfree_with_check(d_curr_imb, sizeof(float), "d_curr_imb");
+		else
+			cudaFree(d_curr_imb);
+
+		if(h_best_imb > IMB && h_curr_imb < h_best_imb)
+		{
+			h_best_imb = h_curr_imb;
+			best_cut = graph->mincut;
+			
+			cudaMemcpy(best_where, graph->cuda_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);
+			// count = 0;
+		}
+		else if(graph->mincut < best_cut && (h_curr_imb <= IMB || h_curr_imb <= h_best_imb))
+		{
+			// if(graph->mincut < tol * best_cut)
+			// 	count = 0;
+			h_best_imb = h_curr_imb;
+			best_cut = graph->mincut;
+			
+			cudaMemcpy(best_where, graph->cuda_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);
+		}*/
+
+		// printf("count=%10d, h_curr_imb=%10f, h_best_imb=%10f, best_cut=%10d curr_cut=%10d \n", count, h_curr_imb, h_best_imb, best_cut, graph->mincut);
 	}
+
+	/*graph->mincut = best_cut;
+
+	cudaMemcpy(graph->cuda_where, best_where, sizeof(int) * nvtxs, cudaMemcpyDeviceToDevice);
+
+	if(GPU_Memory_Pool)
+		lfree_with_check(best_where, sizeof(int) * nvtxs, "k_refine: best_where");
+	else
+		cudaFree(best_where);*/
 }
 
 
@@ -3533,7 +3651,9 @@ __global__ void reset_conn_DS_warp(int nvtxs, int nparts, int *mark, int *gain_o
 	if(mark[vertex] == 0)
 		return ;
 	
+#ifdef FIGURE14_EDGECUT
 	dest_cache[vertex] = -1;
+#endif
 
 	int begin = xadj[vertex];
 	int end   = xadj[vertex + 1];
@@ -4032,53 +4152,6 @@ void perform_moves(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_
 	uncoarsen_gpu_free += tmp_time;
 #endif
 
-}
-
-__global__ void compute_imb(const int nparts, int *pwgts, int *opt_pwgts, float *imb)
-{
-	int ii = threadIdx.x;
-
-	extern __shared__ float imb_cache[];
-	imb_cache[ii] = 0.0;
-	__syncthreads();
-
-	// printf("0 part=%10d imb_cache=%10.3f\n", ii, imb_cache[ii]);
-
-	if(ii >= nparts)
-		return ;
-	
-	int p = ii;
-	int p_wgt = pwgts[p];
-	int opt_p_wgt = opt_pwgts[p];
-	float imb_val = (float)p_wgt / (float)opt_p_wgt;
-
-	imb_cache[ii] = imb_val;
-	for(int i = blockDim.x + ii;i < nparts;i += blockDim.x)
-		imb_cache[ii] = max(imb_val, imb_cache[ii]);
-
-	#pragma unroll
-	for(int range = blockDim.x >> 1;range >= 32;range >>= 1)
-	{
-		if(ii < range)
-			imb_cache[ii] = max(imb_cache[ii], imb_cache[ii + range]);
-		
-		__syncthreads();
-	}
-
-	if(ii < 32)
-	{
-		imb_val = imb_cache[ii];
-		#pragma unroll
-		for(int range = 16;range > 0;range >>= 1)
-		{
-			float tmp_imb = __shfl_down_sync(0xffffffff, imb_val, range, 32);
-			if(ii < range)
-				imb_val = max(imb_val, tmp_imb);
-		}
-	}
-
-	if(ii == 0)
-		imb[0] = imb_val;
 }
 
 int next_pow2(int n) 
@@ -4582,7 +4655,12 @@ void k_refine(hunyuangraph_admin_t *hunyuangraph_admin, hunyuangraph_graph_t *gr
     int lab_counter = 0;
     double tol = 0.999;
 
+#ifdef FIGURE14_EDGECUT
 	while(count++ <= 11)
+#else 
+	while(count++ <= 5)
+#endif
+
 	{
 		int balance = 1;
 		cudaMemcpy(graph->cuda_balance, &balance, sizeof(int), cudaMemcpyHostToDevice);

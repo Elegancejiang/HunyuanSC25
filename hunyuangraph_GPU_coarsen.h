@@ -55,21 +55,23 @@ void hunyuangraph_memcpy_coarsentoinit(hunyuangraph_graph_t *graph)
     int nvtxs = graph->nvtxs;
     int nedges = graph->nedges;
 
-    // graph->xadj = (int *)malloc(sizeof(int) * (nvtxs + 1));
-    // graph->vwgt = (int *)malloc(sizeof(int) * nvtxs);
-    // graph->adjncy = (int *)malloc(sizeof(int) * nedges);
-    // graph->adjwgt = (int *)malloc(sizeof(int) * nedges);
+#ifdef FIGURE10_CGRAPH
+    graph->xadj = (int *)malloc(sizeof(int) * (nvtxs + 1));
+    graph->vwgt = (int *)malloc(sizeof(int) * nvtxs);
+    graph->adjncy = (int *)malloc(sizeof(int) * nedges);
+    graph->adjwgt = (int *)malloc(sizeof(int) * nedges);
     // graph->where = (int *)malloc(sizeof(int) * nvtxs);
 
     // cudaDeviceSynchronize();
     // gettimeofday(&begin_coarsen_memcpy, NULL);
-    // cudaMemcpy(graph->xadj, graph->cuda_xadj, (nvtxs + 1) * sizeof(int), cudaMemcpyDeviceToHost);
-    // cudaMemcpy(graph->vwgt, graph->cuda_vwgt, nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
-    // cudaMemcpy(graph->adjncy, graph->cuda_adjncy, nedges * sizeof(int), cudaMemcpyDeviceToHost);
-    // cudaMemcpy(graph->adjwgt, graph->cuda_adjwgt, nedges * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(graph->xadj, graph->cuda_xadj, (nvtxs + 1) * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(graph->vwgt, graph->cuda_vwgt, nvtxs * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(graph->adjncy, graph->cuda_adjncy, nedges * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(graph->adjwgt, graph->cuda_adjwgt, nedges * sizeof(int), cudaMemcpyDeviceToHost);
     // cudaDeviceSynchronize();
     // gettimeofday(&end_coarsen_memcpy, NULL);
     // coarsen_memcpy += (end_coarsen_memcpy.tv_sec - begin_coarsen_memcpy.tv_sec) * 1000 + (end_coarsen_memcpy.tv_usec - begin_coarsen_memcpy.tv_usec) / 1000.0;
+#endif
 
     int *length_bin, *bin_size;
 #ifdef TIMER
@@ -193,6 +195,11 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
         part_contruction += (end_part_contruction.tv_sec - begin_part_contruction.tv_sec) * 1000 + (end_part_contruction.tv_usec - begin_part_contruction.tv_usec) / 1000.0;
 #endif
 
+#ifdef FIGURE9_TIME
+        cudaDeviceSynchronize();
+        gettimeofday(&end_part_coarsen, NULL);
+        hunyuangraph_admin->time_coarsen[level[0]] = (end_part_coarsen.tv_sec - begin_part_coarsen.tv_sec) * 1000 + (end_part_coarsen.tv_usec - begin_part_coarsen.tv_usec) / 1000.0;
+#endif
         graph = graph->coarser;
         level[0]++;
 
@@ -227,11 +234,12 @@ hunyuangraph_graph_t *hunyuangarph_coarsen(hunyuangraph_admin_t *hunyuangraph_ad
 	    // cudaDeviceSynchronize();
 
         // if(level[0] < 2)
-        // printf("level %2d: nvtxs %10d nedges %10d\n", level[0], graph->nvtxs, graph->nedges);
+        // printf("level %2d: time: %10.3lf\n", level[0], part_coarsen);
 
         // break;
-        
-        // printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level[0], graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
+#ifdef FIGURE9_SUM
+        printf("level %2d: nvtxs %10d nedges %10d nedges/nvtxs=%7.2lf adjwgtsum %12d\n", level[0], graph->nvtxs, graph->nedges, (double)graph->nedges / (double)graph->nvtxs, compute_graph_adjwgtsum_gpu(graph));
+#endif
 
     } while (
         graph->nvtxs > hunyuangraph_admin->Coarsen_threshold &&

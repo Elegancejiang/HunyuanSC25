@@ -1,0 +1,253 @@
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/wb-edu.graph 9845725 92472210 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x78bdc0000000
+back_pointer=   0x78c3ecc99980
+begin partition
+level  1: nvtxs    6091328 nedges   62324504 nedges/nvtxs=  10.23 adjwgtsum     87513966
+level  2: nvtxs    3720106 nedges   35896630 nedges/nvtxs=   9.65 adjwgtsum     81684770
+level  3: nvtxs    1860053 nedges   17497142 nedges/nvtxs=   9.41 adjwgtsum     74795202
+level  4: nvtxs    1133745 nedges   10198140 nedges/nvtxs=   9.00 adjwgtsum     67042094
+level  5: nvtxs     566873 nedges    5748216 nedges/nvtxs=  10.14 adjwgtsum     58833050
+level  6: nvtxs     340406 nedges    3716628 nedges/nvtxs=  10.92 adjwgtsum     50923576
+level  7: nvtxs     211799 nedges    2552294 nedges/nvtxs=  12.05 adjwgtsum     43565564
+level  8: nvtxs     105900 nedges    1761374 nedges/nvtxs=  16.63 adjwgtsum     36764252
+level  9: nvtxs      64118 nedges    1349276 nedges/nvtxs=  21.04 adjwgtsum     30216862
+level 10: nvtxs      40024 nedges    1089964 nedges/nvtxs=  27.23 adjwgtsum     23924808
+level 11: nvtxs      20012 nedges     902698 nedges/nvtxs=  45.11 adjwgtsum     18418270
+level 12: nvtxs      12348 nedges     782584 nedges/nvtxs=  63.38 adjwgtsum     14185710
+level 13: nvtxs       7516 nedges     682668 nedges/nvtxs=  90.83 adjwgtsum     11586986
+level 14: nvtxs       3758 nedges     572424 nedges/nvtxs= 152.32 adjwgtsum      9741370
+level 15: nvtxs       2318 nedges     434966 nedges/nvtxs= 187.65 adjwgtsum      8388930
+level 16: nvtxs       1411 nedges     266252 nedges/nvtxs= 188.70 adjwgtsum      7461626
+level 17: nvtxs        846 nedges     125824 nedges/nvtxs= 148.73 adjwgtsum      6807140
+level 18: nvtxs        509 nedges      53068 nedges/nvtxs= 104.26 adjwgtsum      6386998
+level 19: nvtxs        255 nedges      22086 nedges/nvtxs=  86.61 adjwgtsum      6109118
+level 20: nvtxs        153 nedges       9112 nedges/nvtxs=  59.56 adjwgtsum      5908932
+level 21: nvtxs         90 nedges       4000 nedges/nvtxs=  44.44 adjwgtsum      5806952
+level 22: nvtxs         50 nedges       2162 nedges/nvtxs=  43.24 adjwgtsum      5765618
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/amazon-2008.graph 735323 7046944 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7da02a000000
+back_pointer=   0x7da656c99980
+begin partition
+level  1: nvtxs     423039 nedges    5011810 nedges/nvtxs=  11.85 adjwgtsum      6422376
+level  2: nvtxs     254930 nedges    3322386 nedges/nvtxs=  13.03 adjwgtsum      5722070
+level  3: nvtxs     156137 nedges    2349052 nedges/nvtxs=  15.04 adjwgtsum      4935524
+level  4: nvtxs      91901 nedges    1754912 nedges/nvtxs=  19.10 adjwgtsum      4099414
+level  5: nvtxs      55635 nedges    1372186 nedges/nvtxs=  24.66 adjwgtsum      3427272
+level  6: nvtxs      34539 nedges    1100978 nedges/nvtxs=  31.88 adjwgtsum      2972218
+level  7: nvtxs      17270 nedges     884670 nedges/nvtxs=  51.23 adjwgtsum      2661966
+level  8: nvtxs       8635 nedges     701666 nedges/nvtxs=  81.26 adjwgtsum      2433500
+level  9: nvtxs       5344 nedges     538070 nedges/nvtxs= 100.69 adjwgtsum      2254280
+level 10: nvtxs       2672 nedges     385286 nedges/nvtxs= 144.19 adjwgtsum      2101946
+level 11: nvtxs       1336 nedges     247914 nedges/nvtxs= 185.56 adjwgtsum      1973386
+level 12: nvtxs        668 nedges     136968 nedges/nvtxs= 205.04 adjwgtsum      1863632
+level 13: nvtxs        390 nedges      64414 nedges/nvtxs= 165.16 adjwgtsum      1761344
+level 14: nvtxs        224 nedges      25954 nedges/nvtxs= 115.87 adjwgtsum      1655604
+level 15: nvtxs        133 nedges       9920 nedges/nvtxs=  74.59 adjwgtsum      1568610
+level 16: nvtxs         73 nedges       4074 nedges/nvtxs=  55.81 adjwgtsum      1553574
+level 17: nvtxs         47 nedges       2162 nedges/nvtxs=  46.00 adjwgtsum      1550752
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/vas_stokes_4M.graph 4382246 195417042 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7a1ea8000000
+back_pointer=   0x7a24d4c99980
+begin partition
+level  1: nvtxs    2473288 nedges  123235172 nedges/nvtxs=  49.83 adjwgtsum    191599126
+level  2: nvtxs    1317581 nedges   70299070 nedges/nvtxs=  53.35 adjwgtsum    184963492
+level  3: nvtxs     710546 nedges   36567426 nedges/nvtxs=  51.46 adjwgtsum    174890366
+level  4: nvtxs     400738 nedges   18427200 nedges/nvtxs=  45.98 adjwgtsum    162978348
+level  5: nvtxs     241518 nedges    9036358 nedges/nvtxs=  37.41 adjwgtsum    150564504
+level  6: nvtxs     150939 nedges    4401234 nedges/nvtxs=  29.16 adjwgtsum    138153262
+level  7: nvtxs      85424 nedges    2143462 nedges/nvtxs=  25.09 adjwgtsum    125931364
+level  8: nvtxs      51225 nedges    1059288 nedges/nvtxs=  20.68 adjwgtsum    113727548
+level  9: nvtxs      29354 nedges     529028 nedges/nvtxs=  18.02 adjwgtsum    101420986
+level 10: nvtxs      17380 nedges     273784 nedges/nvtxs=  15.75 adjwgtsum     88913864
+level 11: nvtxs      10592 nedges     146858 nedges/nvtxs=  13.86 adjwgtsum     76430778
+level 12: nvtxs       6602 nedges      80812 nedges/nvtxs=  12.24 adjwgtsum     64536202
+level 13: nvtxs       3301 nedges      46058 nedges/nvtxs=  13.95 adjwgtsum     53645736
+level 14: nvtxs       1651 nedges      27552 nedges/nvtxs=  16.69 adjwgtsum     44137242
+level 15: nvtxs        826 nedges      17344 nedges/nvtxs=  21.00 adjwgtsum     35726958
+level 16: nvtxs        511 nedges      11554 nedges/nvtxs=  22.61 adjwgtsum     28080528
+level 17: nvtxs        256 nedges       7570 nedges/nvtxs=  29.57 adjwgtsum     22190026
+level 18: nvtxs        159 nedges       5174 nedges/nvtxs=  32.54 adjwgtsum     18525724
+level 19: nvtxs         90 nedges       3210 nedges/nvtxs=  35.67 adjwgtsum     17713274
+level 20: nvtxs         56 nedges       2394 nedges/nvtxs=  42.75 adjwgtsum     17635786
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/road_usa.graph 23947347 57708624 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7b6ee6000000
+back_pointer=   0x7b7512c99980
+begin partition
+level  1: nvtxs   14273598 nedges   37107116 nedges/nvtxs=   2.60 adjwgtsum     38361126
+level  2: nvtxs    8376686 nedges   23237390 nedges/nvtxs=   2.77 adjwgtsum     25440588
+level  3: nvtxs    4998091 nedges   14646584 nedges/nvtxs=   2.93 adjwgtsum     17122130
+level  4: nvtxs    3041578 nedges    9339136 nedges/nvtxs=   3.07 adjwgtsum     11716732
+level  5: nvtxs    1846842 nedges    5954884 nedges/nvtxs=   3.22 adjwgtsum      8163288
+level  6: nvtxs    1147259 nedges    3869336 nedges/nvtxs=   3.37 adjwgtsum      5729108
+level  7: nvtxs     716834 nedges    2531776 nedges/nvtxs=   3.53 adjwgtsum      4100362
+level  8: nvtxs     414160 nedges    1586874 nedges/nvtxs=   3.83 adjwgtsum      2986356
+level  9: nvtxs     240097 nedges     991156 nedges/nvtxs=   4.13 adjwgtsum      2181044
+level 10: nvtxs     139639 nedges     616716 nedges/nvtxs=   4.42 adjwgtsum      1601410
+level 11: nvtxs      81655 nedges     384748 nedges/nvtxs=   4.71 adjwgtsum      1185286
+level 12: nvtxs      48070 nedges     242592 nedges/nvtxs=   5.05 adjwgtsum       887230
+level 13: nvtxs      28519 nedges     156324 nedges/nvtxs=   5.48 adjwgtsum       672554
+level 14: nvtxs      17069 nedges     103682 nedges/nvtxs=   6.07 adjwgtsum       518066
+level 15: nvtxs      10219 nedges      71396 nedges/nvtxs=   6.99 adjwgtsum       406806
+level 16: nvtxs       6183 nedges      51706 nedges/nvtxs=   8.36 adjwgtsum       327108
+level 17: nvtxs       3733 nedges      38986 nedges/nvtxs=  10.44 adjwgtsum       268434
+level 18: nvtxs       2252 nedges      30372 nedges/nvtxs=  13.49 adjwgtsum       227026
+level 19: nvtxs       1355 nedges      23988 nedges/nvtxs=  17.70 adjwgtsum       196702
+level 20: nvtxs        828 nedges      18812 nedges/nvtxs=  22.72 adjwgtsum       174446
+level 21: nvtxs        499 nedges      13732 nedges/nvtxs=  27.52 adjwgtsum       157744
+level 22: nvtxs        304 nedges       8870 nedges/nvtxs=  29.18 adjwgtsum       144496
+level 23: nvtxs        152 nedges       4486 nedges/nvtxs=  29.51 adjwgtsum       134232
+level 24: nvtxs         89 nedges       2960 nedges/nvtxs=  33.26 adjwgtsum       127772
+level 25: nvtxs         54 nedges       2572 nedges/nvtxs=  47.63 adjwgtsum       125478
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/nlpkkt120.graph 3542400 93303392 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x794062000000
+back_pointer=   0x79468ec99980
+begin partition
+level  1: nvtxs    1814749 nedges   89846100 nedges/nvtxs=  49.51 adjwgtsum     89848090
+level  2: nvtxs     907375 nedges   45927226 nedges/nvtxs=  50.62 adjwgtsum     88396026
+level  3: nvtxs     462741 nedges   27250600 nedges/nvtxs=  58.89 adjwgtsum     85397624
+level  4: nvtxs     235508 nedges   13510960 nedges/nvtxs=  57.37 adjwgtsum     81030202
+level  5: nvtxs     120619 nedges    6979992 nedges/nvtxs=  57.87 adjwgtsum     75394092
+level  6: nvtxs      62408 nedges    3916494 nedges/nvtxs=  62.76 adjwgtsum     68822554
+level  7: nvtxs      32847 nedges    2372090 nedges/nvtxs=  72.22 adjwgtsum     62042660
+level  8: nvtxs      17790 nedges    1536828 nedges/nvtxs=  86.39 adjwgtsum     55672654
+level  9: nvtxs      10097 nedges    1054014 nedges/nvtxs= 104.39 adjwgtsum     49975414
+level 10: nvtxs       6155 nedges     752834 nedges/nvtxs= 122.31 adjwgtsum     45042956
+level 11: nvtxs       3502 nedges     528914 nedges/nvtxs= 151.03 adjwgtsum     40800702
+level 12: nvtxs       2096 nedges     336208 nedges/nvtxs= 160.40 adjwgtsum     37219002
+level 13: nvtxs       1306 nedges     174878 nedges/nvtxs= 133.90 adjwgtsum     34204628
+level 14: nvtxs        653 nedges      73190 nedges/nvtxs= 112.08 adjwgtsum     31650900
+level 15: nvtxs        327 nedges      27074 nedges/nvtxs=  82.80 adjwgtsum     29350294
+level 16: nvtxs        164 nedges      10624 nedges/nvtxs=  64.78 adjwgtsum     27308070
+level 17: nvtxs        101 nedges       5592 nedges/nvtxs=  55.37 adjwgtsum     27087316
+level 18: nvtxs         64 nedges       3910 nedges/nvtxs=  61.09 adjwgtsum     27076036
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/Bump_2911.graph 2911419 124818480 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x730508000000
+back_pointer=   0x730b34c99980
+begin partition
+level  1: nvtxs    1570822 nedges   66761310 nedges/nvtxs=  42.50 adjwgtsum    122137286
+level  2: nvtxs     832664 nedges   24379284 nedges/nvtxs=  29.28 adjwgtsum    117101098
+level  3: nvtxs     456930 nedges   10321024 nedges/nvtxs=  22.59 adjwgtsum    108465886
+level  4: nvtxs     265702 nedges    4706386 nedges/nvtxs=  17.71 adjwgtsum     95849022
+level  5: nvtxs     138299 nedges    2270280 nedges/nvtxs=  16.42 adjwgtsum     83256312
+level  6: nvtxs      73089 nedges    1130266 nedges/nvtxs=  15.46 adjwgtsum     72392832
+level  7: nvtxs      39550 nedges     573104 nedges/nvtxs=  14.49 adjwgtsum     62704022
+level  8: nvtxs      22231 nedges     299336 nedges/nvtxs=  13.46 adjwgtsum     54101510
+level  9: nvtxs      13231 nedges     161280 nedges/nvtxs=  12.19 adjwgtsum     46608144
+level 10: nvtxs       7409 nedges      87288 nedges/nvtxs=  11.78 adjwgtsum     40147228
+level 11: nvtxs       4267 nedges      48480 nedges/nvtxs=  11.36 adjwgtsum     34546134
+level 12: nvtxs       2539 nedges      27820 nedges/nvtxs=  10.96 adjwgtsum     29709644
+level 13: nvtxs       1540 nedges      16452 nedges/nvtxs=  10.68 adjwgtsum     25541980
+level 14: nvtxs        770 nedges       9990 nedges/nvtxs=  12.97 adjwgtsum     21873332
+level 15: nvtxs        476 nedges       6382 nedges/nvtxs=  13.41 adjwgtsum     18650418
+level 16: nvtxs        238 nedges       4178 nedges/nvtxs=  17.55 adjwgtsum     15848682
+level 17: nvtxs        146 nedges       2918 nedges/nvtxs=  19.99 adjwgtsum     14214682
+level 18: nvtxs         90 nedges       2128 nedges/nvtxs=  23.64 adjwgtsum     13990736
+level 19: nvtxs         57 nedges       1796 nedges/nvtxs=  31.51 adjwgtsum     13969802
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/cage15.graph 5154859 94044692 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x70f734000000
+back_pointer=   0x70fd60c99980
+begin partition
+level  1: nvtxs    2627625 nedges   70377372 nedges/nvtxs=  26.78 adjwgtsum     88990224
+level  2: nvtxs    1351234 nedges   54171148 nedges/nvtxs=  40.09 adjwgtsum     83622350
+level  3: nvtxs     695136 nedges   39282834 nedges/nvtxs=  56.51 adjwgtsum     78603244
+level  4: nvtxs     358848 nedges   27092358 nedges/nvtxs=  75.50 adjwgtsum     74121460
+level  5: nvtxs     186667 nedges   17856564 nedges/nvtxs=  95.66 adjwgtsum     69990070
+level  6: nvtxs      98652 nedges   11246636 nedges/nvtxs= 114.00 adjwgtsum     65982560
+level  7: nvtxs      53666 nedges    6776766 nedges/nvtxs= 126.28 adjwgtsum     61928666
+level  8: nvtxs      30630 nedges    3916194 nedges/nvtxs= 127.85 adjwgtsum     57727228
+level  9: nvtxs      18828 nedges    2191258 nedges/nvtxs= 116.38 adjwgtsum     53403522
+level 10: nvtxs      11486 nedges    1191368 nedges/nvtxs= 103.72 adjwgtsum     49186120
+level 11: nvtxs       5743 nedges     633384 nedges/nvtxs= 110.29 adjwgtsum     45146542
+level 12: nvtxs       2872 nedges     332422 nedges/nvtxs= 115.75 adjwgtsum     41381516
+level 13: nvtxs       1436 nedges     173218 nedges/nvtxs= 120.63 adjwgtsum     37876610
+level 14: nvtxs        718 nedges      90366 nedges/nvtxs= 125.86 adjwgtsum     34646226
+level 15: nvtxs        438 nedges      47652 nedges/nvtxs= 108.79 adjwgtsum     31553746
+level 16: nvtxs        219 nedges      22730 nedges/nvtxs= 103.79 adjwgtsum     28417622
+level 17: nvtxs        130 nedges       9840 nedges/nvtxs=  75.69 adjwgtsum     25393754
+level 18: nvtxs         81 nedges       4718 nedges/nvtxs=  58.25 adjwgtsum     24969438
+level 19: nvtxs         49 nedges       2346 nedges/nvtxs=  47.88 adjwgtsum     24949656
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/hugebubbles-00000.graph 18318143 54940162 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x78724e000000
+back_pointer=   0x78787ac99980
+begin partition
+level  1: nvtxs    9223411 nedges   29428736 nedges/nvtxs=   3.19 adjwgtsum     36750698
+level  2: nvtxs    5388308 nedges   21480924 nedges/nvtxs=   3.99 adjwgtsum     21758542
+level  3: nvtxs    2856468 nedges   14093332 nedges/nvtxs=   4.93 adjwgtsum     16513088
+level  4: nvtxs    1537676 nedges    8091828 nedges/nvtxs=   5.26 adjwgtsum     12417350
+level  5: nvtxs     839675 nedges    4738410 nedges/nvtxs=   5.64 adjwgtsum      9376652
+level  6: nvtxs     462063 nedges    2676808 nedges/nvtxs=   5.79 adjwgtsum      7148062
+level  7: nvtxs     258311 nedges    1509456 nedges/nvtxs=   5.84 adjwgtsum      5438072
+level  8: nvtxs     147620 nedges     856406 nedges/nvtxs=   5.80 adjwgtsum      4158550
+level  9: nvtxs      87348 nedges     494146 nedges/nvtxs=   5.66 adjwgtsum      3198224
+level 10: nvtxs      54399 nedges     293260 nedges/nvtxs=   5.39 adjwgtsum      2474772
+level 11: nvtxs      30845 nedges     169224 nedges/nvtxs=   5.49 adjwgtsum      1927324
+level 12: nvtxs      17887 nedges      99002 nedges/nvtxs=   5.53 adjwgtsum      1510980
+level 13: nvtxs      10520 nedges      58770 nedges/nvtxs=   5.59 adjwgtsum      1189644
+level 14: nvtxs       6256 nedges      35852 nedges/nvtxs=   5.73 adjwgtsum       940950
+level 15: nvtxs       3785 nedges      22634 nedges/nvtxs=   5.98 adjwgtsum       747670
+level 16: nvtxs       2313 nedges      15152 nedges/nvtxs=   6.55 adjwgtsum       599960
+level 17: nvtxs       1424 nedges      10694 nedges/nvtxs=   7.51 adjwgtsum       483962
+level 18: nvtxs        890 nedges       7998 nedges/nvtxs=   8.99 adjwgtsum       395354
+level 19: nvtxs        445 nedges       6204 nedges/nvtxs=  13.94 adjwgtsum       327760
+level 20: nvtxs        223 nedges       4818 nedges/nvtxs=  21.61 adjwgtsum       274620
+level 21: nvtxs        136 nedges       3568 nedges/nvtxs=  26.24 adjwgtsum       241492
+level 22: nvtxs         77 nedges       2696 nedges/nvtxs=  35.01 adjwgtsum       227626
+level 23: nvtxs         57 nedges       2454 nedges/nvtxs=  43.05 adjwgtsum       224614
+graph:/home/lyj/HunyuanGraph_SC25_0.0.0_04080203_test/graphs/kron_g500-logn21.graph 2097152 182081864 8 1
+hunyuangraph_admin->Coarsen_threshold=        64
+Total GPU Memory:                   33680457728B 32891072KB 32120MB 31GB
+Usable GPU Memory before execution: 33151516672B 32374528KB 31615MB 30GB
+Malloc GPU Memory:                  26521213312B 25899622KB 25292MB 24GB
+front_pointer=  0x7698fe000000
+back_pointer=   0x769f2ac99980
+begin partition
+level  1: nvtxs    1228237 nedges  180677748 nedges/nvtxs= 147.10 adjwgtsum    181256500
+level  2: nvtxs     614119 nedges  179364332 nedges/nvtxs= 292.07 adjwgtsum    180757608
+level  3: nvtxs     307060 nedges  177036734 nedges/nvtxs= 576.55 adjwgtsum    180520996
+level  4: nvtxs     191711 nedges  172441138 nedges/nvtxs= 899.48 adjwgtsum    180324142
+level  5: nvtxs     117544 nedges  162728736 nedges/nvtxs=1384.41 adjwgtsum    180135672
+level  6: nvtxs      72225 nedges  141325546 nedges/nvtxs=1956.74 adjwgtsum    179992532
+level  7: nvtxs      36113 nedges  100698590 nedges/nvtxs=2788.43 adjwgtsum    179887532
+level  8: nvtxs      18057 nedges   57070912 nedges/nvtxs=3160.60 adjwgtsum    179832838
+level  9: nvtxs       9029 nedges   27420730 nedges/nvtxs=3036.96 adjwgtsum    179795008
+level 10: nvtxs       4515 nedges    9949462 nedges/nvtxs=2203.65 adjwgtsum    179740950
+level 11: nvtxs       2258 nedges    3021542 nedges/nvtxs=1338.15 adjwgtsum    179638884
+level 12: nvtxs       1129 nedges     868706 nedges/nvtxs= 769.45 adjwgtsum    179444438
+level 13: nvtxs        565 nedges     234972 nedges/nvtxs= 415.88 adjwgtsum    179076234
+level 14: nvtxs        283 nedges      59892 nedges/nvtxs= 211.63 adjwgtsum    178340790
+level 15: nvtxs        175 nedges      24104 nedges/nvtxs= 137.74 adjwgtsum    177091684
+level 16: nvtxs         98 nedges       6344 nedges/nvtxs=  64.73 adjwgtsum    174767790
+level 17: nvtxs         68 nedges       2534 nedges/nvtxs=  37.26 adjwgtsum    174141924
+level 18: nvtxs         62 nedges       1980 nedges/nvtxs=  31.94 adjwgtsum    174111134
