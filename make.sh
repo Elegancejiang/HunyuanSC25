@@ -255,6 +255,34 @@ for p in $p_values; do  # 遍历空格分隔的值
     echo "Processed $p partitions."
 done
 
+# 需要检测的第三方包列表（兼容POSIX sh的写法）
+required_packages="pandas numpy matplotlib"
+
+# 获取当前Python命令（优先使用python3）
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON_CMD="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON_CMD="python"
+else
+    echo "错误：未找到Python解释器"
+    exit 1
+fi
+
+# 检测并安装缺失包
+for pkg in $required_packages; do
+    if ! $PYTHON_CMD -c "import $pkg" >/dev/null 2>&1; then
+        echo "正在安装 $pkg..."
+        if ! $PYTHON_CMD -m pip install --user $pkg; then
+            echo "安装 $pkg 失败，请手动检查"
+            exit 1
+        fi
+    else
+        echo "$pkg 已安装"
+    fi
+done
+
+echo "所有依赖已满足"
+
 cd data
 cd hunyuan
 python3 hunyuan_9.py
